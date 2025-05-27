@@ -1,0 +1,21 @@
+# type(scope): description courte en français
+#
+# Types possibles:
+# feat: nouvelle fonctionnalité
+# fix: correction de bug
+# docs: documentation
+# style: formatage, point-virgules manquants, etc.
+# refactor: refactorisation du code
+# test: ajout ou modification de tests
+# chore: tâches de maintenance
+#
+# Exemples:
+# feat(admin): ajout interface gestion produits
+# fix(store): correction affichage panier
+# docs(readme): mise à jour installation
+#
+# Corps du message (optionnel):
+# Explication détaillée des changements
+#
+# Footer (optionnel):
+# Closes #123

@@ -1,0 +1,49 @@
+# Règles DemoForge - Outil démo multi-boutiques avec backoffice admin prioritaire
+
+## 📚 Documentation de référence
+
+- **OBLIGATOIRE** : Lire docs/README.md pour vue d'ensemble
+- **CRITIQUE** : Consulter docs/01-vision-strategique.md pour objectifs
+- **ESSENTIEL** : Respecter docs/02-nomenclature-technique.md pour conventions
+- **PRATIQUE** : Suivre docs/99-guide-initialisation.md pour setup
+- **DESIGN** : Consulter docs/03-charte-design.md pour Chakra UI
+- **COMMERCIAL** : Référencer docs/04-scenarios-demo.md pour contexte
+
+## Architecture
+
+- Projet divisé en /backend et /frontend avec architecture multi-boutique unifiée
+- Stack: React + Vite + TypeScript (frontend), Node.js + Express + Prisma + SQLite (backend)
+- UI: Chakra UI exclusivement pour vitrine ET backoffice
+
+## Priorités
+
+- **PRIORITÉ ABSOLUE**: Interface admin (backoffice) avant vitrine
+- Focus tâche en cours, éviter modifications non prioritaires
+
+## Structure métier
+
+- Nomenclature: Commerçant > Boutiques > Catégories > Produits
+- 4 univers: brewery, tea-shop, beauty-shop, herb-shop
+- Composants: Store* (vitrine), Admin* (backoffice), Shared\* (communs)
+
+## Standards de code
+
+- TypeScript strict, pas de any, props explicitement typées
+- Tests Jest obligatoires (couverture >80%), dossier **tests**
+- Fichiers max 300 lignes, refactoriser si nécessaire
+- Yarn classique exclusivement, pas de mélange npm/pnpm, pas de PnP
+
+## Conventions
+
+- Commentaires et commits en français
+- Format commits: type(scope): description
+- Jamais de données mock en dev/prod, uniquement en tests
+
+## Instructions pour l'IA
+
+- Toujours respecter ces règles dans les suggestions de code
+- Prioriser l'interface admin dans tous les développements
+- Utiliser exclusivement Chakra UI pour les composants
+- Maintenir la structure TypeScript stricte
+- Proposer des tests Jest pour chaque fonctionnalité
+- Consulter la documentation dans docs/ avant toute suggestion

@@ -1,0 +1,14 @@
+# Configuration Git pour DemoForge
+# À appliquer avec: git config --local include.path ../.gitconfig-local
+
+[commit]
+    template = .gitmessage
+
+[core]
+    editor = code --wait
+
+[alias]
+    # Aliases utiles pour DemoForge
+    admin = "!f() { git log --oneline --grep='admin'; }; f"
+    store = "!f() { git log --oneline --grep='store'; }; f"
+    feat = "!f() { git log --oneline --grep='feat'; }; f" 

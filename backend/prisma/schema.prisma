@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Merchant {
+  id    String @id @default(cuid())
+  name  String
+  email String @unique
+  shops Shop[]
+  
+  @@map("merchants")
+}
+
+model Shop {
+  id         String    @id @default(cuid())
+  name       String
+  shopType   String    // brewery, tea-shop, beauty-shop, herb-shop
+  merchant   Merchant  @relation(fields: [merchantId], references: [id])
+  merchantId String
+  products   Product[]
+  categories Category[]
+  
+  @@map("shops")
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String
+  shop     Shop      @relation(fields: [shopId], references: [id])
+  shopId   String
+  products Product[]
+  
+  @@map("categories")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  image       String?
+  attributes  String?  // JSON string for flexible attributes
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  shop        Shop     @relation(fields: [shopId], references: [id])
+  shopId      String
+  
+  @@map("products")
+}
