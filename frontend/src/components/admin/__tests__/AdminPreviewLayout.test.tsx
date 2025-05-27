@@ -11,6 +11,14 @@ jest.mock("framer-motion", () => ({
   },
 }));
 
+// Mock react-icons
+jest.mock("react-icons/fi", () => ({
+  FiEye: () => "👁️",
+  FiEyeOff: () => "🙈",
+  FiMaximize2: () => "⛶",
+  FiMinimize2: () => "⊟",
+}));
+
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <ChakraProvider>{children}</ChakraProvider>
 );

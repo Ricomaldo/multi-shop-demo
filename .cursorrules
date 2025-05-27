@@ -8,6 +8,7 @@
 - **PRATIQUE** : Suivre docs/99-guide-initialisation.md pour setup
 - **DESIGN** : Consulter docs/03-charte-design.md pour Chakra UI
 - **COMMERCIAL** : Référencer docs/04-scenarios-demo.md pour contexte
+- **INNOVATION** : Maîtriser docs/05-split-view-admin.md pour aperçu temps réel
 
 ## Architecture
 
@@ -18,13 +19,60 @@
 ## Priorités
 
 - **PRIORITÉ ABSOLUE**: Interface admin (backoffice) avant vitrine
+- **INNOVATION CLEF**: Split view admin avec aperçu temps réel utilisant vrais composants vitrine
 - Focus tâche en cours, éviter modifications non prioritaires
 
 ## Structure métier
 
 - Nomenclature: Commerçant > Boutiques > Catégories > Produits
 - 4 univers: brewery, tea-shop, beauty-shop, herb-shop
-- Composants: Store* (vitrine), Admin* (backoffice), Shared\* (communs)
+- Composants: Store* (vitrine), Admin* (backoffice), Shared\* (communs réutilisés)
+
+## 🚀 Split View Admin - Architecture Révolutionnaire
+
+### Principe fondamental
+
+- **Fidélité parfaite** : Utilisation des vrais composants vitrine (SharedProductCard) dans l'aperçu admin
+- **Thématisation automatique** : Mapping shopType → universe pour détection automatique des thèmes
+- **Temps réel** : Modifications visibles instantanément avec animations fluides
+
+### Composants clés
+
+- **AdminPreviewLayout** : Layout split view responsive (desktop 50/50, mobile vertical)
+- **AdminProductPreview** : Aperçu utilisant SharedProductCard + UniverseProvider
+- **useProductPreview** : Hook gestion état et détection changements
+- **universeMapping** : Utilitaires mapping shopType ↔ universe
+
+### Mapping univers obligatoire
+
+```
+brewery → brewery (🍺 Houblon & Tradition, orange)
+tea-shop → tea-shop (🍵 Les Jardins de Darjeeling, green)
+beauty-shop → beauty-shop (💄 L'Écrin de Jade, pink)
+herb-shop → herb-shop (🌿 Herboristerie du Moulin Vert, teal)
+```
+
+## 🎬 Scénarios Démo Commerciaux
+
+### Objectif démo
+
+- **Cible** : Commerçants TPE/PME insatisfaits solutions actuelles
+- **Durée** : 15-20 minutes par prospect
+- **Focus** : Contrôle total vs solutions imposées
+- **Effet wow** : Split view avec aperçu temps réel
+
+### Trame démo type (15-20 min)
+
+1. **Accroche** (2-3 min) : Accès direct backoffice, ajout produit temps réel
+2. **Parcours admin** (10-12 min) : Gestion produits, catégories, multi-boutique
+3. **Différenciation** (3-5 min) : Vs WooCommerce/Shopify/PrestaShop
+
+### Arguments transversaux
+
+- **Autonomie** : Pas de dépendance plateforme
+- **Évolutivité** : Croissance sans migration
+- **Maîtrise coûts** : Pas d'abonnements progressifs
+- **Support** : Développeur français dédié
 
 ## Standards de code
 
@@ -43,7 +91,11 @@
 
 - Toujours respecter ces règles dans les suggestions de code
 - Prioriser l'interface admin dans tous les développements
+- **OBLIGATOIRE** : Utiliser SharedProductCard dans les aperçus admin pour fidélité parfaite
+- **ESSENTIEL** : Implémenter mapping shopType → universe pour thématisation automatique
 - Utiliser exclusivement Chakra UI pour les composants
 - Maintenir la structure TypeScript stricte
-- Proposer des tests Jest pour chaque fonctionnalité
+- Proposer des tests Jest pour chaque fonctionnalité (17 tests pour AdminProductPreview)
 - Consulter la documentation dans docs/ avant toute suggestion
+- **INNOVATION** : Privilégier split view admin avec aperçu temps réel pour effet démo maximal
+- **COMMERCIAL** : Garder en tête les scénarios démo lors du développement des fonctionnalités admin

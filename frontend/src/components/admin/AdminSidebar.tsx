@@ -17,7 +17,7 @@ import {
   FiX,
 } from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
-import { AdminUniverseSelector } from "./AdminUniverseSelector";
+import AdminShopSelector from "./AdminShopSelector";
 
 const menuItems = [
   { icon: FiHome, label: "Dashboard", path: "/admin" },
@@ -129,8 +129,8 @@ export default function AdminSidebar({
             )}
           </Flex>
 
-          {/* Sélecteur d'univers - masqué si collapsed */}
-          {shouldShowLabels && <AdminUniverseSelector />}
+          {/* Sélecteur de boutique - masqué si collapsed */}
+          {shouldShowLabels && <AdminShopSelector />}
 
           {/* Menu items */}
           <VStack spacing={1} align="stretch" mt={shouldShowLabels ? 4 : 2}>

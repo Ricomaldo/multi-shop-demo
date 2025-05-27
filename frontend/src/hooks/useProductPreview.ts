@@ -39,7 +39,7 @@ export function useProductPreview(
 
   const [hasChanges, setHasChanges] = useState(false);
   const previousDataRef = useRef(previewData);
-  const changeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const changeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const updatePreview = (formData: ProductFormData, category?: string) => {
     const newData = {

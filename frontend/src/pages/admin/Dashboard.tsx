@@ -1,51 +1,86 @@
-import { Box, Heading, SimpleGrid, Stat, StatLabel, StatNumber, StatHelpText, Text, Alert, AlertIcon } from '@chakra-ui/react'
-import { useState, useEffect } from 'react'
-import axios from 'axios'
+import {
+  Alert,
+  AlertIcon,
+  Box,
+  Heading,
+  SimpleGrid,
+  Stat,
+  StatHelpText,
+  StatLabel,
+  StatNumber,
+  Text,
+} from "@chakra-ui/react";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useAdminShop } from "../../contexts/AdminShopContext";
 
 export default function Dashboard() {
+  const { selectedShop } = useAdminShop();
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalShops: 0,
-    totalCategories: 0
-  })
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+    totalCategories: 0,
+    shopProducts: 0,
+    shopCategories: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadStats()
-  }, [])
+    loadStats();
+  }, [selectedShop]);
 
   const loadStats = async () => {
     try {
-      setLoading(true)
-      const shopsResponse = await axios.get('http://localhost:3001/api/shops')
-      const shops = shopsResponse.data
-      
-      let totalProducts = 0
-      let totalCategories = 0
-      
+      setLoading(true);
+      const shopsResponse = await axios.get("http://localhost:3001/api/shops");
+      const shops = shopsResponse.data;
+
+      let totalProducts = 0;
+      let totalCategories = 0;
+
       for (const shop of shops) {
-        const productsResponse = await axios.get(`http://localhost:3001/api/shops/${shop.id}/products`)
-        totalProducts += productsResponse.data.length
-        totalCategories += shop.categories.length
+        const productsResponse = await axios.get(
+          `http://localhost:3001/api/shops/${shop.id}/products`
+        );
+        totalProducts += productsResponse.data.length;
+        totalCategories += shop.categories.length;
       }
-      
+
+      // Statistiques pour la boutique sélectionnée
+      let shopProducts = 0;
+      let shopCategories = 0;
+      if (selectedShop) {
+        const selectedShopData = shops.find(
+          (s: { id: string; categories: unknown[] }) => s.id === selectedShop.id
+        );
+        if (selectedShopData) {
+          const shopProductsResponse = await axios.get(
+            `http://localhost:3001/api/shops/${selectedShop.id}/products`
+          );
+          shopProducts = shopProductsResponse.data.length;
+          shopCategories = selectedShopData.categories.length;
+        }
+      }
+
       setStats({
         totalProducts,
         totalShops: shops.length,
-        totalCategories
-      })
-      setError(null)
+        totalCategories,
+        shopProducts,
+        shopCategories,
+      });
+      setError(null);
     } catch (error) {
-      console.error('Erreur:', error)
-      setError('Impossible de charger les statistiques')
+      console.error("Erreur:", error);
+      setError("Impossible de charger les statistiques");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (loading) {
-    return <Box>Chargement...</Box>
+    return <Box>Chargement...</Box>;
   }
 
   if (error) {
@@ -54,44 +89,71 @@ export default function Dashboard() {
         <AlertIcon />
         {error}
       </Alert>
-    )
+    );
   }
 
   return (
-    <Box>
-      <Heading size="lg" mb={6}>📊 Tableau de Bord</Heading>
-      
-      <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} mb={8}>
-        <Stat p={6} bg="white" borderRadius="md" shadow="sm">
-          <StatLabel>Boutiques Actives</StatLabel>
-          <StatNumber color="blue.500">{stats.totalShops}</StatNumber>
-          <StatHelpText>Brasserie, Salon de thé</StatHelpText>
-        </Stat>
-        
-        <Stat p={6} bg="white" borderRadius="md" shadow="sm">
-          <StatLabel>Produits Total</StatLabel>
-          <StatNumber color="green.500">{stats.totalProducts}</StatNumber>
-          <StatHelpText>Toutes boutiques confondues</StatHelpText>
-        </Stat>
-        
-        <Stat p={6} bg="white" borderRadius="md" shadow="sm">
-          <StatLabel>Catégories</StatLabel>
-          <StatNumber color="purple.500">{stats.totalCategories}</StatNumber>
-          <StatHelpText>4 par boutique</StatHelpText>
-        </Stat>
-      </SimpleGrid>
+    <VStack spacing={6} align="stretch">
+      {/* Sélecteur de boutique */}
+      <AdminShopSelector />
 
-      <Box p={6} bg="blue.50" borderRadius="md">
-        <Heading size="md" mb={4} color="blue.700">
-          🎯 Prochaines étapes
+      <Box>
+        <Heading size="lg" mb={6}>
+          📊 Tableau de Bord
         </Heading>
-        <Text>
-          • Modifier un produit et voir le changement en temps réel<br/>
-          • Ajouter les boutiques Cosmétiques et Herboristerie<br/>
-          • Implémenter la gestion des catégories<br/>
-          • Créer les interfaces vitrines pour tous les univers
-        </Text>
+
+        {/* Statistiques globales */}
+        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} mb={8}>
+          <Stat p={6} bg="white" borderRadius="md" shadow="sm">
+            <StatLabel>Boutiques Actives</StatLabel>
+            <StatNumber color="blue.500">{stats.totalShops}</StatNumber>
+            <StatHelpText>Brasserie, Salon de thé</StatHelpText>
+          </Stat>
+
+          <Stat p={6} bg="white" borderRadius="md" shadow="sm">
+            <StatLabel>Produits Total</StatLabel>
+            <StatNumber color="green.500">{stats.totalProducts}</StatNumber>
+            <StatHelpText>Toutes boutiques confondues</StatHelpText>
+          </Stat>
+
+          <Stat p={6} bg="white" borderRadius="md" shadow="sm">
+            <StatLabel>Catégories</StatLabel>
+            <StatNumber color="purple.500">{stats.totalCategories}</StatNumber>
+            <StatHelpText>4 par boutique</StatHelpText>
+          </Stat>
+        </SimpleGrid>
+
+        {/* Statistiques de la boutique sélectionnée */}
+        {selectedShop && (
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} mb={8}>
+            <Stat p={6} bg="white" borderRadius="md" shadow="sm">
+              <StatLabel>Produits - {selectedShop.name}</StatLabel>
+              <StatNumber color="orange.500">{stats.shopProducts}</StatNumber>
+              <StatHelpText>Dans cette boutique</StatHelpText>
+            </Stat>
+
+            <Stat p={6} bg="white" borderRadius="md" shadow="sm">
+              <StatLabel>Catégories - {selectedShop.name}</StatLabel>
+              <StatNumber color="purple.500">{stats.shopCategories}</StatNumber>
+              <StatHelpText>Catégories actives</StatHelpText>
+            </Stat>
+          </SimpleGrid>
+        )}
+
+        <Box p={6} bg="blue.50" borderRadius="md">
+          <Heading size="md" mb={4} color="blue.700">
+            🎯 Prochaines étapes
+          </Heading>
+          <Text>
+            • Modifier un produit et voir le changement en temps réel
+            <br />
+            • Ajouter les boutiques Cosmétiques et Herboristerie
+            <br />
+            • Implémenter la gestion des catégories
+            <br />• Créer les interfaces vitrines pour tous les univers
+          </Text>
+        </Box>
       </Box>
-    </Box>
-  )
+    </VStack>
+  );
 }

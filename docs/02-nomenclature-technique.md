@@ -3,22 +3,30 @@
 ## 🎯 Terminologie Standardisée
 
 **Acteurs :**
+
 - **Commerçant** = client qui achète la solution
 - **Visiteur** = client final du commerçant
 - **Prospect** = commerçant potentiel à convaincre
 
 **Interfaces :**
+
 - **Vitrine** = frontend public (visiteurs)
 - **Backoffice** = interface admin (commerçant)
 
+**Fonctionnalités :**
+
+- **Filtres avancés** = filtres métier spécialisés par univers
+- **Split view** = aperçu temps réel admin/vitrine
+- **Attributs métier** = caractéristiques spécialisées par secteur
+
 ## 🏪 Configuration des Univers
 
-| ID Technique | Nom Commercial | Type Commerce |
-|--------------|----------------|---------------|
-| `brewery` | "Houblon & Tradition" | Brasserie |
-| `tea-shop` | "Les Jardins de Darjeeling" | Salon de thé |
-| `beauty-shop` | "L'Écrin de Jade" | Institut beauté |
-| `herb-shop` | "Herboristerie du Moulin Vert" | Herboristerie |
+| ID Technique  | Nom Commercial                 | Type Commerce   |
+| ------------- | ------------------------------ | --------------- |
+| `brewery`     | "Houblon & Tradition"          | Brasserie       |
+| `tea-shop`    | "Les Jardins de Darjeeling"    | Salon de thé    |
+| `beauty-shop` | "L'Écrin de Jade"              | Institut beauté |
+| `herb-shop`   | "Herboristerie du Moulin Vert" | Herboristerie   |
 
 ## 🏗 Architecture Multi-Boutique
 
@@ -30,6 +38,7 @@ Commerçant (Merchant)
 ```
 
 **Hiérarchie des données :**
+
 - 1 Commerçant → N Boutiques
 - 1 Boutique → 4 Catégories fixes
 - 1 Catégorie → 4 Produits
@@ -37,16 +46,19 @@ Commerçant (Merchant)
 ## 🔧 Conventions de Code
 
 **Composants React :**
+
 - Vitrine : `Store*` (StoreProductCard, StoreCategoryGrid)
 - Backoffice : `Admin*` (AdminProductForm, AdminShopConfig)
 - Communs : `Shared*` (SharedHeader, SharedModal)
 
 **Hooks personnalisés :**
+
 - `useShopData()` - données boutique active
 - `useProductFilters()` - filtres produits
 - `useMerchantAuth()` - authentification commerçant
 
 **Services API :**
+
 - `ShopService` - CRUD boutiques
 - `ProductService` - CRUD produits
 - `MerchantService` - gestion commerçants
@@ -80,11 +92,13 @@ model Shop {
 ## 🤖 Standards pour IA
 
 **Contexte requis :**
+
 - Toujours spécifier l'univers cible (`brewery`, `tea-shop`, etc.)
 - Préciser l'interface (vitrine/backoffice)
 - Indiquer le niveau multi-boutique si pertinent
 
 **Formats de demande :**
+
 - `@code brewery vitrine` - code pour brasserie côté vitrine
 - `@admin multi-shop` - interface admin multi-boutique
 - `@data tea-shop` - structure données salon de thé

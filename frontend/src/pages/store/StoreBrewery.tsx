@@ -1,38 +1,64 @@
 import {
-  Badge,
   Box,
   Button,
-  Flex,
   Heading,
   SimpleGrid,
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import type { Product } from "../../../../shared/types";
+import { StoreAdvancedFilters } from "../../components/store/StoreAdvancedFilters";
 import StoreCategoryFilter from "../../components/store/StoreCategoryFilter";
+import { StoreProductCard } from "../../components/store/StoreProductCard";
 import { UniverseProvider } from "../../contexts/UniverseContext";
-import { useProductFilters, useShopData } from "../../hooks";
+import { useShopData, useStoreProductFilters } from "../../hooks";
+import type { ProductFilters } from "../../services/adminProductService";
 
 export default function StoreBrewery() {
   const colorScheme = "orange";
+  const [advancedFilters, setAdvancedFilters] = useState<ProductFilters>({});
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Utiliser les hooks pour la gestion des données
   const { shops, products, loading, error } = useShopData();
 
+  // Trouver la boutique brasserie
+  const breweryShop = useMemo(() => {
+    return shops.find((shop) => shop.shopType === "brewery");
+  }, [shops]);
+
   // Filtrer les produits de la brasserie
   const breweryProducts = useMemo(() => {
-    const breweryShop = shops.find((shop) => shop.shopType === "brewery");
     return products.filter((product) => product.shopId === breweryShop?.id);
-  }, [shops, products]);
+  }, [products, breweryShop]);
 
-  // Hook de filtrage par catégorie
+  // Hook de filtrage vitrine
   const {
     filteredProducts,
     selectedCategoryId,
     categories,
     setSelectedCategoryId,
     resetFilters,
-  } = useProductFilters(breweryProducts);
+    applyAdvancedFilters,
+  } = useStoreProductFilters(breweryProducts);
+
+  // Gestionnaires pour les filtres avancés
+  const handleFiltersChange = (newFilters: ProductFilters) => {
+    setAdvancedFilters(newFilters);
+    applyAdvancedFilters(newFilters, searchTerm);
+  };
+
+  const handleSearchChange = (search: string) => {
+    setSearchTerm(search);
+    applyAdvancedFilters(advancedFilters, search);
+  };
+
+  const handleResetFilters = () => {
+    setAdvancedFilters({});
+    setSearchTerm("");
+    resetFilters();
+  };
 
   const handleAddToCart = (productId: string) => {
     // Simulation ajout panier
@@ -77,6 +103,18 @@ export default function StoreBrewery() {
             </Text>
           </VStack>
 
+          {/* Filtres avancés */}
+          {breweryShop && (
+            <StoreAdvancedFilters
+              shop={breweryShop}
+              filters={advancedFilters}
+              searchTerm={searchTerm}
+              onFiltersChange={handleFiltersChange}
+              onSearchChange={handleSearchChange}
+              onReset={handleResetFilters}
+            />
+          )}
+
           {/* Filtrage par catégorie */}
           {categories.length > 0 && (
             <StoreCategoryFilter
@@ -113,52 +151,13 @@ export default function StoreBrewery() {
               spacing={6}
               w="full"
             >
-              {filteredProducts.map((product) => (
-                <Box
+              {filteredProducts.map((product: Product) => (
+                <StoreProductCard
                   key={product.id}
-                  p={6}
-                  bg="white"
-                  borderRadius="lg"
-                  shadow="md"
-                  borderWidth={1}
-                  borderColor={`${colorScheme}.200`}
-                  transition="transform 0.2s"
-                  _hover={{ transform: "translateY(-2px)", shadow: "lg" }}
-                >
-                  <VStack spacing={4} align="stretch">
-                    <Flex justify="space-between" align="start">
-                      <Badge colorScheme={colorScheme} fontSize="xs">
-                        {product.category?.name}
-                      </Badge>
-                    </Flex>
-
-                    <VStack spacing={2} align="start">
-                      <Heading size="md" color={`${colorScheme}.800`}>
-                        {product.name}
-                      </Heading>
-                      <Text fontSize="sm" color="gray.600" noOfLines={2}>
-                        {product.description}
-                      </Text>
-                    </VStack>
-
-                    <Flex justify="space-between" align="center">
-                      <Text
-                        fontSize="xl"
-                        fontWeight="bold"
-                        color={`${colorScheme}.600`}
-                      >
-                        {product.price.toFixed(2)}€
-                      </Text>
-                      <Button
-                        size="sm"
-                        colorScheme={colorScheme}
-                        onClick={() => handleAddToCart(product.id)}
-                      >
-                        🛒 Ajouter
-                      </Button>
-                    </Flex>
-                  </VStack>
-                </Box>
+                  product={product}
+                  shop={breweryShop!}
+                  onAddToCart={(prod: Product) => handleAddToCart(prod.id)}
+                />
               ))}
             </SimpleGrid>
           )}

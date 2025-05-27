@@ -21,10 +21,19 @@ import axios from "axios";
 import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import type { Product } from "../../../../shared/types";
-import { AdminCategoryFilter, AdminProductList } from "../../components/admin";
+import {
+  AdminAdvancedFilters,
+  AdminCategoryFilter,
+  AdminProductList,
+} from "../../components/admin";
 import AdminPreviewLayout from "../../components/admin/AdminPreviewLayout";
 import AdminProductPreview from "../../components/admin/AdminProductPreview";
-import { useProductFilters, useProductPreview, useShopData } from "../../hooks";
+import {
+  useAdvancedProductFilters,
+  useProductPreview,
+  useShopData,
+} from "../../hooks";
+import type { ProductFilters } from "../../services/adminProductService";
 
 export default function Products() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -34,6 +43,8 @@ export default function Products() {
     price: "0.00" as string,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState<ProductFilters>({});
+  const [searchTerm, setSearchTerm] = useState("");
   const toast = useToast();
 
   // Utiliser les hooks personnalisés pour la gestion des données
@@ -44,14 +55,15 @@ export default function Products() {
     [products, currentShop]
   );
 
-  // Hook de filtrage par catégorie
+  // Hook de filtrage avancé
   const {
     filteredProducts,
     selectedCategoryId,
     categories,
     setSelectedCategoryId,
     resetFilters,
-  } = useProductFilters(shopProducts);
+    applyAdvancedFilters,
+  } = useAdvancedProductFilters(shopProducts, currentShop?.id);
 
   const colorScheme = "blue";
 
@@ -118,6 +130,23 @@ export default function Products() {
     const newFormData = { ...formData, [field]: value };
     setFormData(newFormData);
     updatePreview(newFormData, editingProduct?.category?.name);
+  };
+
+  // Gestionnaires pour les filtres avancés
+  const handleFiltersChange = (newFilters: ProductFilters) => {
+    setAdvancedFilters(newFilters);
+    applyAdvancedFilters(newFilters, searchTerm);
+  };
+
+  const handleSearchChange = (search: string) => {
+    setSearchTerm(search);
+    applyAdvancedFilters(advancedFilters, search);
+  };
+
+  const handleResetFilters = () => {
+    setAdvancedFilters({});
+    setSearchTerm("");
+    resetFilters();
   };
 
   // Effet pour mettre à jour l'aperçu quand les données changent
@@ -242,7 +271,11 @@ export default function Products() {
 
     // Contenu de l'aperçu
     const previewContent = (
-      <AdminProductPreview productData={previewData} hasChanges={hasChanges} />
+      <AdminProductPreview
+        productData={previewData}
+        hasChanges={hasChanges}
+        shopType={currentShop?.shopType}
+      />
     );
 
     return (
@@ -346,6 +379,18 @@ export default function Products() {
           </Flex>
         </CardBody>
       </Card>
+
+      {/* Filtres avancés */}
+      {currentShop && (
+        <AdminAdvancedFilters
+          shop={currentShop}
+          filters={advancedFilters}
+          searchTerm={searchTerm}
+          onFiltersChange={handleFiltersChange}
+          onSearchChange={handleSearchChange}
+          onReset={handleResetFilters}
+        />
+      )}
 
       {/* Filtrage par catégorie */}
       <AdminCategoryFilter

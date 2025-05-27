@@ -31,3 +31,9 @@ Object.defineProperty(window, "matchMedia", {
     return null;
   }
 };
+
+// Mock pour Emotion
+Object.defineProperty(window, "__emotion_real", {
+  value: true,
+  writable: true,
+});
