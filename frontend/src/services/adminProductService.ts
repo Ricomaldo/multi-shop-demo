@@ -4,10 +4,33 @@ interface WindowWithEnv extends Window {
   VITE_API_URL?: string;
 }
 
-const API_BASE_URL =
-  (typeof window !== "undefined" && (window as WindowWithEnv).VITE_API_URL) ||
-  process.env.VITE_API_URL ||
-  "http://localhost:3001/api";
+const getApiUrl = (): string => {
+  // En mode navigateur
+  if (typeof window !== "undefined") {
+    const windowWithEnv = window as WindowWithEnv;
+    if (windowWithEnv.VITE_API_URL) {
+      return windowWithEnv.VITE_API_URL;
+    }
+  }
+
+  // En mode Vite (import.meta.env)
+  if (
+    typeof globalThis !== "undefined" &&
+    (globalThis as any).import?.meta?.env?.VITE_API_URL
+  ) {
+    return (globalThis as any).import.meta.env.VITE_API_URL;
+  }
+
+  // En mode Node.js (process.env)
+  if (typeof process !== "undefined" && process.env?.VITE_API_URL) {
+    return process.env.VITE_API_URL;
+  }
+
+  // Fallback
+  return "http://localhost:3001/api";
+};
+
+const API_BASE_URL = getApiUrl();
 
 export interface ProductFilters {
   category?: string;

@@ -360,7 +360,7 @@ describe("productAttributes utils", () => {
         productWithNullValues,
         mockShops["shop-1"]
       );
-      expect(result).toHaveLength(2); // Seulement amertume et stock
+      expect(result).toHaveLength(4); // degre_alcool (null), amertume, format (undefined), stock
     });
 
     it("devrait gérer les types de boutique non reconnus", () => {

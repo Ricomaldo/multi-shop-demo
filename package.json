@@ -1,0 +1,35 @@
+{
+  "name": "demoforge",
+  "version": "1.0.0",
+  "description": "DemoForge - Outil de démonstration multi-boutiques avec backoffice admin",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "test": "yarn workspace frontend test && yarn workspace backend test",
+    "test:frontend": "yarn workspace frontend test",
+    "test:backend": "yarn workspace backend test",
+    "test:coverage": "yarn workspace frontend test:coverage && yarn workspace backend test:coverage",
+    "test:watch": "concurrently \"yarn workspace frontend test:watch\" \"yarn workspace backend test:watch\"",
+    "dev": "concurrently \"yarn workspace backend dev\" \"yarn workspace frontend dev\"",
+    "build": "yarn workspace backend build && yarn workspace frontend build",
+    "lint": "yarn workspace frontend lint",
+    "lint:fix": "yarn workspace frontend lint:fix"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "packageManager": "yarn@4.9.1",
+  "keywords": [
+    "demo",
+    "e-commerce",
+    "multi-boutique",
+    "react",
+    "typescript",
+    "chakra-ui"
+  ],
+  "author": "DemoForge Team",
+  "license": "MIT"
+}

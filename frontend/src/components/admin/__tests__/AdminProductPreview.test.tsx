@@ -22,29 +22,38 @@ jest.mock("@chakra-ui/react", () => ({
   ),
 }));
 
-// Mock SharedProductCard pour isoler les tests
+// Mock SharedProductCard pour éviter les dépendances complexes
 jest.mock("../../shared/SharedProductCard", () => ({
   SharedProductCard: ({
-    name,
-    description,
-    price,
-    category,
+    product,
+    shop,
     isAdminMode,
   }: {
-    name: string;
-    description?: string;
-    price: number;
-    category?: string;
+    product: {
+      name?: string;
+      description?: string;
+      price?: number;
+      category?: { name: string };
+    };
+    shop: { name: string };
     isAdminMode: boolean;
-  }) => (
-    <div data-testid="shared-product-card">
-      <div data-testid="product-name">{name}</div>
-      <div data-testid="product-description">{description}</div>
-      <div data-testid="product-price">{price.toFixed(2)}€</div>
-      {category && <div data-testid="product-category">{category}</div>}
-      <div data-testid="admin-mode">{isAdminMode ? "admin" : "vitrine"}</div>
-    </div>
-  ),
+  }) => {
+    const price = typeof product.price === "number" ? product.price : 0;
+    return (
+      <div data-testid="shared-product-card">
+        <div data-testid="product-name">{product.name || "Nom du produit"}</div>
+        <div data-testid="product-description">
+          {product.description || "Description du produit..."}
+        </div>
+        <div data-testid="product-price">{price.toFixed(2)}€</div>
+        {product.category && (
+          <div data-testid="product-category">{product.category.name}</div>
+        )}
+        <div data-testid="admin-mode">{isAdminMode ? "admin" : "vitrine"}</div>
+        <div data-testid="shop-name">{shop.name}</div>
+      </div>
+    );
+  },
 }));
 
 // Mock UniverseProvider pour simplifier
@@ -86,7 +95,9 @@ describe("AdminProductPreview", () => {
   test("affiche le nom de boutique brewery par défaut", () => {
     render(<AdminProductPreview productData={mockProductData} />);
 
-    expect(screen.getByText("🍺 Houblon & Tradition")).toBeInTheDocument();
+    expect(screen.getByTestId("shop-name")).toHaveTextContent(
+      "Houblon & Tradition"
+    );
   });
 
   test("affiche le nom de boutique tea-shop quand shopType est tea-shop", () => {
@@ -94,9 +105,9 @@ describe("AdminProductPreview", () => {
       <AdminProductPreview productData={mockProductData} shopType="tea-shop" />
     );
 
-    expect(
-      screen.getByText("🍵 Les Jardins de Darjeeling")
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("shop-name")).toHaveTextContent(
+      "Les Jardins de Darjeeling"
+    );
   });
 
   test("affiche le nom de boutique beauty-shop quand shopType est beauty-shop", () => {
@@ -107,7 +118,9 @@ describe("AdminProductPreview", () => {
       />
     );
 
-    expect(screen.getByText("💄 L'Écrin de Jade")).toBeInTheDocument();
+    expect(screen.getByTestId("shop-name")).toHaveTextContent(
+      "L'Écrin de Jade"
+    );
   });
 
   test("affiche le nom de boutique herb-shop quand shopType est herb-shop", () => {
@@ -115,9 +128,9 @@ describe("AdminProductPreview", () => {
       <AdminProductPreview productData={mockProductData} shopType="herb-shop" />
     );
 
-    expect(
-      screen.getByText("🌿 Herboristerie du Moulin Vert")
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("shop-name")).toHaveTextContent(
+      "Herboristerie du Moulin Vert"
+    );
   });
 
   test("utilise brewery comme fallback pour shopType invalide", () => {
@@ -125,7 +138,9 @@ describe("AdminProductPreview", () => {
       <AdminProductPreview productData={mockProductData} shopType="invalid" />
     );
 
-    expect(screen.getByText("🍺 Houblon & Tradition")).toBeInTheDocument();
+    expect(screen.getByTestId("shop-name")).toHaveTextContent(
+      "Houblon & Tradition"
+    );
   });
 
   test("affiche l'indicateur de changements quand hasChanges est true", () => {
