@@ -1073,6 +1073,8 @@ async function main() {
 main()
   .catch((e: Error) => {
     console.error("❌ Erreur lors de l'initialisation:", e);
+    // @ts-expect-error: Forçage des types Node pour process
+    /// <reference types="node" />
     process.exit(1);
   })
   .finally(async () => {
