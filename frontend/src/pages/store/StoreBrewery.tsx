@@ -1,16 +1,20 @@
 import {
+  Badge,
   Box,
   Button,
+  Divider,
   Heading,
-  SimpleGrid,
+  HStack,
   Text,
   VStack,
 } from "@chakra-ui/react";
 import { useMemo, useState } from "react";
 import type { Product } from "../../../../shared/types";
-import { StoreAdvancedFilters } from "../../components/store/StoreAdvancedFilters";
-import StoreCategoryFilter from "../../components/store/StoreCategoryFilter";
-import { StoreProductCard } from "../../components/store/StoreProductCard";
+import {
+  SharedAdvancedFilters,
+  SharedCategoryFilter,
+} from "../../components/shared";
+import { ProductGrid } from "../../components/shared/ProductGrid";
 import { UniverseProvider } from "../../contexts/UniverseContext";
 import { useShopData, useStoreProductFilters } from "../../hooks";
 import type { ProductFilters } from "../../services/adminProductService";
@@ -60,9 +64,14 @@ export default function StoreBrewery() {
     resetFilters();
   };
 
-  const handleAddToCart = (productId: string) => {
+  const handleAddToCart = (product: Product) => {
     // Simulation ajout panier
-    console.log("Ajout au panier:", productId);
+    console.log("Ajout au panier:", product.name);
+  };
+
+  const handleViewProduct = (product: Product) => {
+    // Navigation vers détail produit
+    console.log("Voir détails:", product.name);
   };
 
   if (loading) {
@@ -89,78 +98,106 @@ export default function StoreBrewery() {
     <UniverseProvider defaultUniverse="brewery">
       <Box p={8} maxW="1200px" mx="auto">
         <VStack spacing={8}>
-          <VStack spacing={4}>
+          {/* Header E-commerce */}
+          <VStack spacing={4} textAlign="center">
             <Heading size="xl" color={`${colorScheme}.700`}>
               🍺 Houblon & Tradition
             </Heading>
-            <Text fontSize="lg" color="gray.600" textAlign="center">
+            <Text fontSize="lg" color="gray.600">
               Brasserie artisanale - Sélection de bières traditionnelles
             </Text>
-            <Text fontSize="sm" color="gray.500">
-              {breweryProducts.length} produit
-              {breweryProducts.length !== 1 ? "s" : ""} disponible
-              {breweryProducts.length !== 1 ? "s" : ""}
-            </Text>
+
+            {/* Stats boutique */}
+            <HStack spacing={6} wrap="wrap" justify="center">
+              <Badge colorScheme={colorScheme} px={3} py={1}>
+                {breweryProducts.length} produit
+                {breweryProducts.length !== 1 ? "s" : ""}
+              </Badge>
+              <Badge colorScheme="green" px={3} py={1}>
+                {categories.length} catégorie
+                {categories.length !== 1 ? "s" : ""}
+              </Badge>
+              <Badge colorScheme="blue" px={3} py={1}>
+                Livraison gratuite dès 50€
+              </Badge>
+            </HStack>
           </VStack>
 
-          {/* Filtres avancés */}
+          <Divider />
+
+          {/* Filtres avancés - Spécificité brasserie */}
           {breweryShop && (
-            <StoreAdvancedFilters
-              shop={breweryShop}
-              filters={advancedFilters}
-              searchTerm={searchTerm}
-              onFiltersChange={handleFiltersChange}
-              onSearchChange={handleSearchChange}
-              onReset={handleResetFilters}
-            />
+            <Box w="full">
+              <SharedAdvancedFilters
+                shop={breweryShop}
+                filters={advancedFilters}
+                searchTerm={searchTerm}
+                onFiltersChange={handleFiltersChange}
+                onSearchChange={handleSearchChange}
+                onReset={handleResetFilters}
+              />
+            </Box>
           )}
 
           {/* Filtrage par catégorie */}
           {categories.length > 0 && (
-            <StoreCategoryFilter
+            <SharedCategoryFilter
               categories={categories}
               selectedCategoryId={selectedCategoryId}
               onCategoryChange={setSelectedCategoryId}
               onResetFilters={resetFilters}
               productCount={filteredProducts.length}
               colorScheme={colorScheme}
+              mode="store"
             />
           )}
 
-          {/* Grille des produits */}
-          {filteredProducts.length === 0 ? (
-            <VStack spacing={4} py={8}>
-              <Text fontSize="lg" color="gray.500">
-                {selectedCategoryId
-                  ? "Aucun produit dans cette catégorie"
-                  : "Aucun produit disponible"}
-              </Text>
-              {selectedCategoryId && (
-                <Button
-                  variant="outline"
-                  colorScheme={colorScheme}
-                  onClick={resetFilters}
-                >
-                  Voir tous les produits
-                </Button>
-              )}
-            </VStack>
-          ) : (
-            <SimpleGrid
-              columns={{ base: 1, md: 2, lg: 3 }}
-              spacing={6}
-              w="full"
-            >
-              {filteredProducts.map((product: Product) => (
-                <StoreProductCard
-                  key={product.id}
-                  product={product}
-                  shop={breweryShop!}
-                  onAddToCart={(prod: Product) => handleAddToCart(prod.id)}
-                />
-              ))}
-            </SimpleGrid>
-          )}
+          {/* Résultats et actions */}
+          <HStack justify="space-between" w="full">
+            <Text fontSize="sm" color="gray.600">
+              {filteredProducts.length} résultat
+              {filteredProducts.length !== 1 ? "s" : ""} trouvé
+              {filteredProducts.length !== 1 ? "s" : ""}
+            </Text>
+
+            {(selectedCategoryId ||
+              Object.keys(advancedFilters).length > 0 ||
+              searchTerm) && (
+              <Button
+                size="sm"
+                variant="outline"
+                colorScheme={colorScheme}
+                onClick={handleResetFilters}
+              >
+                Réinitialiser tous les filtres
+              </Button>
+            )}
+          </HStack>
+
+          {/* Grille produits avec ProductGrid */}
+          <ProductGrid
+            products={filteredProducts}
+            shop={breweryShop!}
+            onAddToCart={handleAddToCart}
+            onView={handleViewProduct}
+            columns={{ base: 1, md: 2, lg: 3 }}
+            spacing={6}
+            isAdminMode={false}
+            emptyMessage={
+              selectedCategoryId ||
+              Object.keys(advancedFilters).length > 0 ||
+              searchTerm
+                ? "Aucun produit ne correspond à vos critères"
+                : "Aucun produit disponible"
+            }
+            emptySubMessage={
+              selectedCategoryId ||
+              Object.keys(advancedFilters).length > 0 ||
+              searchTerm
+                ? "Essayez de modifier vos filtres"
+                : undefined
+            }
+          />
         </VStack>
       </Box>
     </UniverseProvider>

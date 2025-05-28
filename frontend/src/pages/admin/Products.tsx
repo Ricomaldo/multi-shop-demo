@@ -21,13 +21,13 @@ import axios from "axios";
 import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import type { Product } from "../../../../shared/types";
-import {
-  AdminAdvancedFilters,
-  AdminCategoryFilter,
-  AdminProductList,
-} from "../../components/admin";
+import { AdminProductList } from "../../components/admin";
 import AdminPreviewLayout from "../../components/admin/AdminPreviewLayout";
 import AdminProductPreview from "../../components/admin/AdminProductPreview";
+import {
+  SharedAdvancedFilters,
+  SharedCategoryFilter,
+} from "../../components/shared";
 import {
   useAdvancedProductFilters,
   useProductPreview,
@@ -382,24 +382,26 @@ export default function Products() {
 
       {/* Filtres avancés */}
       {currentShop && (
-        <AdminAdvancedFilters
+        <SharedAdvancedFilters
           shop={currentShop}
           filters={advancedFilters}
           searchTerm={searchTerm}
           onFiltersChange={handleFiltersChange}
           onSearchChange={handleSearchChange}
           onReset={handleResetFilters}
+          mode="admin"
         />
       )}
 
       {/* Filtrage par catégorie */}
-      <AdminCategoryFilter
+      <SharedCategoryFilter
         categories={categories}
         selectedCategoryId={selectedCategoryId}
         onCategoryChange={setSelectedCategoryId}
         onResetFilters={resetFilters}
         productCount={filteredProducts.length}
         colorScheme={colorScheme}
+        mode="admin"
       />
 
       {/* Liste des produits */}
@@ -436,7 +438,11 @@ export default function Products() {
               )}
             </VStack>
           ) : (
-            <AdminProductList products={filteredProducts} onEdit={handleEdit} />
+            <AdminProductList
+              products={filteredProducts}
+              shop={currentShop!}
+              onEdit={handleEdit}
+            />
           )}
         </CardBody>
       </Card>

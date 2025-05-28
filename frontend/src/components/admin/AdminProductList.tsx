@@ -1,9 +1,10 @@
 import { VStack } from "@chakra-ui/react";
-import type { Product } from "../../../../shared/types";
+import type { Product, Shop } from "../../../../shared/types";
 import { SharedProductCard } from "../shared/SharedProductCard";
 
 interface AdminProductListProps {
   products: Product[];
+  shop: Shop;
   onEdit: (product: Product) => void;
 }
 
@@ -13,26 +14,17 @@ interface AdminProductListProps {
  */
 export default function AdminProductList({
   products,
+  shop,
   onEdit,
 }: AdminProductListProps) {
-  const handleEdit = (id: string) => {
-    const product = products.find((p) => p.id === id);
-    if (product) {
-      onEdit(product);
-    }
-  };
-
   return (
     <VStack spacing={4} align="stretch">
       {products.map((product) => (
         <SharedProductCard
           key={product.id}
-          id={product.id}
-          name={product.name}
-          description={product.description}
-          price={product.price}
-          category={product.category?.name}
-          onEdit={handleEdit}
+          product={product}
+          shop={shop}
+          onEdit={onEdit}
           isAdminMode={true}
         />
       ))}

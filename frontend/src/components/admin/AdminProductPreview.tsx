@@ -1,6 +1,7 @@
 import { Box, Heading, Text, VStack } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import type { Product, Shop } from "../../../../shared/types";
 import type { UniverseType } from "../../contexts/UniverseContext";
 import { UniverseProvider } from "../../contexts/UniverseContext";
 import {
@@ -71,9 +72,34 @@ export default function AdminProductPreview({
     },
   };
 
-  const handleAddToCart = (productId: string) => {
+  // Créer un objet Product mock pour l'aperçu
+  const mockProduct: Product = {
+    id: "preview",
+    name: productData.name || "Nom du produit",
+    description: productData.description || "Description du produit...",
+    price: price,
+    categoryId: "preview-category",
+    shopId: "preview-shop",
+    category: productData.category
+      ? {
+          id: "preview-category",
+          name: productData.category,
+          shopId: "preview-shop",
+        }
+      : undefined,
+  };
+
+  // Créer un objet Shop mock pour l'aperçu
+  const mockShop: Shop = {
+    id: "preview-shop",
+    name: shopDisplayName,
+    shopType: shopType as "brewery" | "tea-shop" | "beauty-shop" | "herb-shop",
+    categories: [],
+  };
+
+  const handleAddToCart = (product: Product) => {
     // Simulation pour l'aperçu - pas d'action réelle
-    console.log("Aperçu - Ajout au panier:", productId);
+    console.log("Aperçu - Ajout au panier:", product.id);
   };
 
   return (
@@ -103,11 +129,8 @@ export default function AdminProductPreview({
           w="full"
         >
           <SharedProductCard
-            id="preview"
-            name={productData.name || "Nom du produit"}
-            description={productData.description || "Description du produit..."}
-            price={price}
-            category={productData.category}
+            product={mockProduct}
+            shop={mockShop}
             onAddToCart={handleAddToCart}
             isAdminMode={false} // Mode vitrine pour l'aperçu
           />

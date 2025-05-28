@@ -1,17 +1,11 @@
 import { Box, SimpleGrid, Text } from "@chakra-ui/react";
+import type { Product, Shop } from "../../../../shared/types";
 import { SharedProductCard } from "../shared/SharedProductCard";
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category?: string;
-}
 
 interface StoreProductGridProps {
   products: Product[];
-  onAddToCart?: (id: string) => void;
+  shop: Shop;
+  onAddToCart?: (product: Product) => void;
 }
 
 /**
@@ -20,6 +14,7 @@ interface StoreProductGridProps {
  */
 export const StoreProductGrid: React.FC<StoreProductGridProps> = ({
   products,
+  shop,
   onAddToCart,
 }) => {
   if (products.length === 0) {
@@ -37,11 +32,8 @@ export const StoreProductGrid: React.FC<StoreProductGridProps> = ({
       {products.map((product) => (
         <SharedProductCard
           key={product.id}
-          id={product.id}
-          name={product.name}
-          description={product.description}
-          price={product.price}
-          category={product.category}
+          product={product}
+          shop={shop}
           onAddToCart={onAddToCart}
           isAdminMode={false}
         />

@@ -1,15 +1,28 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import { fireEvent, render, screen } from "@testing-library/react";
+import React from "react";
 import AdminPreviewLayout from "../AdminPreviewLayout";
 
-// Mock framer-motion
-jest.mock("framer-motion", () => ({
-  motion: {
-    div: ({ children, ...props }: React.ComponentProps<"div">) => (
-      <div {...props}>{children}</div>
-    ),
-  },
-}));
+// Mock framer-motion - Version complète
+jest.mock("framer-motion", () => {
+  const mockMotion = (
+    Component: React.ComponentType<Record<string, unknown>>
+  ) => {
+    return ({
+      children,
+      ...props
+    }: Record<string, unknown> & { children?: React.ReactNode }) =>
+      React.createElement(Component, props, children);
+  };
+
+  mockMotion.div = ({ children, ...props }: React.ComponentProps<"div">) =>
+    React.createElement("div", props, children);
+
+  return {
+    motion: mockMotion,
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
+  };
+});
 
 // Mock react-icons
 jest.mock("react-icons/fi", () => ({

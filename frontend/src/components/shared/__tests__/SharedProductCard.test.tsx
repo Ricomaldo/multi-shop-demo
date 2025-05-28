@@ -1,43 +1,66 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { UniverseProvider } from "../../../contexts/UniverseContext";
+import type { Product, Shop } from "../../../../../shared/types";
 import theme from "../../../theme";
 import { SharedProductCard } from "../SharedProductCard";
 
-// Mock des props de test
-const mockProduct = {
+// Mock des données de test
+const mockShop: Shop = {
+  id: "test-shop-1",
+  name: "Houblon & Tradition",
+  shopType: "brewery",
+  categories: [],
+};
+
+const mockProduct: Product = {
   id: "test-product-1",
   name: "Bière Blonde Test",
   description: "Une excellente bière blonde artisanale pour les tests",
   price: 4.5,
-  category: "Blondes",
+  image: undefined,
+  attributes: JSON.stringify({
+    degre_alcool: "4.8%",
+    amertume_ibu: "22 IBU",
+    type_houblon: "Cascade",
+    stock: 45,
+  }),
+  categoryId: "test-category-1",
+  shopId: "test-shop-1",
+  category: {
+    id: "test-category-1",
+    name: "Bières Blondes",
+    shopId: "test-shop-1",
+  },
+  shop: mockShop,
 };
 
 // Wrapper avec providers nécessaires
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <ChakraProvider theme={theme}>
-    <UniverseProvider defaultUniverse="brewery">{children}</UniverseProvider>
-  </ChakraProvider>
+  <ChakraProvider theme={theme}>{children}</ChakraProvider>
 );
 
 describe("SharedProductCard", () => {
   it("affiche correctement les informations du produit", () => {
-    render(
-      <SharedProductCard
-        id={mockProduct.id}
-        name={mockProduct.name}
-        description={mockProduct.description}
-        price={mockProduct.price}
-        category={mockProduct.category}
-      />,
-      { wrapper: TestWrapper }
-    );
+    render(<SharedProductCard product={mockProduct} shop={mockShop} />, {
+      wrapper: TestWrapper,
+    });
 
     // Vérifications des éléments affichés
     expect(screen.getByText(mockProduct.name)).toBeInTheDocument();
-    expect(screen.getByText(mockProduct.description)).toBeInTheDocument();
-    expect(screen.getByText("4.50€")).toBeInTheDocument();
-    expect(screen.getByText(mockProduct.category!)).toBeInTheDocument();
+    expect(screen.getByText(mockProduct.description!)).toBeInTheDocument();
+    expect(screen.getByText("4.50 €")).toBeInTheDocument();
+    expect(screen.getByText("Bières Blondes")).toBeInTheDocument();
+  });
+
+  it("affiche les attributs métier spécialisés", () => {
+    render(<SharedProductCard product={mockProduct} shop={mockShop} />, {
+      wrapper: TestWrapper,
+    });
+
+    // Vérifications des attributs brasserie
+    expect(screen.getByText("Caractéristiques :")).toBeInTheDocument();
+    expect(screen.getByText("4.8%°")).toBeInTheDocument(); // degré d'alcool avec unité
+    expect(screen.getByText("22 IBU IBU")).toBeInTheDocument(); // amertume avec unité
   });
 
   it("affiche le bouton admin en mode admin", () => {
@@ -45,10 +68,8 @@ describe("SharedProductCard", () => {
 
     render(
       <SharedProductCard
-        id={mockProduct.id}
-        name={mockProduct.name}
-        description={mockProduct.description}
-        price={mockProduct.price}
+        product={mockProduct}
+        shop={mockShop}
         onEdit={mockOnEdit}
         isAdminMode={true}
       />,
@@ -59,7 +80,7 @@ describe("SharedProductCard", () => {
     expect(editButton).toBeInTheDocument();
 
     fireEvent.click(editButton);
-    expect(mockOnEdit).toHaveBeenCalledWith(mockProduct.id);
+    expect(mockOnEdit).toHaveBeenCalledWith(mockProduct);
   });
 
   it("affiche le bouton panier en mode vitrine", () => {
@@ -67,36 +88,62 @@ describe("SharedProductCard", () => {
 
     render(
       <SharedProductCard
-        id={mockProduct.id}
-        name={mockProduct.name}
-        description={mockProduct.description}
-        price={mockProduct.price}
+        product={mockProduct}
+        shop={mockShop}
         onAddToCart={mockOnAddToCart}
         isAdminMode={false}
       />,
       { wrapper: TestWrapper }
     );
 
-    const cartButton = screen.getByText("🛒 Ajouter au panier");
+    const cartButton = screen.getByText("Ajouter au panier");
     expect(cartButton).toBeInTheDocument();
 
     fireEvent.click(cartButton);
-    expect(mockOnAddToCart).toHaveBeenCalledWith(mockProduct.id);
+    expect(mockOnAddToCart).toHaveBeenCalledWith(mockProduct);
   });
 
-  it("applique le thème brewery par défaut", () => {
+  it("applique le thème brewery automatiquement", () => {
+    render(<SharedProductCard product={mockProduct} shop={mockShop} />, {
+      wrapper: TestWrapper,
+    });
+
+    // Le badge devrait utiliser le colorScheme orange (brewery)
+    const badge = screen.getByText("Bières Blondes");
+    expect(badge).toHaveClass("chakra-badge");
+  });
+
+  it("affiche le badge de stock", () => {
+    render(<SharedProductCard product={mockProduct} shop={mockShop} />, {
+      wrapper: TestWrapper,
+    });
+
+    // Le badge de stock devrait être affiché avec le format complet
+    expect(screen.getByText("En stock (45)")).toBeInTheDocument();
+  });
+
+  it("désactive le bouton panier si rupture de stock", () => {
+    const outOfStockProduct = {
+      ...mockProduct,
+      attributes: JSON.stringify({
+        ...JSON.parse(mockProduct.attributes!),
+        stock: 0,
+      }),
+    };
+
+    const mockOnAddToCart = jest.fn();
+
     render(
       <SharedProductCard
-        id={mockProduct.id}
-        name={mockProduct.name}
-        description={mockProduct.description}
-        price={mockProduct.price}
+        product={outOfStockProduct}
+        shop={mockShop}
+        onAddToCart={mockOnAddToCart}
+        isAdminMode={false}
       />,
       { wrapper: TestWrapper }
     );
 
-    // Le badge devrait utiliser le colorScheme brewery
-    const badge = screen.getByText(mockProduct.category!);
-    expect(badge).toHaveClass("chakra-badge");
+    const cartButton = screen.getByText("Rupture de stock");
+    expect(cartButton).toBeDisabled();
   });
 });

@@ -1,15 +1,16 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
+import type { Shop } from "../../../../shared/types";
 import * as shopService from "../../services/shopService";
 import { useShopData } from "../useShopData";
 
 jest.mock("../../services/shopService");
 const mockedShopService = shopService as jest.Mocked<typeof shopService>;
 
-const mockShops = [
+const mockShops: Shop[] = [
   {
     id: "shop-1",
     name: "Houblon & Tradition",
-    shopType: "brewery",
+    shopType: "brewery" as const,
     categories: [
       { id: "cat-1", name: "Blondes", shopId: "shop-1" },
       { id: "cat-2", name: "IPA", shopId: "shop-1" },
@@ -18,7 +19,7 @@ const mockShops = [
   {
     id: "shop-2",
     name: "Les Jardins de Darjeeling",
-    shopType: "tea-shop",
+    shopType: "tea-shop" as const,
     categories: [{ id: "cat-3", name: "Thés Verts", shopId: "shop-2" }],
   },
 ];

@@ -3,6 +3,11 @@ import type { Category, Product } from "../../../shared/types";
 import adminProductService, {
   type ProductFilters,
 } from "../services/adminProductService";
+import {
+  filterProductsLocally,
+  hasAdvancedFilters,
+} from "../utils/productFilterHelpers";
+import { useBaseProductFilters } from "./useBaseProductFilters";
 
 interface UseAdvancedProductFiltersReturn {
   filteredProducts: Product[];
@@ -18,69 +23,29 @@ interface UseAdvancedProductFiltersReturn {
 /**
  * Hook personnalisé pour gérer les filtres avancés de produits
  * Combine filtres par catégorie et filtres métier spécialisés
+ * Utilise useBaseProductFilters et productFilterHelpers pour éviter la duplication
  */
 export const useAdvancedProductFilters = (
   allProducts: Product[] = [],
   shopId?: string
 ): UseAdvancedProductFiltersReturn => {
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
-    null
-  );
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    selectedCategoryId,
+    setSelectedCategoryId,
+    filteredProducts,
+    setFilteredProducts,
+    categories,
+    loading,
+    setLoading,
+    error,
+    setError,
+    resetFilters: baseResetFilters,
+  } = useBaseProductFilters(allProducts);
+
   const [currentFilters, setCurrentFilters] = useState<ProductFilters>({});
   const [currentSearchTerm, setCurrentSearchTerm] = useState("");
 
-  // Extraire les catégories uniques des produits
-  const extractCategories = useCallback((products: Product[]): Category[] => {
-    const categoryMap = new Map<string, Category>();
-
-    products.forEach((product) => {
-      if (product.category && !categoryMap.has(product.category.id)) {
-        categoryMap.set(product.category.id, product.category);
-      }
-    });
-
-    return Array.from(categoryMap.values()).sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
-  }, []);
-
-  // Filtrer les produits localement (filtres de base)
-  const filterProductsLocally = useCallback(
-    (
-      products: Product[],
-      categoryId: string | null,
-      searchTerm: string
-    ): Product[] => {
-      let filtered = products;
-
-      // Filtre par catégorie
-      if (categoryId) {
-        filtered = filtered.filter(
-          (product) => product.categoryId === categoryId
-        );
-      }
-
-      // Filtre par recherche textuelle
-      if (searchTerm.trim()) {
-        const searchLower = searchTerm.toLowerCase();
-        filtered = filtered.filter(
-          (product) =>
-            product.name.toLowerCase().includes(searchLower) ||
-            (product.description &&
-              product.description.toLowerCase().includes(searchLower))
-        );
-      }
-
-      return filtered;
-    },
-    []
-  );
-
-  // Appliquer les filtres avancés via le service
+  // Appliquer les filtres avancés via le service ou localement
   const applyAdvancedFilters = useCallback(
     async (filters: ProductFilters, searchTerm: string) => {
       if (!shopId) return;
@@ -91,26 +56,29 @@ export const useAdvancedProductFilters = (
       setCurrentSearchTerm(searchTerm);
 
       try {
-        // Si aucun filtre avancé n'est appliqué, utiliser le filtrage local
-        const hasAdvancedFilters = Object.keys(filters).some(
-          (key) =>
-            key !== "minPrice" &&
-            key !== "maxPrice" &&
-            key !== "stockStatus" &&
-            filters[key as keyof ProductFilters]
-        );
+        // Déterminer si on a besoin du service distant ou si le filtrage local suffit
+        const needsRemoteFiltering =
+          hasAdvancedFilters(filters) ||
+          filters.minPrice !== undefined ||
+          filters.maxPrice !== undefined ||
+          filters.stockStatus !== undefined;
 
-        if (
-          !hasAdvancedFilters &&
-          !filters.minPrice &&
-          !filters.maxPrice &&
-          !filters.stockStatus
-        ) {
-          // Filtrage local uniquement
+        if (!needsRemoteFiltering && !searchTerm.trim()) {
+          // Filtrage local uniquement par catégorie
           const localFiltered = filterProductsLocally(
             allProducts,
             selectedCategoryId,
-            searchTerm
+            "",
+            {}
+          );
+          setFilteredProducts(localFiltered);
+        } else if (!needsRemoteFiltering) {
+          // Filtrage local complet
+          const localFiltered = filterProductsLocally(
+            allProducts,
+            selectedCategoryId,
+            searchTerm,
+            filters
           );
           setFilteredProducts(localFiltered);
         } else {
@@ -129,26 +97,33 @@ export const useAdvancedProductFilters = (
           err instanceof Error ? err.message : "Erreur lors du filtrage";
         setError(errorMessage);
         console.error("Erreur filtrage avancé:", err);
+
+        // Fallback sur filtrage local en cas d'erreur
+        try {
+          const fallbackFiltered = filterProductsLocally(
+            allProducts,
+            selectedCategoryId,
+            searchTerm,
+            filters
+          );
+          setFilteredProducts(fallbackFiltered);
+        } catch (fallbackErr) {
+          console.error("Erreur fallback filtrage local:", fallbackErr);
+        }
       } finally {
         setLoading(false);
       }
     },
-    [shopId, allProducts, selectedCategoryId, categories, filterProductsLocally]
+    [
+      shopId,
+      allProducts,
+      selectedCategoryId,
+      categories,
+      setLoading,
+      setError,
+      setFilteredProducts,
+    ]
   );
-
-  // Mettre à jour les catégories quand les produits changent
-  useEffect(() => {
-    const extractedCategories = extractCategories(allProducts);
-    setCategories((prev) => {
-      if (
-        prev.length === extractedCategories.length &&
-        prev.every((cat, i) => cat.id === extractedCategories[i].id)
-      ) {
-        return prev;
-      }
-      return extractedCategories;
-    });
-  }, [allProducts, extractCategories]);
 
   // Réappliquer les filtres quand la catégorie change
   useEffect(() => {
@@ -159,7 +134,8 @@ export const useAdvancedProductFilters = (
       const filtered = filterProductsLocally(
         allProducts,
         selectedCategoryId,
-        ""
+        "",
+        {}
       );
       setFilteredProducts(filtered);
     }
@@ -169,16 +145,14 @@ export const useAdvancedProductFilters = (
     currentFilters,
     currentSearchTerm,
     applyAdvancedFilters,
-    filterProductsLocally,
+    setFilteredProducts,
   ]);
 
   const resetFilters = useCallback(() => {
-    setSelectedCategoryId(null);
+    baseResetFilters();
     setCurrentFilters({});
     setCurrentSearchTerm("");
-    setError(null);
-    setFilteredProducts(allProducts);
-  }, [allProducts]);
+  }, [baseResetFilters]);
 
   return {
     filteredProducts,

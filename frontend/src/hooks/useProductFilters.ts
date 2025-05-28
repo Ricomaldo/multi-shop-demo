@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import type { Category, Product } from "../../../shared/types";
+import { useBaseProductFilters } from "./useBaseProductFilters";
 
 interface UseProductFiltersReturn {
   filteredProducts: Product[];
@@ -14,32 +15,23 @@ interface UseProductFiltersReturn {
 /**
  * Hook personnalisé pour gérer les filtres de produits par catégorie
  * Centralise la logique de filtrage et de gestion des catégories
+ * Utilise useBaseProductFilters pour éviter la duplication
  */
 export const useProductFilters = (
   allProducts: Product[] = []
 ): UseProductFiltersReturn => {
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
-    null
-  );
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Extraire les catégories uniques des produits
-  const extractCategories = useCallback((products: Product[]): Category[] => {
-    const categoryMap = new Map<string, Category>();
-
-    products.forEach((product) => {
-      if (product.category && !categoryMap.has(product.category.id)) {
-        categoryMap.set(product.category.id, product.category);
-      }
-    });
-
-    return Array.from(categoryMap.values()).sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
-  }, []);
+  const {
+    selectedCategoryId,
+    setSelectedCategoryId,
+    filteredProducts,
+    setFilteredProducts,
+    categories,
+    loading,
+    setLoading,
+    error,
+    setError,
+    resetFilters: baseResetFilters,
+  } = useBaseProductFilters(allProducts);
 
   // Filtrer les produits par catégorie sélectionnée
   const filterProducts = useCallback(
@@ -49,20 +41,6 @@ export const useProductFilters = (
     },
     []
   );
-
-  // Mettre à jour les catégories quand les produits changent
-  useEffect(() => {
-    const extractedCategories = extractCategories(allProducts);
-    setCategories((prev) => {
-      if (
-        prev.length === extractedCategories.length &&
-        prev.every((cat, i) => cat.id === extractedCategories[i].id)
-      ) {
-        return prev;
-      }
-      return extractedCategories;
-    });
-  }, [allProducts, extractCategories]);
 
   // Mettre à jour les produits filtrés quand la sélection change
   useEffect(() => {
@@ -79,12 +57,19 @@ export const useProductFilters = (
     } finally {
       setLoading(false);
     }
-  }, [allProducts, selectedCategoryId, filterProducts]);
+  }, [
+    allProducts,
+    selectedCategoryId,
+    filterProducts,
+    setFilteredProducts,
+    setLoading,
+    setError,
+  ]);
 
   const resetFilters = useCallback(() => {
-    setSelectedCategoryId(null);
+    baseResetFilters();
     setError(null);
-  }, []);
+  }, [baseResetFilters, setError]);
 
   return {
     filteredProducts,

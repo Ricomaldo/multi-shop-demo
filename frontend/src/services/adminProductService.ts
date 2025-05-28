@@ -1,7 +1,13 @@
 import type { Product, Shop } from "../../../shared/types";
 
+interface WindowWithEnv extends Window {
+  VITE_API_URL?: string;
+}
+
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+  (typeof window !== "undefined" && (window as WindowWithEnv).VITE_API_URL) ||
+  process.env.VITE_API_URL ||
+  "http://localhost:3001/api";
 
 export interface ProductFilters {
   category?: string;

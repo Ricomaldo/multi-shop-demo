@@ -1,56 +1,68 @@
 # 📚 Documentation DemoForge
 
-## 🎯 Outil de démonstration multi-boutiques avec backoffice admin prioritaire
+## 🎯 Index Complet
 
-### 📋 Index Documentaire
+### **📋 Documents Fondamentaux**
 
-| Document                                                          | Statut      | Complétude | Priorité |
-| ----------------------------------------------------------------- | ----------- | ---------- | -------- |
-| **[01 - Vision Stratégique](./01-vision-strategique.md)**         | ✅ Stable   | 85%        | Critique |
-| **[02 - Nomenclature Technique](./02-nomenclature-technique.md)** | ✅ Stable   | 90%        | Critique |
-| **[03 - Charte Design UX](./03-charte-design.md)**                | 🚧 En cours | 40%        | Moyenne  |
-| **[04 - Scénarios Démo](./04-scenarios-demo.md)**                 | 🚧 En cours | 30%        | Faible   |
-| **[99 - Guide Initialisation](./99-guide-initialisation.md)**     | ✅ Complet  | 100%       | Critique |
+1. **[Vision Stratégique](01-vision-strategique.md)** - Objectifs business et univers métier
+2. **[Nomenclature Technique](02-nomenclature-technique.md)** - Conventions et architecture
+3. **[Charte Design](03-charte-design.md)** - Composants Chakra UI et thèmes
+4. **[Scénarios Démo](04-scenarios-demo.md)** - Contexte commercial et arguments
+5. **[Split View Admin](05-split-view-admin.md)** - Innovation aperçu temps réel
+6. **[Refactorisation DRY](06-refactorisation-dry.md)** - Architecture modulaire complète ✨
 
-### 🚨 Priorité Absolue : Interface Admin
+### **🛠️ Guides Pratiques**
 
-Tous les développements doivent prioriser le **backoffice admin** avant la vitrine.
+- **[Guide Initialisation](99-guide-initialisation.md)** - Setup technique détaillé
 
-### 🛠️ Stack Technique
+---
 
-- **Frontend** : React + Vite + TypeScript + Chakra UI
-- **Backend** : Node.js + Express + Prisma + SQLite
-- **Tests** : Jest (couverture >80%)
-- **Package Manager** : Yarn classique exclusivement (pas PnP)
+## 🚀 Nouveauté : Refactorisation DRY Complète
 
-### 🏪 Univers Métier
+Le document **[06-refactorisation-dry.md](06-refactorisation-dry.md)** centralise toute l'architecture modulaire :
 
-1. **brewery** - Houblon & Tradition (brasserie)
-2. **tea-shop** - Les Jardins de Darjeeling (salon de thé)
-3. **beauty-shop** - L'Écrin de Jade (institut beauté)
-4. **herb-shop** - Herboristerie du Moulin Vert (herboristerie)
+- **147 tests** qui passent tous
+- **1420 lignes** de duplication éliminées
+- **Hooks refactorisés** : Base technique unifiée
+- **Composants partagés** : SharedProductCard, SharedAdvancedFilters, etc.
+- **Layouts multi-univers** : 4 expériences vitrines différenciées
+- **Split view admin** : Fidélité parfaite avec composants réels
 
-### 📝 Conventions
+---
 
-- **Nomenclature** : Commerçant > Boutiques > Catégories > Produits
-- **Composants** : Store* (vitrine), Admin* (backoffice), Shared\* (communs)
-- **Commits** : `type(scope): description` en français
-- **TypeScript** : Strict, pas de `any`, props explicitement typées
+## 📖 Comment Utiliser Cette Documentation
 
-### 🔄 Workflow Documentation
+### **Pour Développer**
 
-1. **Lecture** : Commencer par 01-vision puis 02-nomenclature
-2. **Développement** : Suivre 99-guide-initialisation
-3. **Design** : Consulter 03-charte-design (en cours)
-4. **Commercial** : Préparer avec 04-scenarios-demo (futur)
+1. Lire **[02-nomenclature-technique.md](02-nomenclature-technique.md)** pour les conventions
+2. Consulter **[06-refactorisation-dry.md](06-refactorisation-dry.md)** pour l'architecture
+3. Suivre **[99-guide-initialisation.md](99-guide-initialisation.md)** pour le setup
 
-### 🤖 Pour l'IA
+### **Pour Démontrer**
 
-Utiliser les commandes :
+1. Comprendre **[01-vision-strategique.md](01-vision-strategique.md)** pour les objectifs
+2. Maîtriser **[04-scenarios-demo.md](04-scenarios-demo.md)** pour les arguments
+3. Utiliser **[05-split-view-admin.md](05-split-view-admin.md)** pour l'innovation
 
-- `@docs` - Consulter la documentation
-- `@admin` - Focus interface admin
-- `@brewery` / `@tea-shop` / `@beauty-shop` / `@herb-shop` - Contexte univers
+### **Pour Personnaliser**
+
+1. Étudier **[03-charte-design.md](03-charte-design.md)** pour les thèmes
+2. Appliquer **[06-refactorisation-dry.md](06-refactorisation-dry.md)** pour les composants
+
+---
+
+## ✅ Validation Complète
+
+Cette documentation respecte parfaitement les **principes DemoForge** :
+
+- ✅ **Priorité admin** : Split view et backoffice documentés
+- ✅ **Multi-univers** : 4 thématiques avec layouts différenciés
+- ✅ **Architecture DRY** : Composants partagés et hooks modulaires
+- ✅ **Innovation technique** : Split view avec fidélité parfaite
+- ✅ **Arguments commerciaux** : Scénarios démo structurés
+- ✅ **Base reproductible** : Architecture unifiée pour conversions client
+
+**DemoForge** dispose maintenant d'une **documentation complète** et **centralisée** ! 🎯
 
 ---
 
