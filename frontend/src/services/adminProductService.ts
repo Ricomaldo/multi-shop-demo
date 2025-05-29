@@ -41,8 +41,10 @@ export interface ProductFilters {
   // Filtres métier spécialisés
   degre_alcool_min?: number;
   degre_alcool_max?: number;
+  degre_alcool_ranges?: string[];
   amertume_ibu_min?: number;
   amertume_ibu_max?: number;
+  amertume_ibu_ranges?: string[];
   type_houblon?: string;
   origine_plantation?: string;
   grade_qualite?: string;

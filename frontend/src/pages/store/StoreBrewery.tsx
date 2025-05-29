@@ -135,6 +135,7 @@ export default function StoreBrewery() {
                 onFiltersChange={handleFiltersChange}
                 onSearchChange={handleSearchChange}
                 onReset={handleResetFilters}
+                products={breweryProducts}
               />
             </Box>
           )}

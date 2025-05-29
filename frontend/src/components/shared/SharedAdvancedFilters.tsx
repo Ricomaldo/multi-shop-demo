@@ -2,6 +2,8 @@ import { SearchIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
+  Checkbox,
+  CheckboxGroup,
   Collapse,
   Divider,
   HStack,
@@ -18,13 +20,14 @@ import {
   RangeSliderThumb,
   RangeSliderTrack,
   Select,
+  SimpleGrid,
   Switch,
   Text,
   useDisclosure,
   VStack,
 } from "@chakra-ui/react";
-import React from "react";
-import type { Shop } from "../../../../shared/types";
+import React, { useMemo } from "react";
+import type { Product, Shop } from "../../../../shared/types";
 import type { ProductFilters } from "../../services/adminProductService";
 
 interface SharedAdvancedFiltersProps {
@@ -36,6 +39,7 @@ interface SharedAdvancedFiltersProps {
   onReset: () => void;
   mode?: "admin" | "store"; // Différenciation interface
   variant?: "compact" | "full"; // Variantes d'affichage
+  products?: Product[]; // Ajout pour génération dynamique des filtres
 }
 
 /**
@@ -52,6 +56,7 @@ export const SharedAdvancedFilters: React.FC<SharedAdvancedFiltersProps> = ({
   onReset,
   mode = "store",
   variant = "full",
+  products = [],
 }) => {
   const { isOpen, onToggle } = useDisclosure();
 
@@ -72,6 +77,49 @@ export const SharedAdvancedFilters: React.FC<SharedAdvancedFiltersProps> = ({
   };
 
   const themeColor = getThemeColor();
+
+  // Extraction dynamique des options depuis les produits
+  const dynamicOptions = useMemo(() => {
+    const options: Record<string, Set<string>> = {};
+
+    products.forEach((product) => {
+      if (product.attributes) {
+        try {
+          const attrs = JSON.parse(product.attributes);
+
+          // Extraction des types de houblon
+          if (attrs.type_houblon && shop.shopType === "brewery") {
+            if (!options.type_houblon) options.type_houblon = new Set();
+            options.type_houblon.add(attrs.type_houblon);
+          }
+
+          // Extraction des origines de plantation pour le thé
+          if (attrs.origine_plantation && shop.shopType === "tea-shop") {
+            if (!options.origine_plantation)
+              options.origine_plantation = new Set();
+            options.origine_plantation.add(attrs.origine_plantation);
+          }
+
+          // Extraction des usages traditionnels pour l'herboristerie
+          if (attrs.usage_traditionnel && shop.shopType === "herb-shop") {
+            if (!options.usage_traditionnel)
+              options.usage_traditionnel = new Set();
+            options.usage_traditionnel.add(attrs.usage_traditionnel);
+          }
+        } catch (e) {
+          // Ignore les erreurs de parsing JSON
+        }
+      }
+    });
+
+    // Conversion des Sets en Arrays triés
+    const result: Record<string, string[]> = {};
+    Object.keys(options).forEach((key) => {
+      result[key] = Array.from(options[key]).sort();
+    });
+
+    return result;
+  }, [products, shop.shopType]);
 
   // Gestionnaires de changement
   const handleFilterChange = (key: keyof ProductFilters, value: unknown) => {
@@ -110,157 +158,157 @@ export const SharedAdvancedFilters: React.FC<SharedAdvancedFiltersProps> = ({
               🍺 Filtres Brasserie
             </Text>
 
-            {/* Degré d'alcool */}
-            {mode === "store" ? (
-              <Box>
-                <Text fontSize="sm" mb={3} fontWeight="medium">
-                  Degré d'alcool : {filters.degre_alcool_min || 3}° -{" "}
-                  {filters.degre_alcool_max || 12}°
-                </Text>
-                <RangeSlider
-                  min={3}
-                  max={12}
-                  step={0.1}
-                  value={[
-                    filters.degre_alcool_min || 3,
-                    filters.degre_alcool_max || 12,
-                  ]}
-                  onChange={(values) => {
-                    handleFilterChange("degre_alcool_min", values[0]);
-                    handleFilterChange("degre_alcool_max", values[1]);
-                  }}
-                  colorScheme={themeColor}
+            {/* Degré d'alcool - Filtres par plages prédéfinies */}
+            <Box>
+              <Text fontSize="sm" mb={3} fontWeight="medium">
+                Degré d'alcool
+              </Text>
+              {mode === "store" ? (
+                <CheckboxGroup
+                  value={filters.degre_alcool_ranges || []}
+                  onChange={(values) =>
+                    handleFilterChange("degre_alcool_ranges", values)
+                  }
                 >
-                  <RangeSliderTrack>
-                    <RangeSliderFilledTrack />
-                  </RangeSliderTrack>
-                  <RangeSliderThumb index={0} />
-                  <RangeSliderThumb index={1} />
-                </RangeSlider>
-              </Box>
-            ) : (
-              <HStack spacing={4}>
-                <Box>
-                  <Text fontSize="sm" mb={1}>
-                    Degré d'alcool min
-                  </Text>
-                  <NumberInput
-                    size="sm"
-                    min={0}
-                    max={20}
-                    step={0.1}
-                    value={filters.degre_alcool_min || ""}
-                    onChange={(_, value) =>
-                      handleFilterChange("degre_alcool_min", value)
-                    }
-                  >
-                    <NumberInputField placeholder="0" />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
-                </Box>
+                  <SimpleGrid columns={2} spacing={2}>
+                    <Checkbox value="light" colorScheme={themeColor}>
+                      Légère (3-5°)
+                    </Checkbox>
+                    <Checkbox value="medium" colorScheme={themeColor}>
+                      Modérée (5-7°)
+                    </Checkbox>
+                    <Checkbox value="strong" colorScheme={themeColor}>
+                      Forte (7-10°)
+                    </Checkbox>
+                    <Checkbox value="very-strong" colorScheme={themeColor}>
+                      Très forte (10°+)
+                    </Checkbox>
+                  </SimpleGrid>
+                </CheckboxGroup>
+              ) : (
+                <HStack spacing={4}>
+                  <Box>
+                    <Text fontSize="sm" mb={1}>
+                      Degré d'alcool min
+                    </Text>
+                    <NumberInput
+                      size="sm"
+                      min={0}
+                      max={20}
+                      step={0.1}
+                      value={filters.degre_alcool_min || ""}
+                      onChange={(_, value) =>
+                        handleFilterChange("degre_alcool_min", value)
+                      }
+                    >
+                      <NumberInputField placeholder="0" />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
+                  </Box>
 
-                <Box>
-                  <Text fontSize="sm" mb={1}>
-                    Degré d'alcool max
-                  </Text>
-                  <NumberInput
-                    size="sm"
-                    min={0}
-                    max={20}
-                    step={0.1}
-                    value={filters.degre_alcool_max || ""}
-                    onChange={(_, value) =>
-                      handleFilterChange("degre_alcool_max", value)
-                    }
-                  >
-                    <NumberInputField placeholder="20" />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
-                </Box>
-              </HStack>
-            )}
+                  <Box>
+                    <Text fontSize="sm" mb={1}>
+                      Degré d'alcool max
+                    </Text>
+                    <NumberInput
+                      size="sm"
+                      min={0}
+                      max={20}
+                      step={0.1}
+                      value={filters.degre_alcool_max || ""}
+                      onChange={(_, value) =>
+                        handleFilterChange("degre_alcool_max", value)
+                      }
+                    >
+                      <NumberInputField placeholder="20" />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
+                  </Box>
+                </HStack>
+              )}
+            </Box>
 
-            {/* Amertume IBU */}
-            {mode === "store" ? (
-              <Box>
-                <Text fontSize="sm" mb={3} fontWeight="medium">
-                  Amertume IBU : {filters.amertume_ibu_min || 10} -{" "}
-                  {filters.amertume_ibu_max || 90}
-                </Text>
-                <RangeSlider
-                  min={10}
-                  max={90}
-                  step={1}
-                  value={[
-                    filters.amertume_ibu_min || 10,
-                    filters.amertume_ibu_max || 90,
-                  ]}
-                  onChange={(values) => {
-                    handleFilterChange("amertume_ibu_min", values[0]);
-                    handleFilterChange("amertume_ibu_max", values[1]);
-                  }}
-                  colorScheme={themeColor}
+            {/* Amertume IBU - Filtres par plages prédéfinies */}
+            <Box>
+              <Text fontSize="sm" mb={3} fontWeight="medium">
+                Amertume IBU
+              </Text>
+              {mode === "store" ? (
+                <CheckboxGroup
+                  value={filters.amertume_ibu_ranges || []}
+                  onChange={(values) =>
+                    handleFilterChange("amertume_ibu_ranges", values)
+                  }
                 >
-                  <RangeSliderTrack>
-                    <RangeSliderFilledTrack />
-                  </RangeSliderTrack>
-                  <RangeSliderThumb index={0} />
-                  <RangeSliderThumb index={1} />
-                </RangeSlider>
-              </Box>
-            ) : (
-              <HStack spacing={4}>
-                <Box>
-                  <Text fontSize="sm" mb={1}>
-                    Amertume IBU min
-                  </Text>
-                  <NumberInput
-                    size="sm"
-                    min={0}
-                    max={100}
-                    value={filters.amertume_ibu_min || ""}
-                    onChange={(_, value) =>
-                      handleFilterChange("amertume_ibu_min", value)
-                    }
-                  >
-                    <NumberInputField placeholder="0" />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
-                </Box>
+                  <SimpleGrid columns={2} spacing={2}>
+                    <Checkbox value="low" colorScheme={themeColor}>
+                      Douce (10-25 IBU)
+                    </Checkbox>
+                    <Checkbox value="medium" colorScheme={themeColor}>
+                      Équilibrée (25-45 IBU)
+                    </Checkbox>
+                    <Checkbox value="high" colorScheme={themeColor}>
+                      Amère (45-70 IBU)
+                    </Checkbox>
+                    <Checkbox value="very-high" colorScheme={themeColor}>
+                      Très amère (70+ IBU)
+                    </Checkbox>
+                  </SimpleGrid>
+                </CheckboxGroup>
+              ) : (
+                <HStack spacing={4}>
+                  <Box>
+                    <Text fontSize="sm" mb={1}>
+                      Amertume IBU min
+                    </Text>
+                    <NumberInput
+                      size="sm"
+                      min={0}
+                      max={100}
+                      value={filters.amertume_ibu_min || ""}
+                      onChange={(_, value) =>
+                        handleFilterChange("amertume_ibu_min", value)
+                      }
+                    >
+                      <NumberInputField placeholder="0" />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
+                  </Box>
 
-                <Box>
-                  <Text fontSize="sm" mb={1}>
-                    Amertume IBU max
-                  </Text>
-                  <NumberInput
-                    size="sm"
-                    min={0}
-                    max={100}
-                    value={filters.amertume_ibu_max || ""}
-                    onChange={(_, value) =>
-                      handleFilterChange("amertume_ibu_max", value)
-                    }
-                  >
-                    <NumberInputField placeholder="100" />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
-                </Box>
-              </HStack>
-            )}
+                  <Box>
+                    <Text fontSize="sm" mb={1}>
+                      Amertume IBU max
+                    </Text>
+                    <NumberInput
+                      size="sm"
+                      min={0}
+                      max={100}
+                      value={filters.amertume_ibu_max || ""}
+                      onChange={(_, value) =>
+                        handleFilterChange("amertume_ibu_max", value)
+                      }
+                    >
+                      <NumberInputField placeholder="100" />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
+                  </Box>
+                </HStack>
+              )}
+            </Box>
 
-            {/* Type de houblon */}
+            {/* Type de houblon - Options dynamiques */}
             <Box>
               <Text fontSize="sm" mb={2} fontWeight="medium">
                 Type de houblon
@@ -274,14 +322,25 @@ export const SharedAdvancedFilters: React.FC<SharedAdvancedFiltersProps> = ({
                   }
                   bg="white"
                 >
-                  <option value="Cascade">Cascade</option>
-                  <option value="Centennial">Centennial</option>
-                  <option value="Chinook">Chinook</option>
-                  <option value="Columbus">Columbus</option>
-                  <option value="Fuggle">Fuggle</option>
-                  <option value="Goldings">Goldings</option>
-                  <option value="Hallertau">Hallertau</option>
-                  <option value="Saaz">Saaz</option>
+                  {dynamicOptions.type_houblon?.length > 0 ? (
+                    dynamicOptions.type_houblon.map((houblon) => (
+                      <option key={houblon} value={houblon}>
+                        {houblon}
+                      </option>
+                    ))
+                  ) : (
+                    // Options par défaut si pas de données dynamiques
+                    <>
+                      <option value="Cascade">Cascade</option>
+                      <option value="Centennial">Centennial</option>
+                      <option value="Chinook">Chinook</option>
+                      <option value="Columbus">Columbus</option>
+                      <option value="Fuggle">Fuggle</option>
+                      <option value="Goldings">Goldings</option>
+                      <option value="Hallertau">Hallertau</option>
+                      <option value="Saaz">Saaz</option>
+                    </>
+                  )}
                 </Select>
               ) : (
                 <Input

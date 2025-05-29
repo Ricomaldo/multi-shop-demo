@@ -8,6 +8,7 @@ import {
   VStack,
   useBreakpointValue,
 } from "@chakra-ui/react";
+import { useState } from "react";
 import {
   FiHome,
   FiMenu,
@@ -17,7 +18,9 @@ import {
   FiX,
 } from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
-import AdminShopSelector from "./AdminShopSelector";
+import type { Shop } from "../../../../shared/types";
+import { useShopData } from "../../hooks";
+import { SharedUniverseSelector } from "../shared";
 
 const menuItems = [
   { icon: FiHome, label: "Dashboard", path: "/admin" },
@@ -45,6 +48,14 @@ export default function AdminSidebar({
 }: AdminSidebarProps) {
   const location = useLocation();
   const isMobile = useBreakpointValue({ base: true, md: false });
+  const { shops, loading } = useShopData();
+  const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
+
+  const handleShopChange = (shop: Shop) => {
+    setSelectedShop(shop);
+    // TODO: Implémenter la logique de changement de boutique
+    console.log("Boutique sélectionnée:", shop);
+  };
 
   // Sur mobile, on utilise isOpen, sur desktop on utilise isCollapsed
   const shouldShowLabels = isMobile ? isOpen : !isCollapsed;
@@ -130,7 +141,17 @@ export default function AdminSidebar({
           </Flex>
 
           {/* Sélecteur de boutique - masqué si collapsed */}
-          {shouldShowLabels && <AdminShopSelector />}
+          {shouldShowLabels && (
+            <SharedUniverseSelector
+              mode="shop"
+              shops={shops}
+              selectedShop={selectedShop}
+              onShopChange={handleShopChange}
+              loading={loading}
+              size="sm"
+              showDescription={false}
+            />
+          )}
 
           {/* Menu items */}
           <VStack spacing={1} align="stretch" mt={shouldShowLabels ? 4 : 2}>

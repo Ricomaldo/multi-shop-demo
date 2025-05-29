@@ -9,7 +9,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useMemo } from "react";
-import StoreCategoryFilter from "../../components/store/StoreCategoryFilter";
+import { SharedCategoryFilter } from "../../components/shared";
 import { UniverseProvider } from "../../contexts/UniverseContext";
 import { useProductFilters, useShopData } from "../../hooks";
 
@@ -79,13 +79,14 @@ export default function StoreHerbShop() {
 
           {/* Filtrage par catégorie */}
           {categories.length > 0 && (
-            <StoreCategoryFilter
+            <SharedCategoryFilter
               categories={categories}
               selectedCategoryId={selectedCategoryId}
               onCategoryChange={setSelectedCategoryId}
               onResetFilters={resetFilters}
               productCount={filteredProducts.length}
               colorScheme={colorScheme}
+              mode="store"
             />
           )}
 

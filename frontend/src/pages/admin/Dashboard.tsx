@@ -9,13 +9,17 @@ import {
   StatLabel,
   StatNumber,
   Text,
+  VStack,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { SharedUniverseSelector } from "../../components/shared";
 import { useAdminShop } from "../../contexts/AdminShopContext";
+import { useShopData } from "../../hooks";
 
 export default function Dashboard() {
-  const { selectedShop } = useAdminShop();
+  const { selectedShop, setSelectedShop } = useAdminShop();
+  const { shops, loading: shopsLoading } = useShopData();
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalShops: 0,
@@ -95,7 +99,14 @@ export default function Dashboard() {
   return (
     <VStack spacing={6} align="stretch">
       {/* Sélecteur de boutique */}
-      <AdminShopSelector />
+      <SharedUniverseSelector
+        mode="shop"
+        shops={shops}
+        selectedShop={selectedShop}
+        onShopChange={setSelectedShop}
+        loading={shopsLoading}
+        title="Sélectionner une boutique"
+      />
 
       <Box>
         <Heading size="lg" mb={6}>

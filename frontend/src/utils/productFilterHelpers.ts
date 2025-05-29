@@ -132,6 +132,35 @@ export function filterByBusinessAttributes(
         )
           return false;
       }
+
+      // Filtres par plages de degré d'alcool (nouveau)
+      if (
+        filters.degre_alcool_ranges &&
+        filters.degre_alcool_ranges.length > 0
+      ) {
+        if (!attrs.degre_alcool) return false;
+
+        const degre = parseFloat(attrs.degre_alcool);
+        const matchesRange = filters.degre_alcool_ranges.some(
+          (range: string) => {
+            switch (range) {
+              case "light":
+                return degre >= 3 && degre < 5;
+              case "medium":
+                return degre >= 5 && degre < 7;
+              case "strong":
+                return degre >= 7 && degre < 10;
+              case "very-strong":
+                return degre >= 10;
+              default:
+                return false;
+            }
+          }
+        );
+
+        if (!matchesRange) return false;
+      }
+
       if (filters.amertume_ibu_min !== undefined) {
         if (
           !attrs.amertume_ibu ||
@@ -146,6 +175,35 @@ export function filterByBusinessAttributes(
         )
           return false;
       }
+
+      // Filtres par plages d'amertume IBU (nouveau)
+      if (
+        filters.amertume_ibu_ranges &&
+        filters.amertume_ibu_ranges.length > 0
+      ) {
+        if (!attrs.amertume_ibu) return false;
+
+        const ibu = parseInt(attrs.amertume_ibu);
+        const matchesRange = filters.amertume_ibu_ranges.some(
+          (range: string) => {
+            switch (range) {
+              case "low":
+                return ibu >= 10 && ibu < 25;
+              case "medium":
+                return ibu >= 25 && ibu < 45;
+              case "high":
+                return ibu >= 45 && ibu < 70;
+              case "very-high":
+                return ibu >= 70;
+              default:
+                return false;
+            }
+          }
+        );
+
+        if (!matchesRange) return false;
+      }
+
       if (filters.type_houblon) {
         if (!attrs.type_houblon || attrs.type_houblon !== filters.type_houblon)
           return false;
