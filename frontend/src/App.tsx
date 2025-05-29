@@ -21,9 +21,9 @@ function App() {
         <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="/store/brewery" element={<StoreBrewery />} />
-      <Route path="/store/tea-shop" element={<StoreTeaShop />} />
-      <Route path="/store/beauty-shop" element={<StoreBeautyShop />} />
-      <Route path="/store/herb-shop" element={<StoreHerbShop />} />
+      <Route path="/store/teaShop" element={<StoreTeaShop />} />
+      <Route path="/store/beautyShop" element={<StoreBeautyShop />} />
+      <Route path="/store/herbShop" element={<StoreHerbShop />} />
     </Routes>
   );
 }

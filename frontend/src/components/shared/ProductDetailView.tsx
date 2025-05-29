@@ -60,11 +60,11 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
     switch (shop.shopType) {
       case "brewery":
         return "orange";
-      case "tea-shop":
+      case "teaShop":
         return "green";
-      case "beauty-shop":
+      case "beautyShop":
         return "pink";
-      case "herb-shop":
+      case "herbShop":
         return "green";
       default:
         return "blue";
@@ -76,11 +76,11 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
     switch (shop.shopType) {
       case "brewery":
         return "🍺";
-      case "tea-shop":
+      case "teaShop":
         return "🍵";
-      case "beauty-shop":
+      case "beautyShop":
         return "💄";
-      case "herb-shop":
+      case "herbShop":
         return "🌿";
       default:
         return "🏪";
@@ -91,11 +91,11 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
     switch (shop.shopType) {
       case "brewery":
         return "Brasserie";
-      case "tea-shop":
+      case "teaShop":
         return "Salon de thé";
-      case "beauty-shop":
+      case "beautyShop":
         return "Institut beauté";
-      case "herb-shop":
+      case "herbShop":
         return "Herboristerie";
       default:
         return "Boutique";

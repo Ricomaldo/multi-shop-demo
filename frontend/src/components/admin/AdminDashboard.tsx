@@ -115,7 +115,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         break;
       }
 
-      case "tea-shop": {
+      case "teaShop": {
         const teaProducts = shopProducts
           .map((p) => ({
             product: p,
@@ -154,7 +154,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         break;
       }
 
-      case "beauty-shop": {
+      case "beautyShop": {
         const beautyProducts = shopProducts
           .map((p) => ({
             product: p,
@@ -196,7 +196,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         break;
       }
 
-      case "herb-shop": {
+      case "herbShop": {
         const herbProducts = shopProducts
           .map((p) => ({
             product: p,
@@ -245,11 +245,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     switch (shopType) {
       case "brewery":
         return "🍺";
-      case "tea-shop":
+      case "teaShop":
         return "🍵";
-      case "beauty-shop":
+      case "beautyShop":
         return "💄";
-      case "herb-shop":
+      case "herbShop":
         return "🌿";
       default:
         return "🏪";
@@ -260,11 +260,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     switch (shopType) {
       case "brewery":
         return "Brasseries";
-      case "tea-shop":
+      case "teaShop":
         return "Salons de thé";
-      case "beauty-shop":
+      case "beautyShop":
         return "Instituts beauté";
-      case "herb-shop":
+      case "herbShop":
         return "Herboristeries";
       default:
         return "Boutiques";
@@ -315,7 +315,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* Statistiques par univers */}
       <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={6}>
-        {["brewery", "tea-shop", "beauty-shop", "herb-shop"].map((shopType) => {
+        {["brewery", "teaShop", "beautyShop", "herbShop"].map((shopType) => {
           const stats = getShopTypeStats(shopType);
           if (!stats) return null;
 
@@ -395,7 +395,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             </>
                           )}
 
-                        {shopType === "tea-shop" &&
+                        {shopType === "teaShop" &&
                           "topOrigin" in stats.specialized && (
                             <>
                               <HStack justify="space-between">
@@ -411,7 +411,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             </>
                           )}
 
-                        {shopType === "beauty-shop" &&
+                        {shopType === "beautyShop" &&
                           "bioPercentage" in stats.specialized && (
                             <>
                               <HStack justify="space-between">
@@ -427,7 +427,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             </>
                           )}
 
-                        {shopType === "herb-shop" &&
+                        {shopType === "herbShop" &&
                           "topCertification" in stats.specialized && (
                             <>
                               <HStack justify="space-between">

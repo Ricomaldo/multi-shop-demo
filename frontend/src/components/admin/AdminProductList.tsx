@@ -1,6 +1,5 @@
-import { VStack } from "@chakra-ui/react";
 import type { Product, Shop } from "../../../../shared/types";
-import { SharedProductCard } from "../shared/SharedProductCard";
+import { ProductGrid } from "../shared/ProductGrid";
 
 interface AdminProductListProps {
   products: Product[];
@@ -9,8 +8,8 @@ interface AdminProductListProps {
 }
 
 /**
- * Liste des produits pour l'interface admin
- * Utilise SharedProductCard avec thématisation automatique
+ * Grille de produits pour l'interface admin
+ * Utilise ProductGrid avec colonnes forcées pour éviter les problèmes de responsive
  */
 export default function AdminProductList({
   products,
@@ -18,16 +17,16 @@ export default function AdminProductList({
   onEdit,
 }: AdminProductListProps) {
   return (
-    <VStack spacing={4} align="stretch">
-      {products.map((product) => (
-        <SharedProductCard
-          key={product.id}
-          product={product}
-          shop={shop}
-          onEdit={onEdit}
-          isAdminMode={true}
-        />
-      ))}
-    </VStack>
+    <ProductGrid
+      products={products}
+      shop={shop}
+      onEdit={onEdit}
+      columns={{ base: 1, md: 2, lg: 3 }}
+      spacing={4}
+      isAdminMode={true}
+      showActions={true}
+      emptyMessage="Aucun produit dans cette boutique"
+      emptySubMessage="Commencez par ajouter votre premier produit"
+    />
   );
 }

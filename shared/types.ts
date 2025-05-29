@@ -2,7 +2,7 @@
 export interface Shop {
   id: string;
   name: string;
-  shopType: "brewery" | "tea-shop" | "beauty-shop" | "herb-shop";
+  shopType: "brewery" | "teaShop" | "beautyShop" | "herbShop";
   categories: Category[];
 }
 

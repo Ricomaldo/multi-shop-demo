@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 
-export type UniverseType = "brewery" | "tea-shop" | "beauty-shop" | "herb-shop";
+export type UniverseType = "brewery" | "teaShop" | "beautyShop" | "herbShop";
 
 interface UniverseContextType {
   universe: UniverseType;
@@ -27,11 +27,11 @@ export const UniverseProvider: React.FC<UniverseProviderProps> = ({
     switch (universe) {
       case "brewery":
         return "orange";
-      case "tea-shop":
+      case "teaShop":
         return "green";
-      case "beauty-shop":
+      case "beautyShop":
         return "pink";
-      case "herb-shop":
+      case "herbShop":
         return "teal";
       default:
         return "orange";

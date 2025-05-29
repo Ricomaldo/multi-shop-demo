@@ -1,8 +1,10 @@
 # Règles DemoForge pour l'IA
 
-## 📚 DOCUMENTATION OBLIGATOIRE
+## 🚨 PRIORITÉ ABSOLUE
 
-**Avant toute suggestion, consulter :**
+**Interface admin (backoffice) AVANT vitrine**
+
+## 📚 DOCUMENTATION OBLIGATOIRE
 
 - `docs/README.md` - Vue d'ensemble et index complet
 - `docs/01-vision-strategique.md` - Objectifs et univers métier
@@ -10,55 +12,32 @@
 - `docs/03-charte-design.md` - Composants Chakra UI et thèmes
 - `docs/99-guide-initialisation.md` - Setup technique détaillé
 
-## 🚨 PRIORITÉ ABSOLUE
+## 🛠️ WORKFLOW CODE-FIRST
 
-**Interface admin (backoffice) AVANT vitrine**
+### CE QUE TU FAIS
 
-## 📋 Checklist avant chaque suggestion
+- Livrer code directement basé sur conventions établies
+- Respecter architecture /backend et /frontend
+- Utiliser Chakra UI exclusivement
+- TypeScript strict (pas de `any`)
+- Composants nommés: Store*, Admin*, Shared\*
 
-### Documentation
+### CE QUE TU NE FAIS PAS
 
-- [ ] Vérifie cohérence avec docs/02-nomenclature-technique.md
-- [ ] Respecte l'architecture docs/99-guide-initialisation.md
-- [ ] Suit les conventions de nommage établies
-- [ ] Utilise les composants Chakra UI de docs/03-charte-design.md
-- [ ] Respecte les objectifs docs/01-vision-strategique.md
-
-### Architecture
-
-- [ ] Respecte la séparation /backend et /frontend
-- [ ] Utilise Chakra UI exclusivement
-- [ ] TypeScript strict (pas de `any`)
-- [ ] Props explicitement typées
-
-### Structure
-
-- [ ] Nomenclature: Commerçant > Boutiques > Catégories > Produits
-- [ ] Composants nommés: Store*, Admin*, Shared\*
-- [ ] Fichier < 300 lignes
-
-### Tests
-
-- [ ] Tests Jest inclus
-- [ ] Couverture > 80%
-- [ ] Dossier **tests**
-
-### Conventions
-
-- [ ] Commentaires en français
-- [ ] Commits: type(scope): description
-- [ ] Yarn classique uniquement (pas PnP)
-- [ ] Pas de données mock (sauf tests)
+- ❌ Générer des tests automatiquement
+- ❌ Proposer de lancer le serveur (npm/yarn dev)
+- ❌ Valider en créant des fichiers test.js
+- ❌ Vérifier que "ça marche" - L'humain s'en charge
+- ❌ Proposer des modifications non demandées
 
 ## 🎯 Focus actuel
 
-Toujours demander quelle est la tâche prioritaire avant de proposer des modifications non essentielles.
+Demander quelle est la tâche prioritaire. Une fonctionnalité à la fois.
 
-## 🛠️ Stack technique
+## 🏪 Stack technique
 
 - **Frontend**: React + Vite + TypeScript + Chakra UI
 - **Backend**: Node.js + Express + Prisma + SQLite
-- **Tests**: Jest
 - **Package Manager**: Yarn classique (pas PnP)
 
 ## 🏪 Univers métier
@@ -68,9 +47,14 @@ Toujours demander quelle est la tâche prioritaire avant de proposer des modific
 3. beauty-shop (beauté) - "L'Écrin de Jade"
 4. herb-shop (herboristerie) - "Herboristerie du Moulin Vert"
 
-## 🔍 Commandes utiles pour l'IA
+## 📋 Conventions obligatoires
 
-- `@docs` - Consulter la documentation
-- `@admin` - Focus interface admin
-- `@brewery` - Contexte brasserie
-- `@tea-shop` - Contexte salon de thé
+- Nomenclature: Commerçant > Boutiques > Catégories > Produits
+- Fichier < 300 lignes
+- Commentaires en français
+- Commits: type(scope): description
+- Pas de données mock (sauf tests humains)
+
+## 🤖 Alfred Mode
+
+Livrer code propre basé sur conventions. Feedback et validation = responsabilité humaine.

@@ -73,7 +73,7 @@ export function getKeyAttributesForCard(
       }
       break;
 
-    case "tea-shop":
+    case "teaShop":
       if (isTeaShopAttributes(attributes)) {
         return [
           { label: "Origine", value: attributes.origine_plantation },
@@ -84,7 +84,7 @@ export function getKeyAttributesForCard(
       }
       break;
 
-    case "beauty-shop":
+    case "beautyShop":
       if (isBeautyShopAttributes(attributes)) {
         return [
           { label: "Type de peau", value: attributes.type_peau },
@@ -95,7 +95,7 @@ export function getKeyAttributesForCard(
       }
       break;
 
-    case "herb-shop":
+    case "herbShop":
       if (isHerbShopAttributes(attributes)) {
         return [
           { label: "Usage", value: attributes.usage_traditionnel },
@@ -168,7 +168,7 @@ export function getAllFormattedAttributes(
       }
       break;
 
-    case "tea-shop":
+    case "teaShop":
       if (isTeaShopAttributes(attributes)) {
         return [
           {
@@ -220,7 +220,7 @@ export function getAllFormattedAttributes(
       }
       break;
 
-    case "beauty-shop":
+    case "beautyShop":
       if (isBeautyShopAttributes(attributes)) {
         return [
           {
@@ -272,7 +272,7 @@ export function getAllFormattedAttributes(
       }
       break;
 
-    case "herb-shop":
+    case "herbShop":
       if (isHerbShopAttributes(attributes)) {
         const result = [
           {

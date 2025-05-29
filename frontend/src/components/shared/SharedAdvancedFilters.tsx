@@ -65,11 +65,11 @@ export const SharedAdvancedFilters: React.FC<SharedAdvancedFiltersProps> = ({
     switch (shop.shopType) {
       case "brewery":
         return "orange";
-      case "tea-shop":
+      case "teaShop":
         return "green";
-      case "beauty-shop":
+      case "beautyShop":
         return "pink";
-      case "herb-shop":
+      case "herbShop":
         return "teal";
       default:
         return "blue";
@@ -94,14 +94,14 @@ export const SharedAdvancedFilters: React.FC<SharedAdvancedFiltersProps> = ({
           }
 
           // Extraction des origines de plantation pour le thé
-          if (attrs.origine_plantation && shop.shopType === "tea-shop") {
+          if (attrs.origine_plantation && shop.shopType === "teaShop") {
             if (!options.origine_plantation)
               options.origine_plantation = new Set();
             options.origine_plantation.add(attrs.origine_plantation);
           }
 
           // Extraction des usages traditionnels pour l'herboristerie
-          if (attrs.usage_traditionnel && shop.shopType === "herb-shop") {
+          if (attrs.usage_traditionnel && shop.shopType === "herbShop") {
             if (!options.usage_traditionnel)
               options.usage_traditionnel = new Set();
             options.usage_traditionnel.add(attrs.usage_traditionnel);
@@ -356,7 +356,7 @@ export const SharedAdvancedFilters: React.FC<SharedAdvancedFiltersProps> = ({
           </VStack>
         );
 
-      case "tea-shop":
+      case "teaShop":
         return (
           <VStack spacing={4} align="stretch">
             <Text
@@ -433,7 +433,7 @@ export const SharedAdvancedFilters: React.FC<SharedAdvancedFiltersProps> = ({
           </VStack>
         );
 
-      case "beauty-shop":
+      case "beautyShop":
         return (
           <VStack spacing={4} align="stretch">
             <Text
@@ -485,7 +485,7 @@ export const SharedAdvancedFilters: React.FC<SharedAdvancedFiltersProps> = ({
           </VStack>
         );
 
-      case "herb-shop":
+      case "herbShop":
         return (
           <VStack spacing={4} align="stretch">
             <Text

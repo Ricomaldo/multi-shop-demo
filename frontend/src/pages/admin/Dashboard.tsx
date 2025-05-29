@@ -13,7 +13,7 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { SharedUniverseSelector } from "../../components/shared";
+import AdminDualSelector from "../../components/admin/AdminDualSelector";
 import { useAdminShop } from "../../contexts/AdminShopContext";
 import { useShopData } from "../../hooks";
 
@@ -98,14 +98,12 @@ export default function Dashboard() {
 
   return (
     <VStack spacing={6} align="stretch">
-      {/* Sélecteur de boutique */}
-      <SharedUniverseSelector
-        mode="shop"
+      {/* Sélecteur de boutique en deux étapes */}
+      <AdminDualSelector
         shops={shops}
         selectedShop={selectedShop}
         onShopChange={setSelectedShop}
         loading={shopsLoading}
-        title="Sélectionner une boutique"
       />
 
       <Box>

@@ -1,10 +1,4 @@
-import {
-  Box,
-  SimpleGrid,
-  Text,
-  VStack,
-  useBreakpointValue,
-} from "@chakra-ui/react";
+import { Box, Text, VStack, useBreakpointValue } from "@chakra-ui/react";
 import React, { useMemo } from "react";
 import type { Product, Shop } from "../../../../shared/types";
 import { SharedProductCard } from "./SharedProductCard";
@@ -50,7 +44,6 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
   // Détection responsive intelligente
   const isMobile = useBreakpointValue({ base: true, md: false });
   const isTablet = useBreakpointValue({ base: false, md: true, lg: false });
-  const isDesktop = useBreakpointValue({ base: false, lg: true });
 
   // Configuration responsive intelligente selon le contexte
   const responsiveConfig = useMemo(() => {
@@ -169,16 +162,15 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
 
   return (
     <Box w="full">
-      <SimpleGrid
-        columns={responsiveConfig.columns}
-        spacing={adaptiveSpacing}
+      <Box
+        display="grid"
+        gridTemplateColumns={{
+          base: "1fr",
+          md: "repeat(2, 1fr)",
+          lg: "repeat(3, 1fr)",
+        }}
+        gap={adaptiveSpacing}
         w="full"
-        // Optimisations performance
-        templateColumns={
-          isDesktop && variant === "showcase"
-            ? "repeat(auto-fit, minmax(280px, 1fr))"
-            : undefined
-        }
       >
         {displayedProducts.map((product) => (
           <SharedProductCard
@@ -193,7 +185,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
             showActions={showActions}
           />
         ))}
-      </SimpleGrid>
+      </Box>
 
       {/* Indicateur si limitation active */}
       {maxItems && products.length > maxItems && (

@@ -20,7 +20,7 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import type { Shop } from "../../../../shared/types";
 import { useShopData } from "../../hooks";
-import { SharedUniverseSelector } from "../shared";
+import AdminDualSelector from "./AdminDualSelector";
 
 const menuItems = [
   { icon: FiHome, label: "Dashboard", path: "/admin" },
@@ -140,16 +140,14 @@ export default function AdminSidebar({
             )}
           </Flex>
 
-          {/* Sélecteur de boutique - masqué si collapsed */}
+          {/* Sélecteur de boutique en deux étapes - masqué si collapsed */}
           {shouldShowLabels && (
-            <SharedUniverseSelector
-              mode="shop"
+            <AdminDualSelector
               shops={shops}
               selectedShop={selectedShop}
               onShopChange={handleShopChange}
               loading={loading}
               size="sm"
-              showDescription={false}
             />
           )}
 

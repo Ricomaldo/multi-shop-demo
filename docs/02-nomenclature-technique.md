@@ -21,12 +21,12 @@
 
 ## 🏪 Configuration des Univers
 
-| ID Technique  | Nom Commercial                 | Type Commerce   |
-| ------------- | ------------------------------ | --------------- |
-| `brewery`     | "Houblon & Tradition"          | Brasserie       |
-| `tea-shop`    | "Les Jardins de Darjeeling"    | Salon de thé    |
-| `beauty-shop` | "L'Écrin de Jade"              | Institut beauté |
-| `herb-shop`   | "Herboristerie du Moulin Vert" | Herboristerie   |
+| ID Technique | Nom Commercial                 | Type Commerce   |
+| ------------ | ------------------------------ | --------------- |
+| `brewery`    | "Houblon & Tradition"          | Brasserie       |
+| `teaShop`    | "Les Jardins de Darjeeling"    | Salon de thé    |
+| `beautyShop` | "L'Écrin de Jade"              | Institut beauté |
+| `herbShop`   | "Herboristerie du Moulin Vert" | Herboristerie   |
 
 ## 🏗 Architecture Multi-Boutique
 

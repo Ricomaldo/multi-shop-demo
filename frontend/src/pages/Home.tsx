@@ -16,19 +16,19 @@ const shopTypes = [
     description: "Houblon & Tradition",
   },
   {
-    id: "tea-shop",
+    id: "teaShop",
     name: "Salon de Thé",
     color: "teaShop",
     description: "Les Jardins de Darjeeling",
   },
   {
-    id: "beauty-shop",
+    id: "beautyShop",
     name: "Institut Beauté",
     color: "beautyShop",
     description: "L'Écrin de Jade",
   },
   {
-    id: "herb-shop",
+    id: "herbShop",
     name: "Herboristerie",
     color: "herbShop",
     description: "Herboristerie du Moulin Vert",

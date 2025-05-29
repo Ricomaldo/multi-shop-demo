@@ -70,7 +70,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
             stock: 0,
           });
           break;
-        case "tea-shop":
+        case "teaShop":
           setAttributes({
             origine_plantation: "",
             altitude_culture: "",
@@ -83,7 +83,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
             stock: 0,
           });
           break;
-        case "beauty-shop":
+        case "beautyShop":
           setAttributes({
             type_peau: "",
             ingredients_actifs: "",
@@ -96,7 +96,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
             stock: 0,
           });
           break;
-        case "herb-shop":
+        case "herbShop":
           setAttributes({
             principes_actifs: "",
             usage_traditionnel: "",
@@ -253,7 +253,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
           </VStack>
         );
 
-      case "tea-shop":
+      case "teaShop":
         return (
           <VStack spacing={4} align="stretch">
             <Heading size="md" color="green.500">
@@ -340,7 +340,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
           </VStack>
         );
 
-      case "beauty-shop":
+      case "beautyShop":
         return (
           <VStack spacing={4} align="stretch">
             <Heading size="md" color="pink.500">
@@ -437,7 +437,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
           </VStack>
         );
 
-      case "herb-shop":
+      case "herbShop":
         return (
           <VStack spacing={4} align="stretch">
             <Heading size="md" color="green.600">

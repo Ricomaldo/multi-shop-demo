@@ -91,21 +91,21 @@ class StoreProductService {
           filters.type_houblon = String(attributes.type_houblon);
         break;
 
-      case "tea-shop":
+      case "teaShop":
         if (attributes.origine_plantation)
           filters.origine_plantation = String(attributes.origine_plantation);
         if (attributes.grade_qualite)
           filters.grade_qualite = String(attributes.grade_qualite);
         break;
 
-      case "beauty-shop":
+      case "beautyShop":
         if (attributes.type_peau)
           filters.type_peau = String(attributes.type_peau);
         if (attributes.certification_bio !== undefined)
           filters.certification_bio = Boolean(attributes.certification_bio);
         break;
 
-      case "herb-shop":
+      case "herbShop":
         if (attributes.usage_traditionnel)
           filters.usage_traditionnel = String(attributes.usage_traditionnel);
         if (attributes.forme_galenique)

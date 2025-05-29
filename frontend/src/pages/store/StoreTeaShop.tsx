@@ -1,42 +1,109 @@
+import { SearchIcon } from "@chakra-ui/icons";
 import {
   Badge,
   Box,
   Button,
   Flex,
   Heading,
-  SimpleGrid,
+  Input,
+  InputGroup,
+  InputLeftElement,
+  Select,
   Text,
   VStack,
+  Wrap,
+  WrapItem,
 } from "@chakra-ui/react";
-import { useMemo } from "react";
-import { SharedCategoryFilter } from "../../components/shared";
+import { useMemo, useState } from "react";
+import type { Product } from "../../../../shared/types";
+import { ProductGrid } from "../../components/shared/ProductGrid";
 import { UniverseProvider } from "../../contexts/UniverseContext";
-import { useProductFilters, useShopData } from "../../hooks";
+import { useShopData, useStoreProductFilters } from "../../hooks";
+import type { ProductFilters } from "../../services/adminProductService";
 
 export default function StoreTeaShop() {
   const colorScheme = "green";
+  const [advancedFilters, setAdvancedFilters] = useState<ProductFilters>({});
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Utiliser les hooks pour la gestion des données
   const { shops, products, loading, error } = useShopData();
 
+  // Trouver la boutique salon de thé
+  const teaShop = useMemo(() => {
+    return shops.find((shop) => shop.shopType === "teaShop");
+  }, [shops]);
+
   // Filtrer les produits du salon de thé
   const teaShopProducts = useMemo(() => {
-    const teaShop = shops.find((shop) => shop.shopType === "tea-shop");
     return products.filter((product) => product.shopId === teaShop?.id);
-  }, [shops, products]);
+  }, [products, teaShop]);
 
-  // Hook de filtrage par catégorie
+  // Hook de filtrage vitrine
   const {
     filteredProducts,
     selectedCategoryId,
     categories,
     setSelectedCategoryId,
     resetFilters,
-  } = useProductFilters(teaShopProducts);
+    applyAdvancedFilters,
+  } = useStoreProductFilters(teaShopProducts);
 
-  const handleAddToCart = (productId: string) => {
-    // Simulation ajout panier
-    console.log("Ajout au panier:", productId);
+  // Extraction dynamique des options d'origine
+  const originOptions = useMemo(() => {
+    const origins = new Set<string>();
+    teaShopProducts.forEach((product) => {
+      if (product.attributes) {
+        try {
+          const attrs = JSON.parse(product.attributes);
+          if (attrs.origine_plantation) origins.add(attrs.origine_plantation);
+        } catch {
+          // Ignore les erreurs de parsing
+        }
+      }
+    });
+    return Array.from(origins).sort();
+  }, [teaShopProducts]);
+
+  // Extraction dynamique des grades de qualité
+  const gradeOptions = useMemo(() => {
+    const grades = new Set<string>();
+    teaShopProducts.forEach((product) => {
+      if (product.attributes) {
+        try {
+          const attrs = JSON.parse(product.attributes);
+          if (attrs.grade_qualite) grades.add(attrs.grade_qualite);
+        } catch {
+          // Ignore les erreurs de parsing
+        }
+      }
+    });
+    return Array.from(grades).sort();
+  }, [teaShopProducts]);
+
+  // Gestionnaires pour les filtres
+  const handleFiltersChange = (newFilters: ProductFilters) => {
+    setAdvancedFilters(newFilters);
+    applyAdvancedFilters(newFilters, searchTerm);
+  };
+
+  const handleSearchChange = (search: string) => {
+    setSearchTerm(search);
+    applyAdvancedFilters(advancedFilters, search);
+  };
+
+  const handleResetFilters = () => {
+    setAdvancedFilters({});
+    setSearchTerm("");
+    resetFilters();
+  };
+
+  const handleAddToCart = (product: Product) => {
+    console.log("Ajout au panier:", product.name);
+  };
+
+  const handleViewProduct = (product: Product) => {
+    console.log("Voir détails:", product.name);
   };
 
   if (loading) {
@@ -60,108 +127,165 @@ export default function StoreTeaShop() {
   }
 
   return (
-    <UniverseProvider defaultUniverse="tea-shop">
-      <Box p={8} maxW="1200px" mx="auto">
-        <VStack spacing={8}>
-          <VStack spacing={4}>
-            <Heading size="xl" color={`${colorScheme}.700`}>
+    <UniverseProvider defaultUniverse="teaShop">
+      <Box p={6} maxW="1200px" mx="auto">
+        <VStack spacing={6}>
+          {/* Header E-commerce compact */}
+          <VStack spacing={3} textAlign="center">
+            <Heading size="lg" color={`${colorScheme}.700`}>
               🍵 Les Jardins de Darjeeling
             </Heading>
-            <Text fontSize="lg" color="gray.600" textAlign="center">
+            <Text fontSize="md" color="gray.600">
               Salon de thé raffiné - Sélection de thés d'exception
-            </Text>
-            <Text fontSize="sm" color="gray.500">
-              {teaShopProducts.length} produit
-              {teaShopProducts.length !== 1 ? "s" : ""} disponible
-              {teaShopProducts.length !== 1 ? "s" : ""}
             </Text>
           </VStack>
 
-          {/* Filtrage par catégorie */}
-          {categories.length > 0 && (
-            <SharedCategoryFilter
-              categories={categories}
-              selectedCategoryId={selectedCategoryId}
-              onCategoryChange={setSelectedCategoryId}
-              onResetFilters={resetFilters}
-              productCount={filteredProducts.length}
-              colorScheme={colorScheme}
-              mode="store"
-            />
-          )}
+          {/* Barre de recherche et filtres rapides */}
+          <VStack spacing={4} w="full">
+            {/* Recherche principale */}
+            <InputGroup size="lg" maxW="500px">
+              <InputLeftElement>
+                <SearchIcon color="gray.400" />
+              </InputLeftElement>
+              <Input
+                placeholder="Rechercher un thé..."
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                borderRadius="full"
+                bg="white"
+                _focus={{
+                  borderColor: `${colorScheme}.400`,
+                  boxShadow: `0 0 0 1px var(--chakra-colors-${colorScheme}-400)`,
+                }}
+              />
+            </InputGroup>
 
-          {/* Grille des produits */}
-          {filteredProducts.length === 0 ? (
-            <VStack spacing={4} py={8}>
-              <Text fontSize="lg" color="gray.500">
-                {selectedCategoryId
-                  ? "Aucun produit dans cette catégorie"
-                  : "Aucun produit disponible"}
-              </Text>
-              {selectedCategoryId && (
+            {/* Filtres rapides horizontaux */}
+            <Flex
+              direction={{ base: "column", md: "row" }}
+              gap={4}
+              align="center"
+              justify="center"
+              wrap="wrap"
+            >
+              {/* Filtre par catégorie */}
+              <Select
+                placeholder="Catégorie"
+                size="sm"
+                maxW="150px"
+                bg="white"
+                value={selectedCategoryId || ""}
+                onChange={(e) => setSelectedCategoryId(e.target.value || null)}
+              >
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </Select>
+
+              {/* Filtre par origine */}
+              <Select
+                placeholder="Origine"
+                size="sm"
+                maxW="150px"
+                bg="white"
+                value={advancedFilters.origine_plantation || ""}
+                onChange={(e) =>
+                  handleFiltersChange({
+                    ...advancedFilters,
+                    origine_plantation: e.target.value || undefined,
+                  })
+                }
+              >
+                {originOptions.map((origin) => (
+                  <option key={origin} value={origin}>
+                    {origin}
+                  </option>
+                ))}
+              </Select>
+
+              {/* Filtre par grade */}
+              <Select
+                placeholder="Grade"
+                size="sm"
+                maxW="150px"
+                bg="white"
+                value={advancedFilters.grade_qualite || ""}
+                onChange={(e) =>
+                  handleFiltersChange({
+                    ...advancedFilters,
+                    grade_qualite: e.target.value || undefined,
+                  })
+                }
+              >
+                {gradeOptions.map((grade) => (
+                  <option key={grade} value={grade}>
+                    {grade}
+                  </option>
+                ))}
+              </Select>
+
+              {/* Reset */}
+              {(selectedCategoryId ||
+                Object.keys(advancedFilters).length > 0 ||
+                searchTerm) && (
                 <Button
-                  variant="outline"
+                  size="sm"
+                  variant="ghost"
                   colorScheme={colorScheme}
-                  onClick={resetFilters}
+                  onClick={handleResetFilters}
                 >
-                  Voir tous les produits
+                  Effacer tout
                 </Button>
               )}
-            </VStack>
-          ) : (
-            <SimpleGrid
-              columns={{ base: 1, md: 2, lg: 3 }}
-              spacing={6}
-              w="full"
-            >
-              {filteredProducts.map((product) => (
-                <Box
-                  key={product.id}
-                  p={6}
-                  bg="white"
-                  borderRadius="lg"
-                  shadow="md"
-                  borderWidth={1}
-                  borderColor={`${colorScheme}.200`}
-                  transition="transform 0.2s"
-                  _hover={{ transform: "translateY(-2px)", shadow: "lg" }}
-                >
-                  <VStack spacing={4} align="stretch">
-                    <Flex justify="space-between" align="start">
-                      <Badge colorScheme={colorScheme} fontSize="xs">
-                        {product.category?.name}
-                      </Badge>
-                    </Flex>
+            </Flex>
+          </VStack>
 
-                    <VStack spacing={2} align="start">
-                      <Heading size="md" color={`${colorScheme}.800`}>
-                        {product.name}
-                      </Heading>
-                      <Text fontSize="sm" color="gray.600" noOfLines={2}>
-                        {product.description}
-                      </Text>
-                    </VStack>
+          {/* Stats et badges */}
+          <Wrap justify="center" spacing={4}>
+            <WrapItem>
+              <Badge colorScheme={colorScheme} px={3} py={1}>
+                {filteredProducts.length} résultat
+                {filteredProducts.length !== 1 ? "s" : ""}
+              </Badge>
+            </WrapItem>
+            <WrapItem>
+              <Badge colorScheme="green" px={3} py={1}>
+                Livraison gratuite dès 30€
+              </Badge>
+            </WrapItem>
+            <WrapItem>
+              <Badge colorScheme="blue" px={3} py={1}>
+                Thés d'exception
+              </Badge>
+            </WrapItem>
+          </Wrap>
 
-                    <Flex justify="space-between" align="center">
-                      <Text
-                        fontSize="xl"
-                        fontWeight="bold"
-                        color={`${colorScheme}.600`}
-                      >
-                        {product.price.toFixed(2)}€
-                      </Text>
-                      <Button
-                        size="sm"
-                        colorScheme={colorScheme}
-                        onClick={() => handleAddToCart(product.id)}
-                      >
-                        🛒 Ajouter
-                      </Button>
-                    </Flex>
-                  </VStack>
-                </Box>
-              ))}
-            </SimpleGrid>
+          {/* Grille produits */}
+          {teaShop && (
+            <ProductGrid
+              products={filteredProducts}
+              shop={teaShop}
+              onAddToCart={handleAddToCart}
+              onView={handleViewProduct}
+              variant="standard"
+              isAdminMode={false}
+              emptyMessage={
+                selectedCategoryId ||
+                Object.keys(advancedFilters).length > 0 ||
+                searchTerm
+                  ? "Aucun thé ne correspond à vos critères"
+                  : "Aucun thé disponible"
+              }
+              emptySubMessage={
+                selectedCategoryId ||
+                Object.keys(advancedFilters).length > 0 ||
+                searchTerm
+                  ? "Essayez de modifier vos filtres"
+                  : undefined
+              }
+            />
           )}
         </VStack>
       </Box>

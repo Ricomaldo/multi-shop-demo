@@ -8,12 +8,12 @@ export const shopTypeToUniverse = (shopType: string): UniverseType => {
   switch (shopType) {
     case "brewery":
       return "brewery";
-    case "tea-shop":
-      return "tea-shop";
-    case "beauty-shop":
-      return "beauty-shop";
-    case "herb-shop":
-      return "herb-shop";
+    case "teaShop":
+      return "teaShop";
+    case "beautyShop":
+      return "beautyShop";
+    case "herbShop":
+      return "herbShop";
     default:
       return "brewery"; // Fallback par défaut
   }
@@ -33,11 +33,11 @@ export const getShopDisplayName = (universe: UniverseType): string => {
   switch (universe) {
     case "brewery":
       return "Houblon & Tradition";
-    case "tea-shop":
+    case "teaShop":
       return "Les Jardins de Darjeeling";
-    case "beauty-shop":
+    case "beautyShop":
       return "L'Écrin de Jade";
-    case "herb-shop":
+    case "herbShop":
       return "Herboristerie du Moulin Vert";
     default:
       return "Boutique DemoForge";
@@ -51,11 +51,11 @@ export const getUniverseIcon = (universe: UniverseType): string => {
   switch (universe) {
     case "brewery":
       return "🍺";
-    case "tea-shop":
+    case "teaShop":
       return "🍵";
-    case "beauty-shop":
+    case "beautyShop":
       return "💄";
-    case "herb-shop":
+    case "herbShop":
       return "🌿";
     default:
       return "🛍️";

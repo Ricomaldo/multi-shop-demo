@@ -60,11 +60,11 @@ export const SharedProductCard: React.FC<SharedProductCardProps> = ({
     switch (shop.shopType) {
       case "brewery":
         return "orange";
-      case "tea-shop":
+      case "teaShop":
         return "green";
-      case "beauty-shop":
+      case "beautyShop":
         return "pink";
-      case "herb-shop":
+      case "herbShop":
         return "teal";
       default:
         return "gray";
@@ -76,11 +76,11 @@ export const SharedProductCard: React.FC<SharedProductCardProps> = ({
     switch (shop.shopType) {
       case "brewery":
         return "🍺";
-      case "tea-shop":
+      case "teaShop":
         return "🍵";
-      case "beauty-shop":
+      case "beautyShop":
         return "💄";
-      case "herb-shop":
+      case "herbShop":
         return "🌿";
       default:
         return "🏪";
@@ -100,8 +100,9 @@ export const SharedProductCard: React.FC<SharedProductCardProps> = ({
       _hover={{ shadow: "md", transform: "translateY(-2px)" }}
       transition="all 0.3s"
       opacity={outOfStock ? 0.7 : 1}
-      minW="280px"
-      maxW="350px"
+      w={isAdminMode ? "full" : undefined}
+      minW={isAdminMode ? undefined : "280px"}
+      maxW={isAdminMode ? undefined : "350px"}
     >
       <VStack align="stretch" spacing={0}>
         {/* Image placeholder avec badge stock */}
