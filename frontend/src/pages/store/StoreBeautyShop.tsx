@@ -174,8 +174,8 @@ export default function StoreBeautyShop() {
                 shop={beautyShop!}
                 onAddToCart={handleAddToCart}
                 onView={handleViewProduct}
-                columns={{ base: 1, md: 3 }}
-                spacing={8}
+                variant="showcase"
+                maxItems={8}
                 isAdminMode={false}
               />
             </VStack>
@@ -290,8 +290,7 @@ export default function StoreBeautyShop() {
               shop={beautyShop!}
               onAddToCart={handleAddToCart}
               onView={handleViewProduct}
-              columns={{ base: 1, md: 2, lg: 3 }}
-              spacing={8}
+              variant="standard"
               isAdminMode={false}
               emptyMessage={
                 selectedCategoryId
