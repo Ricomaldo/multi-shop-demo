@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-Le système de thématisation permet d'adapter automatiquement l'interface selon l'univers métier sélectionné (brewery, tea-shop, beauty-shop, herb-shop).
+Le système de thématisation permet d'adapter automatiquement l'interface selon l'univers métier sélectionné (brewery, teaShop, beatyShop, herbShop).
 
 ## Structure
 

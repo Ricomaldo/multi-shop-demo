@@ -4,31 +4,14 @@ interface WindowWithEnv extends Window {
   VITE_API_URL?: string;
 }
 
-const getApiUrl = (): string => {
-  // En mode navigateur
+// Fonction utilitaire pour obtenir l'URL de l'API
+function getApiUrl(): string {
   if (typeof window !== "undefined") {
-    const windowWithEnv = window as WindowWithEnv;
-    if (windowWithEnv.VITE_API_URL) {
-      return windowWithEnv.VITE_API_URL;
-    }
+    const win = window as WindowWithEnv;
+    return win.VITE_API_URL || "http://localhost:3001/api";
   }
-
-  // En mode Vite (import.meta.env)
-  if (
-    typeof globalThis !== "undefined" &&
-    (globalThis as any).import?.meta?.env?.VITE_API_URL
-  ) {
-    return (globalThis as any).import.meta.env.VITE_API_URL;
-  }
-
-  // En mode Node.js (process.env)
-  if (typeof process !== "undefined" && process.env?.VITE_API_URL) {
-    return process.env.VITE_API_URL;
-  }
-
-  // Fallback
   return "http://localhost:3001/api";
-};
+}
 
 const API_BASE_URL = getApiUrl();
 
@@ -52,6 +35,7 @@ export interface ProductFilters {
   certification_bio?: boolean;
   usage_traditionnel?: string;
   forme_galenique?: string;
+  origine_plante?: string;
 }
 
 export interface ProductsResponse {
@@ -93,21 +77,16 @@ class AdminProductService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${API_BASE_URL}/admin${endpoint}`;
-
-    const response = await fetch(url, {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
       headers: {
         "Content-Type": "application/json",
         ...options.headers,
       },
-      ...options,
     });
 
     if (!response.ok) {
-      const error = await response
-        .json()
-        .catch(() => ({ error: "Erreur réseau" }));
-      throw new Error(error.error || `Erreur HTTP ${response.status}`);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     return response.json();
@@ -262,21 +241,21 @@ class AdminProductService {
           filters.type_houblon = String(attributes.type_houblon);
         break;
 
-      case "tea-shop":
+      case "teaShop":
         if (attributes.origine_plantation)
           filters.origine_plantation = String(attributes.origine_plantation);
         if (attributes.grade_qualite)
           filters.grade_qualite = String(attributes.grade_qualite);
         break;
 
-      case "beauty-shop":
+      case "beautyShop":
         if (attributes.type_peau)
           filters.type_peau = String(attributes.type_peau);
         if (attributes.certification_bio !== undefined)
           filters.certification_bio = Boolean(attributes.certification_bio);
         break;
 
-      case "herb-shop":
+      case "herbShop":
         if (attributes.usage_traditionnel)
           filters.usage_traditionnel = String(attributes.usage_traditionnel);
         if (attributes.forme_galenique)
@@ -346,7 +325,7 @@ class AdminProductService {
         }
         break;
 
-      case "tea-shop":
+      case "teaShop":
         if (!attributes.origine_plantation) {
           errors.push(
             "L'origine de plantation est obligatoire pour un salon de thé"
@@ -359,7 +338,7 @@ class AdminProductService {
         }
         break;
 
-      case "beauty-shop":
+      case "beautyShop":
         if (!attributes.type_peau) {
           errors.push(
             "Le type de peau est obligatoire pour un institut beauté"
@@ -375,7 +354,7 @@ class AdminProductService {
         }
         break;
 
-      case "herb-shop":
+      case "herbShop":
         if (!attributes.principes_actifs) {
           errors.push(
             "Les principes actifs sont obligatoires pour une herboristerie"

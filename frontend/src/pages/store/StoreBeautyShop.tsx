@@ -1,283 +1,130 @@
-import { SearchIcon } from "@chakra-ui/icons";
-import {
-  Badge,
-  Box,
-  Button,
-  Flex,
-  Heading,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  Select,
-  Text,
-  VStack,
-  Wrap,
-  WrapItem,
-} from "@chakra-ui/react";
-import { useMemo, useState } from "react";
+import { Box, Button, Container, Grid, Text, VStack } from "@chakra-ui/react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import type { Product } from "../../../../shared/types";
-import { ProductGrid } from "../../components/shared/ProductGrid";
-import { UniverseProvider } from "../../contexts/UniverseContext";
-import { useShopData, useStoreProductFilters } from "../../hooks";
-import type { ProductFilters } from "../../services/adminProductService";
+import { SharedProductCard } from "../../components/shared/SharedProductCard";
+import BeautySection from "../../components/store/sections/BeautySection";
+import StoreHeroHeader from "../../components/store/StoreHeroHeader";
+import { useShopData } from "../../hooks/useShopData";
+
+const MotionBox = motion(Box);
 
 export default function StoreBeautyShop() {
-  const colorScheme = "pink";
-  const [advancedFilters, setAdvancedFilters] = useState<ProductFilters>({});
-  const [searchTerm, setSearchTerm] = useState("");
+  const { products, loading, getShopByType } = useShopData();
+  const beautyShop = getShopByType("beautyShop");
 
-  // Utiliser les hooks pour la gestion des données
-  const { shops, products, loading, error } = useShopData();
-
-  // Trouver la boutique beauté
-  const beautyShop = useMemo(() => {
-    return shops.find((shop) => shop.shopType === "beautyShop");
-  }, [shops]);
-
-  // Filtrer les produits de beauté
-  const beautyShopProducts = useMemo(() => {
-    return products.filter((product) => product.shopId === beautyShop?.id);
-  }, [products, beautyShop]);
-
-  // Hook de filtrage vitrine
-  const {
-    filteredProducts,
-    selectedCategoryId,
-    categories,
-    setSelectedCategoryId,
-    resetFilters,
-    applyAdvancedFilters,
-  } = useStoreProductFilters(beautyShopProducts);
-
-  // Extraction dynamique des types de peau
-  const skinTypeOptions = useMemo(() => {
-    const skinTypes = new Set<string>();
-    beautyShopProducts.forEach((product) => {
-      if (product.attributes) {
-        try {
-          const attrs = JSON.parse(product.attributes);
-          if (attrs.type_peau) skinTypes.add(attrs.type_peau);
-        } catch {
-          // Ignore les erreurs de parsing
-        }
-      }
-    });
-    return Array.from(skinTypes).sort();
-  }, [beautyShopProducts]);
-
-  // Gestionnaires pour les filtres
-  const handleFiltersChange = (newFilters: ProductFilters) => {
-    setAdvancedFilters(newFilters);
-    applyAdvancedFilters(newFilters, searchTerm);
-  };
-
-  const handleSearchChange = (search: string) => {
-    setSearchTerm(search);
-    applyAdvancedFilters(advancedFilters, search);
-  };
-
-  const handleResetFilters = () => {
-    setAdvancedFilters({});
-    setSearchTerm("");
-    resetFilters();
-  };
+  if (loading || !beautyShop) return null;
 
   const handleAddToCart = (product: Product) => {
-    console.log("Ajout au panier:", product.name);
+    console.log("Ajouter au panier:", product);
   };
 
   const handleViewProduct = (product: Product) => {
-    console.log("Voir détails:", product.name);
+    console.log("Voir produit:", product);
   };
 
-  if (loading) {
-    return (
-      <Box p={8} maxW="1200px" mx="auto">
-        <VStack spacing={8}>
-          <Text fontSize="lg">Chargement de l'institut beauté...</Text>
-        </VStack>
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box p={8} maxW="1200px" mx="auto">
-        <VStack spacing={8}>
-          <Text color="red.500">Erreur: {error}</Text>
-        </VStack>
-      </Box>
-    );
-  }
-
   return (
-    <UniverseProvider defaultUniverse="beautyShop">
-      <Box p={6} maxW="1200px" mx="auto">
-        <VStack spacing={6}>
-          {/* Header E-commerce compact */}
-          <VStack spacing={3} textAlign="center">
-            <Heading size="lg" color={`${colorScheme}.700`}>
-              💄 L'Écrin de Jade
-            </Heading>
-            <Text fontSize="md" color="gray.600">
-              Institut de beauté premium - Cosmétiques de luxe
-            </Text>
-          </VStack>
+    <Box as="main">
+      <MotionBox
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+      >
+        <StoreHeroHeader
+          shop={beautyShop}
+          imageSrc="/images/store/beauty-hero.jpg"
+          imageAlt="Institut de beauté L'Écrin de Jade - Ambiance spa et soins"
+          overlayOpacity={0.3}
+          overlayColor="pink"
+          height="80vh"
+          ctaText="Découvrir nos soins"
+          onCtaClick={() => console.log("CTA clicked")}
+        />
+      </MotionBox>
 
-          {/* Barre de recherche et filtres rapides */}
-          <VStack spacing={4} w="full">
-            {/* Recherche principale */}
-            <InputGroup size="lg" maxW="500px">
-              <InputLeftElement>
-                <SearchIcon color="gray.400" />
-              </InputLeftElement>
-              <Input
-                placeholder="Rechercher un produit..."
-                value={searchTerm}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                borderRadius="full"
-                bg="white"
-                _focus={{
-                  borderColor: `${colorScheme}.400`,
-                  boxShadow: `0 0 0 1px var(--chakra-colors-${colorScheme}-400)`,
-                }}
-              />
-            </InputGroup>
+      <Container maxW="8xl" px={{ base: 4, md: 8 }}>
+        <VStack spacing={20} py={20}>
+          {/* Section Beauté */}
+          <BeautySection />
 
-            {/* Filtres rapides horizontaux */}
-            <Flex
-              direction={{ base: "column", md: "row" }}
-              gap={4}
-              align="center"
-              justify="center"
-              wrap="wrap"
+          {/* Grille de produits asymétrique */}
+          <Box w="full">
+            <Grid
+              templateColumns={{
+                base: "1fr",
+                md: "repeat(2, 1fr)",
+                lg: "repeat(3, 1fr)",
+              }}
+              gap={8}
+              sx={{
+                "& > *:nth-of-type(3n-1)": {
+                  transform: "translateY(2rem)",
+                },
+              }}
             >
-              {/* Filtre par catégorie */}
-              <Select
-                placeholder="Catégorie"
-                size="sm"
-                maxW="150px"
-                bg="white"
-                value={selectedCategoryId || ""}
-                onChange={(e) => setSelectedCategoryId(e.target.value || null)}
-              >
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
+              {products
+                .filter((p) => p.shopId === beautyShop.id)
+                .map((product) => (
+                  <SharedProductCard
+                    key={product.id}
+                    product={product}
+                    shop={beautyShop}
+                    onAddToCart={handleAddToCart}
+                    onView={handleViewProduct}
+                  />
                 ))}
-              </Select>
+            </Grid>
+          </Box>
 
-              {/* Filtre par type de peau */}
-              <Select
-                placeholder="Type de peau"
-                size="sm"
-                maxW="150px"
-                bg="white"
-                value={advancedFilters.type_peau || ""}
-                onChange={(e) =>
-                  handleFiltersChange({
-                    ...advancedFilters,
-                    type_peau: e.target.value || undefined,
-                  })
-                }
+          {/* Footer élégant */}
+          <Box
+            as="footer"
+            w="full"
+            bg="pink.50"
+            p={16}
+            borderRadius="lg"
+            textAlign="center"
+          >
+            <VStack spacing={6}>
+              <Text
+                fontFamily="serif"
+                fontSize="2xl"
+                color="pink.700"
+                fontWeight="light"
               >
-                {skinTypeOptions.map((skinType) => (
-                  <option key={skinType} value={skinType}>
-                    {skinType}
-                  </option>
-                ))}
-              </Select>
-
-              {/* Filtre bio */}
-              <Select
-                placeholder="Certification"
-                size="sm"
-                maxW="150px"
-                bg="white"
-                value={
-                  advancedFilters.certification_bio === undefined
-                    ? ""
-                    : advancedFilters.certification_bio
-                    ? "true"
-                    : "false"
-                }
-                onChange={(e) => {
-                  const value = e.target.value;
-                  handleFiltersChange({
-                    ...advancedFilters,
-                    certification_bio:
-                      value === "" ? undefined : value === "true",
-                  });
-                }}
+                L'Institut de Beauté
+              </Text>
+              <Text fontSize="2xl" color="pink.700" fontWeight="light">
+                L'Institut de Beauté
+              </Text>
+              <Text fontSize="lg">
+                <span role="img" aria-label="étincelles">
+                  ✨
+                </span>{" "}
+                Soins & Rituels
+              </Text>
+              <Text>
+                <span role="img" aria-label="localisation">
+                  📍
+                </span>{" "}
+                18 avenue Montaigne, 75008 Paris
+              </Text>
+              <Text fontStyle="italic">Sur rendez-vous uniquement</Text>
+              <Button
+                as={Link}
+                to="/store/contact"
+                colorScheme="pink"
+                size="lg"
+                variant="outline"
+                px={8}
+                _hover={{ bg: "pink.50" }}
               >
-                <option value="true">Bio certifié</option>
-                <option value="false">Conventionnel</option>
-              </Select>
-
-              {/* Reset */}
-              {(selectedCategoryId ||
-                Object.keys(advancedFilters).length > 0 ||
-                searchTerm) && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  colorScheme={colorScheme}
-                  onClick={handleResetFilters}
-                >
-                  Effacer tout
-                </Button>
-              )}
-            </Flex>
-          </VStack>
-
-          {/* Stats et badges */}
-          <Wrap justify="center" spacing={4}>
-            <WrapItem>
-              <Badge colorScheme={colorScheme} px={3} py={1}>
-                {filteredProducts.length} résultat
-                {filteredProducts.length !== 1 ? "s" : ""}
-              </Badge>
-            </WrapItem>
-            <WrapItem>
-              <Badge colorScheme="green" px={3} py={1}>
-                Livraison gratuite dès 40€
-              </Badge>
-            </WrapItem>
-            <WrapItem>
-              <Badge colorScheme="blue" px={3} py={1}>
-                Conseils personnalisés
-              </Badge>
-            </WrapItem>
-          </Wrap>
-
-          {/* Grille produits */}
-          {beautyShop && (
-            <ProductGrid
-              products={filteredProducts}
-              shop={beautyShop}
-              onAddToCart={handleAddToCart}
-              onView={handleViewProduct}
-              variant="standard"
-              isAdminMode={false}
-              emptyMessage={
-                selectedCategoryId ||
-                Object.keys(advancedFilters).length > 0 ||
-                searchTerm
-                  ? "Aucun produit ne correspond à vos critères"
-                  : "Aucun produit disponible"
-              }
-              emptySubMessage={
-                selectedCategoryId ||
-                Object.keys(advancedFilters).length > 0 ||
-                searchTerm
-                  ? "Essayez de modifier vos filtres"
-                  : undefined
-              }
-            />
-          )}
+                Nous contacter
+              </Button>
+            </VStack>
+          </Box>
         </VStack>
-      </Box>
-    </UniverseProvider>
+      </Container>
+    </Box>
   );
 }

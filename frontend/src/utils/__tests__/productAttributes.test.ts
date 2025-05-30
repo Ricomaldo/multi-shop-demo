@@ -103,19 +103,19 @@ const mockShops: Record<string, Shop> = {
   "shop-2": {
     id: "shop-2",
     name: "Les Jardins de Darjeeling",
-    shopType: "tea-shop",
+    shopType: "teaShop",
     categories: [],
   },
   "shop-3": {
     id: "shop-3",
     name: "L'Écrin de Jade",
-    shopType: "beauty-shop",
+    shopType: "beatyShop",
     categories: [],
   },
   "shop-4": {
     id: "shop-4",
     name: "Herboristerie du Moulin Vert",
-    shopType: "herb-shop",
+    shopType: "herbShop",
     categories: [],
   },
 };
@@ -367,11 +367,7 @@ describe("productAttributes utils", () => {
       const unknownShop: Shop = {
         id: "unknown",
         name: "Boutique Inconnue",
-        shopType: "unknown" as
-          | "brewery"
-          | "tea-shop"
-          | "beauty-shop"
-          | "herb-shop",
+        shopType: "unknown" as "brewery" | "teaShop" | "beatyShop" | "herbShop",
         categories: [],
       };
       const result = getKeyAttributesForCard(mockBreweryProduct, unknownShop);

@@ -44,7 +44,7 @@
 - **`SharedAdvancedFilters.tsx`** : Filtres avancés unifiés + 14 tests
 
   - Mode admin/store avec interfaces différenciées
-  - Filtres métier par univers (brewery, tea-shop, beauty-shop, herb-shop)
+  - Filtres métier par univers (brewery, teaShop, beatyShop, herbShop)
   - Validation et reset intelligents
 
 - **`SharedCategoryFilter.tsx`** : Filtres catégorie adaptatifs + 14 tests
@@ -129,9 +129,9 @@ Chaque univers possède un **layout unique** pour démontrer la **flexibilité**
 
 ```typescript
 brewery → 🍺 orange (Houblon & Tradition)
-tea-shop → 🍵 green (Les Jardins de Darjeeling)
-beauty-shop → 💄 pink (L'Écrin de Jade)
-herb-shop → 🌿 teal (Herboristerie du Moulin Vert)
+teaShop → 🍵 green (Les Jardins de Darjeeling)
+beatyShop → 💄 pink (L'Écrin de Jade)
+herbShop → 🌿 teal (Herboristerie du Moulin Vert)
 ```
 
 ### **Attributs Métier Spécialisés**

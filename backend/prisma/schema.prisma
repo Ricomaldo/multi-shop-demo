@@ -22,7 +22,13 @@ model Merchant {
 model Shop {
   id         String    @id @default(cuid())
   name       String
-  shopType   String    // brewery, tea-shop, beauty-shop, herb-shop
+  shopType   String    // brewery, teaShop, beatyShop, herbShop
+  address    String?   // Adresse postale
+  phone      String?   // Téléphone
+  email      String?   // Email
+  website    String?   // Site web
+  description String?  // Description commerciale
+  openingHours String? // Horaires d'ouverture (JSON)
   merchant   Merchant  @relation(fields: [merchantId], references: [id])
   merchantId String
   products   Product[]
@@ -34,6 +40,7 @@ model Shop {
 model Category {
   id       String    @id @default(cuid())
   name     String
+  image    String?   // Image de la catégorie
   shop     Shop      @relation(fields: [shopId], references: [id])
   shopId   String
   products Product[]

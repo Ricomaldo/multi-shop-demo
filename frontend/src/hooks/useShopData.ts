@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Product, Shop } from "../../../shared/types";
 import { loadProducts, loadShops } from "../services/shopService";
+import { hasLowStock, isOutOfStock } from "../utils/productAttributes";
 
 interface UseShopDataReturn {
   shops: Shop[];
@@ -10,6 +11,14 @@ interface UseShopDataReturn {
   refreshData: () => Promise<void>;
   getProductsByShop: (shopId: string) => Product[];
   getShopByType: (shopType: string) => Shop | undefined;
+  stockData: Record<
+    string,
+    {
+      total: number;
+      lowStock: number;
+      outOfStock: number;
+    }
+  >;
 }
 
 /**
@@ -64,6 +73,25 @@ export const useShopData = (): UseShopDataReturn => {
     [shops]
   );
 
+  // Calcul des données de stock par boutique
+  const stockData = useMemo(() => {
+    const data: Record<
+      string,
+      { total: number; lowStock: number; outOfStock: number }
+    > = {};
+
+    shops.forEach((shop) => {
+      const shopProducts = getProductsByShop(shop.id);
+      data[shop.id] = {
+        total: shopProducts.length,
+        lowStock: shopProducts.filter(hasLowStock).length,
+        outOfStock: shopProducts.filter(isOutOfStock).length,
+      };
+    });
+
+    return data;
+  }, [shops, getProductsByShop]);
+
   useEffect(() => {
     refreshData();
   }, [refreshData]);
@@ -76,5 +104,6 @@ export const useShopData = (): UseShopDataReturn => {
     refreshData,
     getProductsByShop,
     getShopByType,
+    stockData,
   };
 };

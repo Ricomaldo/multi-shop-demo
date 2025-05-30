@@ -1,5 +1,5 @@
 import type { Product, Shop } from "../../../../shared/types";
-import { ProductGrid } from "../shared/ProductGrid";
+import { SharedProductGrid } from "../shared/ProductGrid";
 
 interface AdminProductListProps {
   products: Product[];
@@ -9,7 +9,7 @@ interface AdminProductListProps {
 
 /**
  * Grille de produits pour l'interface admin
- * Utilise ProductGrid avec colonnes forcées pour éviter les problèmes de responsive
+ * Utilise SharedProductGrid avec colonnes forcées pour éviter les problèmes de responsive
  */
 export default function AdminProductList({
   products,
@@ -17,7 +17,7 @@ export default function AdminProductList({
   onEdit,
 }: AdminProductListProps) {
   return (
-    <ProductGrid
+    <SharedProductGrid
       products={products}
       shop={shop}
       onEdit={onEdit}

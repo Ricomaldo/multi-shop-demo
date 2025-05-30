@@ -441,17 +441,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@chakra-ui/icons@npm:2.2.4":
-  version: 2.2.4
-  resolution: "@chakra-ui/icons@npm:2.2.4"
+"@chakra-ui/icons@npm:^2.1.0":
+  version: 2.2.6
+  resolution: "@chakra-ui/icons@npm:2.2.6"
   peerDependencies:
     "@chakra-ui/react": ">=2.0.0"
     react: ">=18"
-  checksum: 10c0/db1aa925e9e22efe12d2417df2b21337f4cb6e6de0a2ba641bc4c3c36dbebb39ec6e6ce9b82f79f3a5d85e988779784468f8b604614170dee1b57c66ea400f9e
+  checksum: 10c0/588d013ac21f53430bf8f03530c7355c67bb4d7e245c86e5b9b93018d6373f4ef64ce6557b5f39185998969539101a8957b6a367d01175a3238f11c421fe8ee9
   languageName: node
   linkType: hard
 
-"@chakra-ui/react@npm:^2.7.2":
+"@chakra-ui/react@npm:^2.8.0":
   version: 2.10.9
   resolution: "@chakra-ui/react@npm:2.10.9"
   dependencies:
@@ -578,7 +578,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/react@npm:^11.11.1":
+"@emotion/react@npm:^11.14.0":
   version: 11.14.0
   resolution: "@emotion/react@npm:11.14.0"
   dependencies:
@@ -619,7 +619,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/styled@npm:^11.11.0":
+"@emotion/styled@npm:^11.14.0":
   version: 11.14.0
   resolution: "@emotion/styled@npm:11.14.0"
   dependencies:
@@ -1343,13 +1343,6 @@ __metadata:
   version: 2.11.8
   resolution: "@popperjs/core@npm:2.11.8"
   checksum: 10c0/4681e682abc006d25eb380d0cf3efc7557043f53b6aea7a5057d0d1e7df849a00e281cd8ea79c902a35a414d7919621fc2ba293ecec05f413598e0b23d5a1e63
-  languageName: node
-  linkType: hard
-
-"@remix-run/router@npm:1.23.0":
-  version: 1.23.0
-  resolution: "@remix-run/router@npm:1.23.0"
-  checksum: 10c0/eaef5cb46a1e413f7d1019a75990808307e08e53a39d4cf69c339432ddc03143d725decef3d6b9b5071b898da07f72a4a57c4e73f787005fcf10162973d8d7d7
   languageName: node
   linkType: hard
 
@@ -2526,6 +2519,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cookie@npm:^1.0.1":
+  version: 1.0.2
+  resolution: "cookie@npm:1.0.2"
+  checksum: 10c0/fd25fe79e8fbcfcaf6aa61cd081c55d144eeeba755206c058682257cb38c4bd6795c6620de3f064c740695bb65b7949ebb1db7a95e4636efb8357a335ad3f54b
+  languageName: node
+  linkType: hard
+
 "copy-to-clipboard@npm:3.3.3":
   version: 3.3.3
   resolution: "copy-to-clipboard@npm:3.3.3"
@@ -3348,11 +3348,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"framer-motion@npm:^12.14.0":
-  version: 12.14.0
-  resolution: "framer-motion@npm:12.14.0"
+"framer-motion@npm:^12.15.0":
+  version: 12.15.0
+  resolution: "framer-motion@npm:12.15.0"
   dependencies:
-    motion-dom: "npm:^12.14.0"
+    motion-dom: "npm:^12.15.0"
     motion-utils: "npm:^12.12.1"
     tslib: "npm:^2.4.0"
   peerDependencies:
@@ -3366,7 +3366,7 @@ __metadata:
       optional: true
     react-dom:
       optional: true
-  checksum: 10c0/c6dc690bfd6737bb816f36b1ff05b379e5533b1df6fcfe2aed5537e7f30b069087313cdefb4006952412ee997bd40733a24d724b5cc12a69cf489219dad9de90
+  checksum: 10c0/b4e54a06d2ceb8ebccd0c79c4ab080ae5dab5fcaee6af0c6a2070dc922054a2403290914f0179b4a250c309654e3fc1f9f173d98e0bc4a78a1f42576013f586c
   languageName: node
   linkType: hard
 
@@ -3383,10 +3383,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "frontend@workspace:."
   dependencies:
-    "@chakra-ui/icons": "npm:2.2.4"
-    "@chakra-ui/react": "npm:^2.7.2"
-    "@emotion/react": "npm:^11.11.1"
-    "@emotion/styled": "npm:^11.11.0"
+    "@chakra-ui/icons": "npm:^2.1.0"
+    "@chakra-ui/react": "npm:^2.8.0"
+    "@emotion/react": "npm:^11.14.0"
+    "@emotion/styled": "npm:^11.14.0"
     "@eslint/js": "npm:^9.25.0"
     "@testing-library/dom": "npm:^10.4.0"
     "@testing-library/jest-dom": "npm:^6.6.3"
@@ -3402,14 +3402,14 @@ __metadata:
     eslint: "npm:^9.25.0"
     eslint-plugin-react-hooks: "npm:^5.2.0"
     eslint-plugin-react-refresh: "npm:^0.4.19"
-    framer-motion: "npm:^12.14.0"
+    framer-motion: "npm:^12.15.0"
     globals: "npm:^16.0.0"
     jest: "npm:^29.7.0"
     jest-environment-jsdom: "npm:^29.7.0"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
     react-icons: "npm:^5.5.0"
-    react-router-dom: "npm:^6.30.1"
+    react-router-dom: "npm:^7.6.1"
     ts-jest: "npm:^29.2.5"
     typescript: "npm:^5.8.3"
     typescript-eslint: "npm:^8.30.1"
@@ -4904,12 +4904,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"motion-dom@npm:^12.14.0":
-  version: 12.14.0
-  resolution: "motion-dom@npm:12.14.0"
+"motion-dom@npm:^12.15.0":
+  version: 12.15.0
+  resolution: "motion-dom@npm:12.15.0"
   dependencies:
     motion-utils: "npm:^12.12.1"
-  checksum: 10c0/a51367ae45af014f80e2ec3151dd81f259b980a56621a78cd9ea80bfaf6d9e97b137e2e32251d5a70ce82914067b5d9b54d3a146a2fdc563c3e132eba89d7ac9
+  checksum: 10c0/b6cc4c158f5e37d4da6d33044642fa5dbdb6b331b5a1c4d4d738770c12cb56a700c839af64c81de2a69bea7832693da5705612f6e15f5b04fac55d0339eb84d2
   languageName: node
   linkType: hard
 
@@ -5469,27 +5469,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-dom@npm:^6.30.1":
-  version: 6.30.1
-  resolution: "react-router-dom@npm:6.30.1"
+"react-router-dom@npm:^7.6.1":
+  version: 7.6.1
+  resolution: "react-router-dom@npm:7.6.1"
   dependencies:
-    "@remix-run/router": "npm:1.23.0"
-    react-router: "npm:6.30.1"
+    react-router: "npm:7.6.1"
   peerDependencies:
-    react: ">=16.8"
-    react-dom: ">=16.8"
-  checksum: 10c0/e9e1297236b0faa864424ad7d51c392fc6e118595d4dad4cd542fd217c479a81601a81c6266d5801f04f9e154de02d3b094fc22ccb544e755c2eb448fab4ec6b
+    react: ">=18"
+    react-dom: ">=18"
+  checksum: 10c0/9d448d82d73c18475c8e3e2f93cf9dd16ca0488379e295f5a949aa849aaf770eb6257d48f2aef2c62ac1635e8ccddd0fa53173c2479525305eb656936f330812
   languageName: node
   linkType: hard
 
-"react-router@npm:6.30.1":
-  version: 6.30.1
-  resolution: "react-router@npm:6.30.1"
+"react-router@npm:7.6.1":
+  version: 7.6.1
+  resolution: "react-router@npm:7.6.1"
   dependencies:
-    "@remix-run/router": "npm:1.23.0"
+    cookie: "npm:^1.0.1"
+    set-cookie-parser: "npm:^2.6.0"
   peerDependencies:
-    react: ">=16.8"
-  checksum: 10c0/0414326f2d8e0c107fb4603cf4066dacba6a1f6f025c6e273f003e177b2f18888aca3de06d9b5522908f0e41de93be1754c37e82aa97b3a269c4742c08e82539
+    react: ">=18"
+    react-dom: ">=18"
+  peerDependenciesMeta:
+    react-dom:
+      optional: true
+  checksum: 10c0/9968dcccc6695671cb216a74a756d717f47d5b8613869be72764966c2dc252ce12aa91a5f74838776b78d65a2297d7d5455c26a3ed78a380897905383b30c7d8
   languageName: node
   linkType: hard
 
@@ -5732,6 +5736,13 @@ __metadata:
   bin:
     semver: bin/semver.js
   checksum: 10c0/aca305edfbf2383c22571cb7714f48cadc7ac95371b4b52362fb8eeffdfbc0de0669368b82b2b15978f8848f01d7114da65697e56cd8c37b0dab8c58e543f9ea
+  languageName: node
+  linkType: hard
+
+"set-cookie-parser@npm:^2.6.0":
+  version: 2.7.1
+  resolution: "set-cookie-parser@npm:2.7.1"
+  checksum: 10c0/060c198c4c92547ac15988256f445eae523f57f2ceefeccf52d30d75dedf6bff22b9c26f756bd44e8e560d44ff4ab2130b178bd2e52ef5571bf7be3bd7632d9a
   languageName: node
   linkType: hard
 

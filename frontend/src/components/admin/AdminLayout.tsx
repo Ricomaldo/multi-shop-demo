@@ -1,65 +1,28 @@
-import {
-  Box,
-  Flex,
-  IconButton,
-  useBreakpointValue,
-  useDisclosure,
-} from "@chakra-ui/react";
-import { useState } from "react";
-import { FiMenu } from "react-icons/fi";
+import { Box, Flex, useDisclosure } from "@chakra-ui/react";
+import React from "react";
 import { Outlet } from "react-router-dom";
-import { AdminDualSelectorProvider } from "../../contexts/AdminDualSelectorContext";
-import { AdminShopProvider } from "../../contexts/AdminShopContext";
 import AdminSidebar from "./AdminSidebar";
 
-export default function AdminLayout() {
-  const { isOpen, onToggle } = useDisclosure(); // Pour mobile
-  const [isCollapsed, setIsCollapsed] = useState(false); // Pour desktop
-  const isMobile = useBreakpointValue({ base: true, md: false });
+interface AdminLayoutProps {
+  children?: React.ReactNode;
+}
 
-  const handleToggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+export default function AdminLayout({ children }: AdminLayoutProps) {
+  const { isOpen, onToggle } = useDisclosure();
+  const { isOpen: isCollapsed, onToggle: onToggleCollapse } = useDisclosure();
 
   return (
-    <AdminShopProvider>
-      <AdminDualSelectorProvider>
-        <Flex h="100vh" overflow="hidden">
-          <AdminSidebar
-            isOpen={isOpen}
-            onToggle={onToggle}
-            isCollapsed={isCollapsed}
-            onToggleCollapse={handleToggleCollapse}
-          />
+    <Flex h="100vh" bg="gray.50">
+      <AdminSidebar
+        isOpen={isOpen}
+        onToggle={onToggle}
+        isCollapsed={isCollapsed}
+        onToggleCollapse={onToggleCollapse}
+      />
 
-          <Box flex="1" overflow="auto" position="relative">
-            {/* Header mobile avec bouton menu */}
-            {isMobile && (
-              <Box
-                position="sticky"
-                top="0"
-                bg="white"
-                borderBottom="1px"
-                borderColor="gray.200"
-                p={4}
-                zIndex="997"
-              >
-                <IconButton
-                  aria-label="Ouvrir menu"
-                  icon={<FiMenu />}
-                  variant="ghost"
-                  onClick={onToggle}
-                />
-              </Box>
-            )}
-
-            {/* Contenu principal */}
-            <Box p={{ base: 4, md: 6, lg: 8 }}>
-              <Outlet />
-            </Box>
-          </Box>
-        </Flex>
-      </AdminDualSelectorProvider>
-    </AdminShopProvider>
+      <Box flex="1" overflow="auto" bg="gray.50">
+        <Box p={{ base: 4, md: 6 }}>{children || <Outlet />}</Box>
+      </Box>
+    </Flex>
   );
 }

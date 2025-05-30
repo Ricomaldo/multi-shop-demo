@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 import type { Product, Shop } from "../../../../shared/types";
 import { SharedProductCard } from "./SharedProductCard";
 
-interface ProductGridProps {
+interface SharedProductGridProps {
   products: Product[];
   shop: Shop;
   onAddToCart?: (product: Product) => void;
@@ -24,8 +24,14 @@ interface ProductGridProps {
  * Grille de produits responsive universelle
  * S'adapte automatiquement selon le contexte, l'univers et l'appareil
  * Optimisée pour tous les cas d'usage : vitrine, admin, preview, dashboard
+ *
+ * @param products - Liste des produits à afficher
+ * @param shop - Boutique pour thématisation automatique
+ * @param isAdminMode - Active le mode admin (actions édition/suppression)
+ * @param variant - compact: admin/preview, standard: défaut, showcase: mise en avant
+ * @param maxItems - Limite le nombre de produits affichés
  */
-export const ProductGrid: React.FC<ProductGridProps> = ({
+export const SharedProductGrid: React.FC<SharedProductGridProps> = ({
   products,
   shop,
   onAddToCart,
@@ -86,21 +92,21 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                 spacing: 6,
               };
 
-            case "tea-shop":
+            case "teaShop":
               // Thés : grille dense pour montrer la variété
               return {
                 columns: { base: 1, md: 3, lg: 4, xl: 5 },
                 spacing: 5,
               };
 
-            case "beauty-shop":
+            case "beautyShop":
               // Cosmétiques : grille élégante avec espace
               return {
                 columns: { base: 1, md: 2, lg: 3, xl: 4 },
                 spacing: 8,
               };
 
-            case "herb-shop":
+            case "herbShop":
               // Herboristerie : grille naturelle et aérée
               return {
                 columns: { base: 1, md: 2, lg: 3, xl: 4 },

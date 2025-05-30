@@ -82,7 +82,7 @@ model Merchant {
 
 model Shop {
   id         String @id @default(cuid())
-  shopType   String // brewery, tea-shop, etc.
+  shopType   String // brewery, teaShop, etc.
   merchant   Merchant
   products   Product[]
   categories Category[]
@@ -93,7 +93,7 @@ model Shop {
 
 **Contexte requis :**
 
-- Toujours spécifier l'univers cible (`brewery`, `tea-shop`, etc.)
+- Toujours spécifier l'univers cible (`brewery`, `teaShop`, etc.)
 - Préciser l'interface (vitrine/backoffice)
 - Indiquer le niveau multi-boutique si pertinent
 
@@ -101,7 +101,7 @@ model Shop {
 
 - `@code brewery vitrine` - code pour brasserie côté vitrine
 - `@admin multi-shop` - interface admin multi-boutique
-- `@data tea-shop` - structure données salon de thé
+- `@data teaShop` - structure données salon de thé
 
 ## 📝 Sections à Compléter
 

@@ -1,4 +1,4 @@
-import { ArrowBackIcon, CheckIcon, CloseIcon } from "@chakra-ui/icons";
+import { ArrowBackIcon, SearchIcon } from "@chakra-ui/icons";
 import {
   Badge,
   Box,
@@ -11,45 +11,55 @@ import {
   Heading,
   IconButton,
   Input,
+  InputGroup,
+  InputLeftElement,
+  Select,
   Text,
-  Textarea,
   Tooltip,
   useToast,
   VStack,
+  Wrap,
+  WrapItem,
 } from "@chakra-ui/react";
 import axios from "axios";
-import type { ChangeEvent } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { Product } from "../../../../shared/types";
 import { AdminProductList } from "../../components/admin";
 import AdminPreviewLayout from "../../components/admin/AdminPreviewLayout";
+import { AdminProductForm } from "../../components/admin/AdminProductForm";
 import AdminProductPreview from "../../components/admin/AdminProductPreview";
-import {
-  SharedAdvancedFilters,
-  SharedCategoryFilter,
-} from "../../components/shared";
+import { useUniverse } from "../../contexts/UniverseContext";
 import {
   useAdvancedProductFilters,
   useProductPreview,
   useShopData,
 } from "../../hooks";
 import type { ProductFilters } from "../../services/adminProductService";
+import {
+  getUniverseColorScheme,
+  shopTypeToUniverse,
+} from "../../utils/universeMapping";
 
 export default function Products() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: "0.00" as string,
-  });
   const [isLoading, setIsLoading] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState<ProductFilters>({});
   const [searchTerm, setSearchTerm] = useState("");
   const toast = useToast();
 
+  const { universe } = useUniverse();
+
   // Utiliser les hooks personnalisés pour la gestion des données
   const { shops, products, loading, error, refreshData } = useShopData();
-  const currentShop = shops[0]; // Prendre la première boutique pour l'admin
+
+  // Filtrer les boutiques selon l'univers sélectionné
+  const filteredShops = useMemo(
+    () =>
+      shops.filter((shop) => shopTypeToUniverse(shop.shopType) === universe),
+    [shops, universe]
+  );
+
+  const currentShop = filteredShops[0]; // Prendre la première boutique de l'univers
   const shopProducts = useMemo(
     () => products.filter((p) => p.shopId === currentShop?.id),
     [products, currentShop]
@@ -65,39 +75,142 @@ export default function Products() {
     applyAdvancedFilters,
   } = useAdvancedProductFilters(shopProducts, currentShop?.id);
 
-  const colorScheme = "blue";
+  // Thème couleur selon l'univers
+  const colorScheme = getUniverseColorScheme(universe);
 
   // Hook pour l'aperçu temps réel
   const { previewData, hasChanges, updatePreview, resetChanges } =
     useProductPreview();
 
+  // Extraction dynamique des options selon l'univers
+  const dynamicOptions = useMemo(() => {
+    const options: Record<string, string[]> = {};
+
+    shopProducts.forEach((product) => {
+      if (product.attributes) {
+        try {
+          const attrs = JSON.parse(product.attributes);
+
+          switch (universe) {
+            case "brewery":
+              if (
+                attrs.type_houblon &&
+                !options.type_houblon?.includes(attrs.type_houblon)
+              ) {
+                options.type_houblon = [
+                  ...(options.type_houblon || []),
+                  attrs.type_houblon,
+                ];
+              }
+              break;
+            case "teaShop":
+              if (
+                attrs.origine_plantation &&
+                !options.origine_plantation?.includes(attrs.origine_plantation)
+              ) {
+                options.origine_plantation = [
+                  ...(options.origine_plantation || []),
+                  attrs.origine_plantation,
+                ];
+              }
+              if (
+                attrs.grade_qualite &&
+                !options.grade_qualite?.includes(attrs.grade_qualite)
+              ) {
+                options.grade_qualite = [
+                  ...(options.grade_qualite || []),
+                  attrs.grade_qualite,
+                ];
+              }
+              break;
+            case "beautyShop":
+              if (
+                attrs.type_peau &&
+                !options.type_peau?.includes(attrs.type_peau)
+              ) {
+                options.type_peau = [
+                  ...(options.type_peau || []),
+                  attrs.type_peau,
+                ];
+              }
+              break;
+            case "herbShop":
+              if (
+                attrs.usage_traditionnel &&
+                !options.usage_traditionnel?.includes(attrs.usage_traditionnel)
+              ) {
+                options.usage_traditionnel = [
+                  ...(options.usage_traditionnel || []),
+                  attrs.usage_traditionnel,
+                ];
+              }
+              if (
+                attrs.forme_galenique &&
+                !options.forme_galenique?.includes(attrs.forme_galenique)
+              ) {
+                options.forme_galenique = [
+                  ...(options.forme_galenique || []),
+                  attrs.forme_galenique,
+                ];
+              }
+              break;
+          }
+        } catch {
+          // Ignore les erreurs de parsing
+        }
+      }
+    });
+
+    // Trier les options
+    Object.keys(options).forEach((key) => {
+      options[key].sort();
+    });
+
+    return options;
+  }, [shopProducts, universe]);
+
+  // Gestionnaires pour les filtres identiques à la vitrine
+  const handleFiltersChange = (newFilters: ProductFilters) => {
+    setAdvancedFilters(newFilters);
+    applyAdvancedFilters(newFilters, searchTerm);
+  };
+
+  const handleSearchChange = (search: string) => {
+    setSearchTerm(search);
+    applyAdvancedFilters(advancedFilters, search);
+  };
+
+  const handleResetFilters = () => {
+    setAdvancedFilters({});
+    setSearchTerm("");
+    resetFilters();
+  };
+
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
+    // Initialiser l'aperçu avec les données du produit
     const initialFormData = {
       name: product.name,
       description: product.description || "",
       price: product.price.toString(),
     };
-    setFormData(initialFormData);
-
-    // Initialiser l'aperçu avec les données du produit
     updatePreview(initialFormData, product.category?.name);
     resetChanges();
   };
 
-  const handleSave = async () => {
-    if (!editingProduct) return;
+  const handleSave = async (productData: Partial<Product>) => {
+    if (!editingProduct || !currentShop) return;
 
     setIsLoading(true);
     try {
       await axios.put(
         `http://localhost:3001/api/products/${editingProduct.id}`,
-        { ...formData, price: parseFloat(String(formData.price)) }
+        productData
       );
 
       toast({
         title: "Produit modifié",
-        description: `${formData.name} a été mis à jour avec succès`,
+        description: `${productData.name} a été mis à jour avec succès`,
         status: "success",
         duration: 3000,
         isClosable: true,
@@ -121,43 +234,232 @@ export default function Products() {
 
   const handleCancel = () => {
     setEditingProduct(null);
-    setFormData({ name: "", description: "", price: "0.00" });
     resetChanges();
   };
 
-  // Fonction pour mettre à jour les données et l'aperçu
-  const handleFormChange = (field: keyof typeof formData, value: string) => {
-    const newFormData = { ...formData, [field]: value };
-    setFormData(newFormData);
-    updatePreview(newFormData, editingProduct?.category?.name);
-  };
+  // Rendu des filtres spécialisés selon l'univers (identique à la vitrine)
+  const renderUniverseFilters = () => {
+    switch (universe) {
+      case "brewery":
+        return (
+          <>
+            {/* Filtre par intensité */}
+            <Select
+              placeholder="Intensité"
+              size="sm"
+              maxW="150px"
+              bg="white"
+              value={advancedFilters.degre_alcool_ranges?.[0] || ""}
+              onChange={(e) => {
+                const value = e.target.value;
+                handleFiltersChange({
+                  ...advancedFilters,
+                  degre_alcool_ranges: value ? [value] : undefined,
+                });
+              }}
+            >
+              <option value="light">Légère (3-5°)</option>
+              <option value="medium">Modérée (5-7°)</option>
+              <option value="strong">Forte (7-10°)</option>
+              <option value="very-strong">Très forte (10°+)</option>
+            </Select>
 
-  // Gestionnaires pour les filtres avancés
-  const handleFiltersChange = (newFilters: ProductFilters) => {
-    setAdvancedFilters(newFilters);
-    applyAdvancedFilters(newFilters, searchTerm);
-  };
+            {/* Filtre par amertume */}
+            <Select
+              placeholder="Amertume"
+              size="sm"
+              maxW="150px"
+              bg="white"
+              value={advancedFilters.amertume_ibu_ranges?.[0] || ""}
+              onChange={(e) => {
+                const value = e.target.value;
+                handleFiltersChange({
+                  ...advancedFilters,
+                  amertume_ibu_ranges: value ? [value] : undefined,
+                });
+              }}
+            >
+              <option value="low">Douce (10-25 IBU)</option>
+              <option value="medium">Équilibrée (25-45 IBU)</option>
+              <option value="high">Amère (45-70 IBU)</option>
+              <option value="very-high">Très amère (70+ IBU)</option>
+            </Select>
 
-  const handleSearchChange = (search: string) => {
-    setSearchTerm(search);
-    applyAdvancedFilters(advancedFilters, search);
-  };
+            {/* Filtre par houblon */}
+            <Select
+              placeholder="Houblon"
+              size="sm"
+              maxW="150px"
+              bg="white"
+              value={advancedFilters.type_houblon || ""}
+              onChange={(e) =>
+                handleFiltersChange({
+                  ...advancedFilters,
+                  type_houblon: e.target.value || undefined,
+                })
+              }
+            >
+              {dynamicOptions.type_houblon?.map((houblon) => (
+                <option key={houblon} value={houblon}>
+                  {houblon}
+                </option>
+              ))}
+            </Select>
+          </>
+        );
 
-  const handleResetFilters = () => {
-    setAdvancedFilters({});
-    setSearchTerm("");
-    resetFilters();
-  };
+      case "teaShop":
+        return (
+          <>
+            {/* Filtre par origine */}
+            <Select
+              placeholder="Origine"
+              size="sm"
+              maxW="150px"
+              bg="white"
+              value={advancedFilters.origine_plantation || ""}
+              onChange={(e) =>
+                handleFiltersChange({
+                  ...advancedFilters,
+                  origine_plantation: e.target.value || undefined,
+                })
+              }
+            >
+              {dynamicOptions.origine_plantation?.map((origine) => (
+                <option key={origine} value={origine}>
+                  {origine}
+                </option>
+              ))}
+            </Select>
 
-  // Effet pour mettre à jour l'aperçu quand les données changent
-  useEffect(() => {
-    if (editingProduct) {
-      updatePreview(formData, editingProduct.category?.name);
+            {/* Filtre par grade */}
+            <Select
+              placeholder="Grade"
+              size="sm"
+              maxW="150px"
+              bg="white"
+              value={advancedFilters.grade_qualite || ""}
+              onChange={(e) =>
+                handleFiltersChange({
+                  ...advancedFilters,
+                  grade_qualite: e.target.value || undefined,
+                })
+              }
+            >
+              {dynamicOptions.grade_qualite?.map((grade) => (
+                <option key={grade} value={grade}>
+                  {grade}
+                </option>
+              ))}
+            </Select>
+          </>
+        );
+
+      case "beautyShop":
+        return (
+          <>
+            {/* Filtre par type de peau */}
+            <Select
+              placeholder="Type de peau"
+              size="sm"
+              maxW="150px"
+              bg="white"
+              value={advancedFilters.type_peau || ""}
+              onChange={(e) =>
+                handleFiltersChange({
+                  ...advancedFilters,
+                  type_peau: e.target.value || undefined,
+                })
+              }
+            >
+              {dynamicOptions.type_peau?.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </Select>
+
+            {/* Filtre bio */}
+            <Select
+              placeholder="Bio"
+              size="sm"
+              maxW="120px"
+              bg="white"
+              value={
+                advancedFilters.certification_bio !== undefined
+                  ? String(advancedFilters.certification_bio)
+                  : ""
+              }
+              onChange={(e) => {
+                const value = e.target.value;
+                handleFiltersChange({
+                  ...advancedFilters,
+                  certification_bio:
+                    value === "" ? undefined : value === "true",
+                });
+              }}
+            >
+              <option value="true">Bio</option>
+              <option value="false">Conventionnel</option>
+            </Select>
+          </>
+        );
+
+      case "herbShop":
+        return (
+          <>
+            {/* Filtre par usage */}
+            <Select
+              placeholder="Usage"
+              size="sm"
+              maxW="150px"
+              bg="white"
+              value={advancedFilters.usage_traditionnel || ""}
+              onChange={(e) =>
+                handleFiltersChange({
+                  ...advancedFilters,
+                  usage_traditionnel: e.target.value || undefined,
+                })
+              }
+            >
+              {dynamicOptions.usage_traditionnel?.map((usage) => (
+                <option key={usage} value={usage}>
+                  {usage}
+                </option>
+              ))}
+            </Select>
+
+            {/* Filtre par forme */}
+            <Select
+              placeholder="Forme"
+              size="sm"
+              maxW="150px"
+              bg="white"
+              value={advancedFilters.forme_galenique || ""}
+              onChange={(e) =>
+                handleFiltersChange({
+                  ...advancedFilters,
+                  forme_galenique: e.target.value || undefined,
+                })
+              }
+            >
+              {dynamicOptions.forme_galenique?.map((forme) => (
+                <option key={forme} value={forme}>
+                  {forme}
+                </option>
+              ))}
+            </Select>
+          </>
+        );
+
+      default:
+        return null;
     }
-  }, [formData, editingProduct, updatePreview]);
+  };
 
-  if (editingProduct) {
-    // Contenu du formulaire d'édition
+  // Mode édition avec split view et aperçu temps réel
+  if (editingProduct && currentShop) {
+    // Contenu du formulaire enrichi avec tous les attributs spécialisés
     const editContent = (
       <VStack spacing={6} align="stretch">
         {/* En-tête avec bouton retour */}
@@ -171,110 +473,32 @@ export default function Products() {
             />
           </Tooltip>
           <VStack align="start" spacing={1} flex="1">
-            <Heading size="md">Modifier le produit</Heading>
+            <Heading size="md">✏️ Modifier le produit</Heading>
             <Text color="gray.600" fontSize="sm">
-              Boutique : {currentShop?.name}
+              {currentShop.name} • Tous les attributs spécialisés
             </Text>
           </VStack>
         </Flex>
 
         <Divider />
 
-        {/* Formulaire */}
-        <Box>
-          <Text mb={2} fontWeight="medium">
-            Nom du produit
-          </Text>
-          <Input
-            value={formData.name}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              handleFormChange("name", e.target.value)
-            }
-            placeholder="Ex: Blonde de Garde"
-            size="lg"
-          />
-        </Box>
-
-        <Box>
-          <Text mb={2} fontWeight="medium">
-            Description
-          </Text>
-          <Textarea
-            value={formData.description}
-            onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-              handleFormChange("description", e.target.value)
-            }
-            placeholder="Décrivez votre produit..."
-            rows={4}
-            resize="vertical"
-          />
-        </Box>
-
-        <Box>
-          <Text mb={2} fontWeight="medium">
-            Prix (€)
-          </Text>
-          <Input
-            type="text"
-            value={formData.price}
-            inputMode="decimal"
-            pattern="^[0-9]*[.,]?[0-9]{0,2}$"
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              const val = e.target.value.replace(",", ".");
-              if (/^\d*\.?\d{0,2}$/.test(val) || val === "") {
-                handleFormChange("price", val);
-              }
-            }}
-            onBlur={() => {
-              const formattedPrice =
-                formData.price !== ""
-                  ? parseFloat(String(formData.price)).toFixed(2)
-                  : "0.00";
-              handleFormChange("price", formattedPrice);
-            }}
-            placeholder="Ex: 4.50"
-            size="lg"
-          />
-        </Box>
-
-        <Divider />
-
-        {/* Boutons d'action */}
-        <Flex
-          direction={{ base: "column", sm: "row" }}
-          justify="flex-end"
-          gap={3}
-        >
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            leftIcon={<CloseIcon />}
-            size="md"
-            w={{ base: "full", sm: "auto" }}
-          >
-            Annuler
-          </Button>
-          <Button
-            colorScheme={colorScheme}
-            onClick={handleSave}
-            isLoading={isLoading}
-            loadingText="Sauvegarde..."
-            leftIcon={<CheckIcon />}
-            size="md"
-            w={{ base: "full", sm: "auto" }}
-          >
-            Sauvegarder
-          </Button>
-        </Flex>
+        {/* Formulaire riche avec synchronisation aperçu */}
+        <AdminProductForm
+          product={editingProduct}
+          shop={currentShop}
+          onSave={handleSave}
+          onCancel={handleCancel}
+          isLoading={isLoading}
+        />
       </VStack>
     );
 
-    // Contenu de l'aperçu
+    // Contenu de l'aperçu temps réel
     const previewContent = (
       <AdminProductPreview
         productData={previewData}
         hasChanges={hasChanges}
-        shopType={currentShop?.shopType}
+        shopType={currentShop.shopType}
       />
     );
 
@@ -331,78 +555,97 @@ export default function Products() {
 
   return (
     <VStack spacing={6} align="stretch">
-      {/* En-tête avec statistiques */}
+      {/* En-tête */}
       <Card>
         <CardBody>
-          <Flex
-            direction={{ base: "column", md: "row" }}
-            justify="space-between"
-            align={{ base: "stretch", md: "center" }}
-            wrap="wrap"
-            gap={4}
-          >
-            <VStack align="start" spacing={1}>
-              <Heading size={{ base: "md", md: "lg" }}>
-                📦 Gestion des Produits
-              </Heading>
-              <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>
-                {currentShop?.name} • {shopProducts.length} produit
-                {shopProducts.length !== 1 ? "s" : ""}
-              </Text>
-            </VStack>
-
-            <Flex
-              direction={{ base: "row", md: "row" }}
-              wrap="wrap"
-              gap={4}
-              justify={{ base: "center", md: "flex-end" }}
-            >
-              <Badge
-                colorScheme="green"
-                p={2}
-                borderRadius="md"
-                fontSize={{ base: "xs", md: "sm" }}
-              >
-                {categories.length} catégorie
-                {categories.length !== 1 ? "s" : ""}
-              </Badge>
-              <Badge
-                colorScheme={colorScheme}
-                p={2}
-                borderRadius="md"
-                fontSize={{ base: "xs", md: "sm" }}
-              >
-                {filteredProducts.length} affiché
-                {filteredProducts.length !== 1 ? "s" : ""}
-              </Badge>
-            </Flex>
-          </Flex>
+          <Heading size={{ base: "md", md: "lg" }}>
+            📦 Gestion des Produits
+          </Heading>
         </CardBody>
       </Card>
 
-      {/* Filtres avancés */}
-      {currentShop && (
-        <SharedAdvancedFilters
-          shop={currentShop}
-          filters={advancedFilters}
-          searchTerm={searchTerm}
-          onFiltersChange={handleFiltersChange}
-          onSearchChange={handleSearchChange}
-          onReset={handleResetFilters}
-          mode="admin"
-        />
-      )}
+      {/* Barre de recherche et filtres - IDENTIQUE à la vitrine */}
+      <VStack spacing={4} w="full">
+        {/* Recherche principale */}
+        <InputGroup size="lg" maxW="500px">
+          <InputLeftElement>
+            <SearchIcon color="gray.400" />
+          </InputLeftElement>
+          <Input
+            placeholder="Rechercher un produit..."
+            value={searchTerm}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            borderRadius="full"
+            bg="white"
+            _focus={{
+              borderColor: `${colorScheme}.400`,
+              boxShadow: `0 0 0 1px var(--chakra-colors-${colorScheme}-400)`,
+            }}
+          />
+        </InputGroup>
 
-      {/* Filtrage par catégorie */}
-      <SharedCategoryFilter
-        categories={categories}
-        selectedCategoryId={selectedCategoryId}
-        onCategoryChange={setSelectedCategoryId}
-        onResetFilters={resetFilters}
-        productCount={filteredProducts.length}
-        colorScheme={colorScheme}
-        mode="admin"
-      />
+        {/* Filtres rapides horizontaux - IDENTIQUE à la vitrine */}
+        <Flex
+          direction={{ base: "column", md: "row" }}
+          gap={4}
+          align="center"
+          justify="center"
+          wrap="wrap"
+        >
+          {/* Filtre par catégorie */}
+          <Select
+            placeholder="Catégorie"
+            size="sm"
+            maxW="150px"
+            bg="white"
+            value={selectedCategoryId || ""}
+            onChange={(e) => setSelectedCategoryId(e.target.value || null)}
+          >
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </Select>
+
+          {/* Filtres spécialisés selon l'univers */}
+          {renderUniverseFilters()}
+
+          {/* Reset */}
+          {(selectedCategoryId ||
+            Object.keys(advancedFilters).length > 0 ||
+            searchTerm) && (
+            <Button
+              size="sm"
+              variant="ghost"
+              colorScheme={colorScheme}
+              onClick={handleResetFilters}
+            >
+              Effacer tout
+            </Button>
+          )}
+        </Flex>
+      </VStack>
+
+      {/* Stats et badges - IDENTIQUE à la vitrine */}
+      <Wrap justify="center" spacing={4}>
+        <WrapItem>
+          <Badge colorScheme={colorScheme} px={3} py={1}>
+            {filteredProducts.length} résultat
+            {filteredProducts.length !== 1 ? "s" : ""}
+          </Badge>
+        </WrapItem>
+        <WrapItem>
+          <Badge colorScheme="blue" px={3} py={1}>
+            Mode Admin
+          </Badge>
+        </WrapItem>
+        <WrapItem>
+          <Badge colorScheme="green" px={3} py={1}>
+            Aperçu temps réel
+          </Badge>
+        </WrapItem>
+      </Wrap>
 
       {/* Liste des produits */}
       <Card>
@@ -423,14 +666,18 @@ export default function Products() {
                 color="gray.500"
                 textAlign="center"
               >
-                {selectedCategoryId
-                  ? "Aucun produit dans cette catégorie"
+                {selectedCategoryId ||
+                Object.keys(advancedFilters).length > 0 ||
+                searchTerm
+                  ? "Aucun produit ne correspond à vos critères"
                   : "Aucun produit disponible"}
               </Text>
-              {selectedCategoryId && (
+              {(selectedCategoryId ||
+                Object.keys(advancedFilters).length > 0 ||
+                searchTerm) && (
                 <Button
                   variant="outline"
-                  onClick={resetFilters}
+                  onClick={handleResetFilters}
                   size={{ base: "sm", md: "md" }}
                 >
                   Voir tous les produits

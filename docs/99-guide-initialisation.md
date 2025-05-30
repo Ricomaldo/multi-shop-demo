@@ -110,7 +110,7 @@ model Merchant {
 model Shop {
   id         String    @id @default(cuid())
   name       String
-  shopType   String    // brewery, tea-shop, beauty-shop, herb-shop
+  shopType   String    // brewery, teaShop, beatyShop, herbShop
   merchant   Merchant  @relation(fields: [merchantId], references: [id])
   merchantId String
   products   Product[]
@@ -214,7 +214,7 @@ async function main() {
     },
   });
 
-  // Crée les boutiques (brewery et tea-shop pour commencer)
+  // Crée les boutiques (brewery et teaShop pour commencer)
   for (const [shopType, config] of Object.entries(shopConfigs)) {
     const shop = await prisma.shop.create({
       data: {
@@ -410,7 +410,7 @@ function App() {
         <Route path="products" element={<Products />} />
       </Route>
       <Route path="/store/brewery" element={<Brewery />} />
-      <Route path="/store/tea-shop" element={<TeaShop />} />
+      <Route path="/store/teaShop" element={<TeaShop />} />
     </Routes>
   );
 }
@@ -439,19 +439,19 @@ const shopTypes = [
     description: "Houblon & Tradition",
   },
   {
-    id: "tea-shop",
+    id: "teaShop",
     name: "Salon de Thé",
     color: "green",
     description: "Les Jardins de Darjeeling",
   },
   {
-    id: "beauty-shop",
+    id: "beatyShop",
     name: "Institut Beauté",
     color: "pink",
     description: "L'Écrin de Jade",
   },
   {
-    id: "herb-shop",
+    id: "herbShop",
     name: "Herboristerie",
     color: "teal",
     description: "Herboristerie du Moulin Vert",

@@ -31,6 +31,12 @@ import {
   hasLowStock,
   isOutOfStock,
 } from "../../utils/productAttributes";
+import {
+  getUniverseColorScheme,
+  getUniverseIcon,
+  getUniverseName,
+  shopTypeToUniverse,
+} from "../../utils/universeMapping";
 
 interface ProductDetailViewProps {
   product: Product;
@@ -39,6 +45,16 @@ interface ProductDetailViewProps {
   onGoBack?: () => void;
 }
 
+/**
+ * Vue détaillée d'un produit pour la vitrine
+ * Affiche toutes les informations et attributs métier du produit
+ * Utilise la thématisation automatique selon l'univers de la boutique
+ *
+ * @param product - Produit à afficher
+ * @param shop - Boutique pour la thématisation
+ * @param onAddToCart - Callback pour ajouter au panier
+ * @param onGoBack - Callback pour retour à la liste
+ */
 export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   product,
   shop,
@@ -55,54 +71,11 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   const outOfStock = isOutOfStock(product);
   const lowStock = hasLowStock(product);
 
-  // Couleur thématique selon le type de boutique
-  const getThemeColor = () => {
-    switch (shop.shopType) {
-      case "brewery":
-        return "orange";
-      case "teaShop":
-        return "green";
-      case "beautyShop":
-        return "pink";
-      case "herbShop":
-        return "green";
-      default:
-        return "blue";
-    }
-  };
-
-  // Icône selon le type de boutique
-  const getShopTypeIcon = () => {
-    switch (shop.shopType) {
-      case "brewery":
-        return "🍺";
-      case "teaShop":
-        return "🍵";
-      case "beautyShop":
-        return "💄";
-      case "herbShop":
-        return "🌿";
-      default:
-        return "🏪";
-    }
-  };
-
-  const getShopTypeName = () => {
-    switch (shop.shopType) {
-      case "brewery":
-        return "Brasserie";
-      case "teaShop":
-        return "Salon de thé";
-      case "beautyShop":
-        return "Institut beauté";
-      case "herbShop":
-        return "Herboristerie";
-      default:
-        return "Boutique";
-    }
-  };
-
-  const themeColor = getThemeColor();
+  // Utilisation du helper centralisé pour l'univers
+  const universe = shopTypeToUniverse(shop.shopType);
+  const themeColor = getUniverseColorScheme(universe);
+  const shopIcon = getUniverseIcon(universe);
+  const shopTypeName = getUniverseName(universe);
 
   // Grouper les attributs par catégorie
   const attributesByCategory = allAttributes.reduce((acc, attr) => {
@@ -124,7 +97,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           >
             <BreadcrumbItem>
               <BreadcrumbLink onClick={onGoBack} cursor="pointer">
-                {getShopTypeName()} {shop.name}
+                {shopTypeName} {shop.name}
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbItem isCurrentPage>
@@ -161,7 +134,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 borderColor={borderColor}
               >
                 <Text fontSize="8xl" opacity={0.3}>
-                  {getShopTypeIcon()}
+                  {shopIcon}
                 </Text>
 
                 {/* Badge stock en overlay */}
@@ -212,9 +185,9 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
               {/* En-tête produit */}
               <Box>
                 <HStack mb={2}>
-                  <Text fontSize="lg">{getShopTypeIcon()}</Text>
+                  <Text fontSize="lg">{shopIcon}</Text>
                   <Text fontSize="sm" color={textColor} fontWeight="medium">
-                    {getShopTypeName()} • {shop.name}
+                    {shopTypeName} • {shop.name}
                   </Text>
                 </HStack>
 
@@ -225,100 +198,4 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 <Text
                   fontSize="3xl"
                   fontWeight="bold"
-                  color={`${themeColor}.500`}
-                  mb={4}
-                >
-                  {product.price.toFixed(2)} €
-                </Text>
-
-                {product.description && (
-                  <Text color={textColor} fontSize="lg" lineHeight="tall">
-                    {product.description}
-                  </Text>
-                )}
-              </Box>
-
-              <Divider />
-
-              {/* Attributs métier par catégorie */}
-              <VStack spacing={4} align="stretch">
-                <Heading size="md" color={`${themeColor}.600`}>
-                  Caractéristiques détaillées
-                </Heading>
-
-                {Object.entries(attributesByCategory).map(
-                  ([category, attributes]) => (
-                    <Card
-                      key={category}
-                      bg={cardBg}
-                      borderColor={borderColor}
-                      borderWidth="1px"
-                    >
-                      <CardHeader pb={2}>
-                        <Heading size="sm" color={`${themeColor}.500`}>
-                          {category}
-                        </Heading>
-                      </CardHeader>
-                      <CardBody pt={0}>
-                        <SimpleGrid columns={1} spacing={3}>
-                          {attributes.map((attr, index) => (
-                            <HStack
-                              key={index}
-                              justify="space-between"
-                              align="start"
-                            >
-                              <Text
-                                fontSize="sm"
-                                color={textColor}
-                                fontWeight="medium"
-                                flex={1}
-                              >
-                                {attr.label}
-                              </Text>
-                              <Text
-                                fontSize="sm"
-                                fontWeight="semibold"
-                                textAlign="right"
-                                flex={1}
-                              >
-                                {attr.value}
-                              </Text>
-                            </HStack>
-                          ))}
-                        </SimpleGrid>
-                      </CardBody>
-                    </Card>
-                  )
-                )}
-              </VStack>
-
-              {/* Informations complémentaires */}
-              <Card
-                bg={`${themeColor}.50`}
-                borderColor={`${themeColor}.200`}
-                borderWidth="1px"
-              >
-                <CardBody>
-                  <VStack spacing={2} align="start">
-                    <Heading size="sm" color={`${themeColor}.700`}>
-                      Informations produit
-                    </Heading>
-                    <Text fontSize="sm" color={`${themeColor}.600`}>
-                      Référence : {product.id.slice(-8).toUpperCase()}
-                    </Text>
-                    <Text fontSize="sm" color={`${themeColor}.600`}>
-                      Boutique : {shop.name}
-                    </Text>
-                    <Text fontSize="sm" color={`${themeColor}.600`}>
-                      Univers : {getShopTypeName()}
-                    </Text>
-                  </VStack>
-                </CardBody>
-              </Card>
-            </VStack>
-          </GridItem>
-        </Grid>
-      </VStack>
-    </Container>
-  );
-};
+                  color={`${themeColor}.500`

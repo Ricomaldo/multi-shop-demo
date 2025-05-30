@@ -29,6 +29,7 @@ import {
   isTeaShopAttributes,
   parseProductAttributes,
 } from "../../utils/productAttributes";
+import { type UniverseIcon } from "../../utils/universeMapping";
 
 interface AdminDashboardProps {
   shops: Shop[];
@@ -241,18 +242,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   // Icônes par type de boutique
-  const getShopTypeIcon = (shopType: string) => {
+  const getShopIcon = (shopType: string): UniverseIcon => {
     switch (shopType) {
       case "brewery":
-        return "🍺";
+        return { emoji: "🍺", label: "bière" };
       case "teaShop":
-        return "🍵";
+        return { emoji: "🍵", label: "thé" };
       case "beautyShop":
-        return "💄";
+        return { emoji: "💄", label: "beauté" };
       case "herbShop":
-        return "🌿";
+        return { emoji: "🌿", label: "herbes" };
       default:
-        return "🏪";
+        return { emoji: "🛍️", label: "boutique" };
     }
   };
 
@@ -276,7 +277,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* Statistiques générales */}
       <Card bg={cardBg} borderColor={borderColor} borderWidth="1px">
         <CardHeader>
-          <Heading size="md">📊 Vue d'ensemble DemoForge</Heading>
+          <Heading size="md">
+            <span role="img" aria-label="statistiques">
+              📊
+            </span>{" "}
+            Vue d'ensemble DemoForge
+          </Heading>
         </CardHeader>
         <CardBody>
           <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
@@ -328,7 +334,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             >
               <CardHeader>
                 <HStack>
-                  <Text fontSize="2xl">{getShopTypeIcon(shopType)}</Text>
+                  <Text fontSize="2xl">
+                    <span role="img" aria-label={getShopIcon(shopType).label}>
+                      {getShopIcon(shopType).emoji}
+                    </span>
+                  </Text>
                   <Heading size="md">{getShopTypeName(shopType)}</Heading>
                 </HStack>
               </CardHeader>

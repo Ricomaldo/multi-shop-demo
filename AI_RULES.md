@@ -43,9 +43,9 @@ Demander quelle est la tâche prioritaire. Une fonctionnalité à la fois.
 ## 🏪 Univers métier
 
 1. brewery (brasserie) - "Houblon & Tradition"
-2. tea-shop (salon de thé) - "Les Jardins de Darjeeling"
-3. beauty-shop (beauté) - "L'Écrin de Jade"
-4. herb-shop (herboristerie) - "Herboristerie du Moulin Vert"
+2. teaShop (salon de thé) - "Les Jardins de Darjeeling"
+3. beatyShop (beauté) - "L'Écrin de Jade"
+4. herbShop (herboristerie) - "Herboristerie du Moulin Vert"
 
 ## 📋 Conventions obligatoires
 

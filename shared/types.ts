@@ -4,6 +4,16 @@ export interface Shop {
   name: string;
   shopType: "brewery" | "teaShop" | "beautyShop" | "herbShop";
   categories: Category[];
+  address?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  openingHours?: OpeningHours | string;
+  description?: string;
+  geoLocation?: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
 export interface Category {
@@ -156,4 +166,22 @@ export interface Merchant {
   name: string;
   email: string;
   shops: Shop[];
+}
+
+export interface OpeningHours {
+  monday?: string;
+  tuesday?: string;
+  wednesday?: string;
+  thursday?: string;
+  friday?: string;
+  saturday?: string;
+  sunday?: string;
+}
+
+export interface ShopCarouselItem {
+  shop: Shop;
+  stockLevel: "high" | "medium" | "low" | "out";
+  totalProducts: number;
+  lowStockCount: number;
+  revenue?: number;
 }

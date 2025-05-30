@@ -31,7 +31,9 @@ import {
 } from "@chakra-ui/react";
 import { useMemo, useState } from "react";
 import type { Category } from "../../../../shared/types";
+import { useUniverse } from "../../contexts/UniverseContext";
 import { useShopData } from "../../hooks";
+import { shopTypeToUniverse } from "../../utils/universeMapping";
 
 export default function Categories() {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -40,9 +42,19 @@ export default function Categories() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
+  const { universe } = useUniverse();
+
   // Utiliser les hooks personnalisés pour la gestion des données
   const { shops, products, loading, error } = useShopData();
-  const currentShop = shops[0];
+
+  // Filtrer les boutiques selon l'univers sélectionné
+  const filteredShops = useMemo(
+    () =>
+      shops.filter((shop) => shopTypeToUniverse(shop.shopType) === universe),
+    [shops, universe]
+  );
+
+  const currentShop = filteredShops[0]; // Prendre la première boutique de l'univers
 
   const shopCategories = useMemo(
     () => currentShop?.categories || [],

@@ -19,7 +19,7 @@ const mockShops: Shop[] = [
   {
     id: "shop-2",
     name: "Les Jardins de Darjeeling",
-    shopType: "tea-shop" as const,
+    shopType: "teaShop" as const,
     categories: [{ id: "cat-3", name: "Thés Verts", shopId: "shop-2" }],
   },
 ];

@@ -100,9 +100,9 @@ describe("AdminProductPreview", () => {
     );
   });
 
-  test("affiche le nom de boutique tea-shop quand shopType est tea-shop", () => {
+  test("affiche le nom de boutique teaShop quand shopType est teaShop", () => {
     render(
-      <AdminProductPreview productData={mockProductData} shopType="tea-shop" />
+      <AdminProductPreview productData={mockProductData} shopType="teaShop" />
     );
 
     expect(screen.getByTestId("shop-name")).toHaveTextContent(
@@ -110,12 +110,9 @@ describe("AdminProductPreview", () => {
     );
   });
 
-  test("affiche le nom de boutique beauty-shop quand shopType est beauty-shop", () => {
+  test("affiche le nom de boutique beatyShop quand shopType est beatyShop", () => {
     render(
-      <AdminProductPreview
-        productData={mockProductData}
-        shopType="beauty-shop"
-      />
+      <AdminProductPreview productData={mockProductData} shopType="beatyShop" />
     );
 
     expect(screen.getByTestId("shop-name")).toHaveTextContent(
@@ -123,9 +120,9 @@ describe("AdminProductPreview", () => {
     );
   });
 
-  test("affiche le nom de boutique herb-shop quand shopType est herb-shop", () => {
+  test("affiche le nom de boutique herbShop quand shopType est herbShop", () => {
     render(
-      <AdminProductPreview productData={mockProductData} shopType="herb-shop" />
+      <AdminProductPreview productData={mockProductData} shopType="herbShop" />
     );
 
     expect(screen.getByTestId("shop-name")).toHaveTextContent(

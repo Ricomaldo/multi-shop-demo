@@ -209,7 +209,7 @@ export function filterByBusinessAttributes(
           return false;
       }
 
-      // Filtres tea-shop
+      // Filtres teaShop
       if (filters.origine_plantation) {
         if (
           !attrs.origine_plantation ||
@@ -225,7 +225,7 @@ export function filterByBusinessAttributes(
           return false;
       }
 
-      // Filtres beauty-shop
+      // Filtres beatyShop
       if (filters.type_peau) {
         if (!attrs.type_peau || attrs.type_peau !== filters.type_peau)
           return false;
@@ -238,7 +238,7 @@ export function filterByBusinessAttributes(
           return false;
       }
 
-      // Filtres herb-shop
+      // Filtres herbShop
       if (filters.usage_traditionnel) {
         if (
           !attrs.usage_traditionnel ||

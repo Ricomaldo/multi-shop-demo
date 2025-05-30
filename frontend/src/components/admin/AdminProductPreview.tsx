@@ -93,7 +93,7 @@ export default function AdminProductPreview({
   const mockShop: Shop = {
     id: "preview-shop",
     name: shopDisplayName,
-    shopType: shopType as "brewery" | "tea-shop" | "beauty-shop" | "herb-shop",
+    shopType: shopType as "brewery" | "teaShop" | "beatyShop" | "herbShop",
     categories: [],
   };
 

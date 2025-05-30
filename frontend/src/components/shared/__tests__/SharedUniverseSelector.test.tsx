@@ -18,13 +18,13 @@ const mockShops: Shop[] = [
   {
     id: "shop-2",
     name: "Les Jardins de Darjeeling",
-    shopType: "tea-shop",
+    shopType: "teaShop",
     categories: [{ id: "cat-3", name: "Thés Verts", shopId: "shop-2" }],
   },
   {
     id: "shop-3",
     name: "L'Écrin de Jade",
-    shopType: "beauty-shop",
+    shopType: "beatyShop",
     categories: [],
   },
 ];
@@ -187,14 +187,14 @@ describe("SharedUniverseSelector", () => {
       const universeButton = screen.getByText("Les Jardins de Darjeeling");
       fireEvent.click(universeButton);
 
-      expect(mockOnUniverseChange).toHaveBeenCalledWith("tea-shop");
+      expect(mockOnUniverseChange).toHaveBeenCalledWith("teaShop");
     });
 
     it("affiche la description de l'univers actuel en mode universe", () => {
       render(
         <SharedUniverseSelector
           mode="universe"
-          universe="tea-shop"
+          universe="teaShop"
           onUniverseChange={mockOnUniverseChange}
           showDescription={true}
         />,
@@ -210,7 +210,7 @@ describe("SharedUniverseSelector", () => {
       render(
         <SharedUniverseSelector
           mode="universe"
-          universe="tea-shop"
+          universe="teaShop"
           onUniverseChange={mockOnUniverseChange}
           showDescription={false}
         />,

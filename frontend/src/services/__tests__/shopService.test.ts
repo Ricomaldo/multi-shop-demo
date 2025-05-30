@@ -23,7 +23,7 @@ describe("shopService", () => {
         {
           id: "shop-2",
           name: "Les Jardins de Darjeeling",
-          shopType: "tea-shop",
+          shopType: "teaShop",
           categories: [],
         },
       ];

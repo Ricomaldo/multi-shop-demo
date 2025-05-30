@@ -17,11 +17,9 @@ import {
   Switch,
   Textarea,
   VStack,
-  useToast,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import type { Product, Shop } from "../../../../shared/types";
-import { parseProductAttributes } from "../../utils/productAttributes";
 
 interface AdminProductFormProps {
   product?: Product;
@@ -31,6 +29,10 @@ interface AdminProductFormProps {
   isLoading?: boolean;
 }
 
+interface ProcessedAttributes {
+  [key: string]: string | number | boolean;
+}
+
 export const AdminProductForm: React.FC<AdminProductFormProps> = ({
   product,
   shop,
@@ -38,40 +40,50 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
   onCancel,
   isLoading = false,
 }) => {
-  const toast = useToast();
-
   // États pour les champs de base
   const [name, setName] = useState(product?.name || "");
   const [description, setDescription] = useState(product?.description || "");
   const [price, setPrice] = useState(product?.price || 0);
 
-  // États pour les attributs spécialisés
-  const [attributes, setAttributes] = useState<Record<string, unknown>>({});
+  // État pour les attributs spécialisés avec typage simple
+  const [attributes, setAttributes] = useState<Record<string, string>>({});
 
   // Initialisation des attributs selon le type de boutique
   useEffect(() => {
-    if (product) {
-      const parsedAttributes = parseProductAttributes(product);
-      if (parsedAttributes) {
-        setAttributes(parsedAttributes);
+    if (product?.attributes) {
+      try {
+        const parsed = JSON.parse(product.attributes);
+        // Conversion de toutes les valeurs en string pour uniformité
+        const stringified = Object.entries(parsed).reduce(
+          (acc, [key, value]) => {
+            acc[key] = String(value);
+            return acc;
+          },
+          {} as Record<string, string>
+        );
+        setAttributes(stringified);
+      } catch (e) {
+        console.error("Erreur parsing attributs:", e);
+        setAttributes({});
       }
     } else {
       // Valeurs par défaut selon le type de boutique
+      const defaultAttributes: Record<string, string> = { stock: "0" };
+
       switch (shop.shopType) {
         case "brewery":
-          setAttributes({
-            degre_alcool: 5.0,
-            amertume_ibu: 20,
+          Object.assign(defaultAttributes, {
+            degre_alcool: "5.0",
+            amertume_ibu: "20",
             type_houblon: "",
             process_brassage: "",
             garde_conseillee: "",
             format_bouteille: "33cl",
             disponibilite: "En stock",
-            stock: 0,
           });
           break;
         case "teaShop":
-          setAttributes({
+          Object.assign(defaultAttributes, {
             origine_plantation: "",
             altitude_culture: "",
             grade_qualite: "",
@@ -80,24 +92,22 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
             temps_infusion: "3 minutes",
             quantite_grammes: "2g",
             conservation: "",
-            stock: 0,
           });
           break;
         case "beautyShop":
-          setAttributes({
+          Object.assign(defaultAttributes, {
             type_peau: "",
             ingredients_actifs: "",
-            certification_bio: false,
-            contenance_ml: 50,
+            certification_bio: "false",
+            contenance_ml: "50",
             utilisation_moment: "",
             zone_application: "",
             texture: "",
             age_recommande: "",
-            stock: 0,
           });
           break;
         case "herbShop":
-          setAttributes({
+          Object.assign(defaultAttributes, {
             principes_actifs: "",
             usage_traditionnel: "",
             posologie: "",
@@ -106,53 +116,56 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
             certification: "",
             duree_cure: "",
             conservation_duree: "",
-            stock: 0,
           });
           break;
       }
+      setAttributes(defaultAttributes);
     }
   }, [product, shop.shopType]);
 
-  const handleAttributeChange = (
-    key: string,
-    value: string | number | boolean
-  ) => {
+  // Pour les champs numériques
+  const handleNumberChange = (key: string, value: number | string) => {
+    setAttributes((prev) => ({ ...prev, [key]: String(value) }));
+  };
+
+  // Pour les champs booléens
+  const handleBooleanChange = (key: string, value: boolean) => {
+    setAttributes((prev) => ({ ...prev, [key]: String(value) }));
+  };
+
+  // Pour les champs texte
+  const handleTextChange = (key: string, value: string) => {
     setAttributes((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim()) {
-      toast({
-        title: "Erreur",
-        description: "Le nom du produit est obligatoire",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-      return;
-    }
+    // Conversion des attributs en leurs types appropriés
+    const processedAttributes = Object.entries(attributes).reduce(
+      (acc, [key, value]) => {
+        if (key === "certification_bio") {
+          acc[key] = value === "true";
+        } else if (
+          ["degre_alcool", "amertume_ibu", "contenance_ml", "stock"].includes(
+            key
+          )
+        ) {
+          acc[key] = parseFloat(value) || 0;
+        } else {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {} as ProcessedAttributes
+    );
 
-    if (price <= 0) {
-      toast({
-        title: "Erreur",
-        description: "Le prix doit être supérieur à 0",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-      return;
-    }
-
-    const productData: Partial<Product> = {
-      name: name.trim(),
-      description: description.trim(),
+    onSave({
+      name,
+      description,
       price,
-      attributes: JSON.stringify(attributes),
-    };
-
-    onSave(productData);
+      attributes: JSON.stringify(processedAttributes),
+    });
   };
 
   // Rendu des champs spécialisés selon le type de boutique
@@ -168,9 +181,9 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
               <FormControl>
                 <FormLabel>Degré d'alcool (%)</FormLabel>
                 <NumberInput
-                  value={attributes.degre_alcool || 0}
+                  value={parseFloat(attributes.degre_alcool) || 0}
                   onChange={(_, value) =>
-                    handleAttributeChange("degre_alcool", value)
+                    handleNumberChange("degre_alcool", value)
                   }
                   min={0}
                   max={20}
@@ -187,9 +200,9 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
               <FormControl>
                 <FormLabel>Amertume (IBU)</FormLabel>
                 <NumberInput
-                  value={attributes.amertume_ibu || 0}
+                  value={attributes.amertume_ibu || "0"}
                   onChange={(_, value) =>
-                    handleAttributeChange("amertume_ibu", value)
+                    handleNumberChange("amertume_ibu", value)
                   }
                   min={0}
                   max={100}
@@ -207,7 +220,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                 <Input
                   value={attributes.type_houblon || ""}
                   onChange={(e) =>
-                    handleAttributeChange("type_houblon", e.target.value)
+                    handleTextChange("type_houblon", e.target.value)
                   }
                   placeholder="Ex: Cascade, Centennial"
                 />
@@ -218,7 +231,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                 <Select
                   value={attributes.format_bouteille || ""}
                   onChange={(e) =>
-                    handleAttributeChange("format_bouteille", e.target.value)
+                    handleTextChange("format_bouteille", e.target.value)
                   }
                 >
                   <option value="25cl">25cl</option>
@@ -234,7 +247,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
               <Textarea
                 value={attributes.process_brassage || ""}
                 onChange={(e) =>
-                  handleAttributeChange("process_brassage", e.target.value)
+                  handleTextChange("process_brassage", e.target.value)
                 }
                 placeholder="Décrivez le processus de brassage..."
               />
@@ -245,7 +258,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
               <Input
                 value={attributes.garde_conseillee || ""}
                 onChange={(e) =>
-                  handleAttributeChange("garde_conseillee", e.target.value)
+                  handleTextChange("garde_conseillee", e.target.value)
                 }
                 placeholder="Ex: 2 ans, À consommer rapidement"
               />
@@ -265,7 +278,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                 <Input
                   value={attributes.origine_plantation || ""}
                   onChange={(e) =>
-                    handleAttributeChange("origine_plantation", e.target.value)
+                    handleTextChange("origine_plantation", e.target.value)
                   }
                   placeholder="Ex: Darjeeling, Ceylan"
                 />
@@ -276,7 +289,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                 <Input
                   value={attributes.altitude_culture || ""}
                   onChange={(e) =>
-                    handleAttributeChange("altitude_culture", e.target.value)
+                    handleTextChange("altitude_culture", e.target.value)
                   }
                   placeholder="Ex: 1500m, Haute altitude"
                 />
@@ -287,7 +300,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                 <Select
                   value={attributes.grade_qualite || ""}
                   onChange={(e) =>
-                    handleAttributeChange("grade_qualite", e.target.value)
+                    handleTextChange("grade_qualite", e.target.value)
                   }
                 >
                   <option value="FTGFOP">FTGFOP</option>
@@ -303,7 +316,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                 <Select
                   value={attributes.recolte_flush || ""}
                   onChange={(e) =>
-                    handleAttributeChange("recolte_flush", e.target.value)
+                    handleTextChange("recolte_flush", e.target.value)
                   }
                 >
                   <option value="First Flush">First Flush</option>
@@ -317,10 +330,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                 <Input
                   value={attributes.temperature_infusion || ""}
                   onChange={(e) =>
-                    handleAttributeChange(
-                      "temperature_infusion",
-                      e.target.value
-                    )
+                    handleTextChange("temperature_infusion", e.target.value)
                   }
                   placeholder="Ex: 80°C, 95°C"
                 />
@@ -331,7 +341,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                 <Input
                   value={attributes.temps_infusion || ""}
                   onChange={(e) =>
-                    handleAttributeChange("temps_infusion", e.target.value)
+                    handleTextChange("temps_infusion", e.target.value)
                   }
                   placeholder="Ex: 3 minutes, 5 minutes"
                 />
@@ -352,7 +362,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                 <Select
                   value={attributes.type_peau || ""}
                   onChange={(e) =>
-                    handleAttributeChange("type_peau", e.target.value)
+                    handleTextChange("type_peau", e.target.value)
                   }
                 >
                   <option value="Tous types">Tous types</option>
@@ -367,9 +377,9 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
               <FormControl>
                 <FormLabel>Contenance (ml)</FormLabel>
                 <NumberInput
-                  value={attributes.contenance_ml || 0}
+                  value={attributes.contenance_ml || "0"}
                   onChange={(_, value) =>
-                    handleAttributeChange("contenance_ml", value)
+                    handleNumberChange("contenance_ml", value)
                   }
                   min={1}
                 >
@@ -386,7 +396,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                 <Select
                   value={attributes.zone_application || ""}
                   onChange={(e) =>
-                    handleAttributeChange("zone_application", e.target.value)
+                    handleTextChange("zone_application", e.target.value)
                   }
                 >
                   <option value="Visage">Visage</option>
@@ -401,9 +411,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                 <FormLabel>Texture</FormLabel>
                 <Select
                   value={attributes.texture || ""}
-                  onChange={(e) =>
-                    handleAttributeChange("texture", e.target.value)
-                  }
+                  onChange={(e) => handleTextChange("texture", e.target.value)}
                 >
                   <option value="Crème">Crème</option>
                   <option value="Gel">Gel</option>
@@ -419,7 +427,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
               <Textarea
                 value={attributes.ingredients_actifs || ""}
                 onChange={(e) =>
-                  handleAttributeChange("ingredients_actifs", e.target.value)
+                  handleTextChange("ingredients_actifs", e.target.value)
                 }
                 placeholder="Listez les ingrédients actifs..."
               />
@@ -428,9 +436,9 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
             <FormControl display="flex" alignItems="center">
               <FormLabel mb="0">Certification bio</FormLabel>
               <Switch
-                isChecked={attributes.certification_bio || false}
+                isChecked={attributes.certification_bio === "true"}
                 onChange={(e) =>
-                  handleAttributeChange("certification_bio", e.target.checked)
+                  handleBooleanChange("certification_bio", e.target.checked)
                 }
               />
             </FormControl>
@@ -449,7 +457,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                 <Input
                   value={attributes.usage_traditionnel || ""}
                   onChange={(e) =>
-                    handleAttributeChange("usage_traditionnel", e.target.value)
+                    handleTextChange("usage_traditionnel", e.target.value)
                   }
                   placeholder="Ex: Digestion, Sommeil"
                 />
@@ -460,7 +468,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                 <Select
                   value={attributes.forme_galenique || ""}
                   onChange={(e) =>
-                    handleAttributeChange("forme_galenique", e.target.value)
+                    handleTextChange("forme_galenique", e.target.value)
                   }
                 >
                   <option value="Gélules">Gélules</option>
@@ -477,7 +485,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                 <Select
                   value={attributes.certification || ""}
                   onChange={(e) =>
-                    handleAttributeChange("certification", e.target.value)
+                    handleTextChange("certification", e.target.value)
                   }
                 >
                   <option value="Agriculture Biologique">
@@ -495,7 +503,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
                 <Input
                   value={attributes.duree_cure || ""}
                   onChange={(e) =>
-                    handleAttributeChange("duree_cure", e.target.value)
+                    handleTextChange("duree_cure", e.target.value)
                   }
                   placeholder="Ex: 3 semaines, 1 mois"
                 />
@@ -507,7 +515,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
               <Textarea
                 value={attributes.principes_actifs || ""}
                 onChange={(e) =>
-                  handleAttributeChange("principes_actifs", e.target.value)
+                  handleTextChange("principes_actifs", e.target.value)
                 }
                 placeholder="Décrivez les principes actifs..."
               />
@@ -517,9 +525,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
               <FormLabel>Posologie</FormLabel>
               <Textarea
                 value={attributes.posologie || ""}
-                onChange={(e) =>
-                  handleAttributeChange("posologie", e.target.value)
-                }
+                onChange={(e) => handleTextChange("posologie", e.target.value)}
                 placeholder="Indiquez la posologie recommandée..."
               />
             </FormControl>
@@ -529,7 +535,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
               <Textarea
                 value={attributes.contre_indications || ""}
                 onChange={(e) =>
-                  handleAttributeChange("contre_indications", e.target.value)
+                  handleTextChange("contre_indications", e.target.value)
                 }
                 placeholder="Mentionnez les contre-indications..."
               />
@@ -549,7 +555,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
         <VStack spacing={4} align="stretch">
           <Heading size="md">Informations générales</Heading>
 
-          <FormControl isRequired>
+          <FormControl>
             <FormLabel>Nom du produit</FormLabel>
             <Input
               value={name}
@@ -587,10 +593,8 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
           <FormControl isRequired>
             <FormLabel>Stock</FormLabel>
             <NumberInput
-              value={attributes.stock || 0}
-              onChange={(_, value) =>
-                handleAttributeChange("stock", value || 0)
-              }
+              value={attributes.stock || "0"}
+              onChange={(_, value) => handleNumberChange("stock", value)}
               min={0}
             >
               <NumberInputField />

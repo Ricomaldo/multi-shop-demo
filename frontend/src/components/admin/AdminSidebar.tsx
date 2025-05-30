@@ -8,7 +8,6 @@ import {
   VStack,
   useBreakpointValue,
 } from "@chakra-ui/react";
-import { useState } from "react";
 import {
   FiHome,
   FiMenu,
@@ -18,9 +17,10 @@ import {
   FiX,
 } from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
-import type { Shop } from "../../../../shared/types";
+import type { UniverseType } from "../../contexts/UniverseContext";
+import { useUniverse } from "../../contexts/UniverseContext";
 import { useShopData } from "../../hooks";
-import AdminDualSelector from "./AdminDualSelector";
+import AdminUniverseQuickSelector from "./AdminUniverseQuickSelector";
 
 const menuItems = [
   { icon: FiHome, label: "Dashboard", path: "/admin" },
@@ -48,13 +48,12 @@ export default function AdminSidebar({
 }: AdminSidebarProps) {
   const location = useLocation();
   const isMobile = useBreakpointValue({ base: true, md: false });
-  const { shops, loading } = useShopData();
-  const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
+  const { loading } = useShopData();
+  const { universe, setUniverse } = useUniverse();
 
-  const handleShopChange = (shop: Shop) => {
-    setSelectedShop(shop);
-    // TODO: Implémenter la logique de changement de boutique
-    console.log("Boutique sélectionnée:", shop);
+  const handleUniverseChange = (newUniverse: UniverseType) => {
+    setUniverse(newUniverse);
+    console.log("Univers sélectionné:", newUniverse);
   };
 
   // Sur mobile, on utilise isOpen, sur desktop on utilise isCollapsed
@@ -140,14 +139,12 @@ export default function AdminSidebar({
             )}
           </Flex>
 
-          {/* Sélecteur de boutique en deux étapes - masqué si collapsed */}
+          {/* Sélecteur d'univers compact - masqué si collapsed */}
           {shouldShowLabels && (
-            <AdminDualSelector
-              shops={shops}
-              selectedShop={selectedShop}
-              onShopChange={handleShopChange}
+            <AdminUniverseQuickSelector
+              selectedUniverse={universe}
+              onUniverseChange={handleUniverseChange}
               loading={loading}
-              size="sm"
             />
           )}
 

@@ -169,7 +169,7 @@ router.get(
       }
     }
 
-    if (shop.shopType === "tea-shop") {
+    if (shop.shopType === "teaShop") {
       if (origine_plantation || grade_qualite) {
         filteredProducts = filteredProducts.filter((product) => {
           if (!product.attributes) return false;
@@ -194,7 +194,7 @@ router.get(
       }
     }
 
-    if (shop.shopType === "beauty-shop") {
+    if (shop.shopType === "beatyShop") {
       if (type_peau || certification_bio) {
         filteredProducts = filteredProducts.filter((product) => {
           if (!product.attributes) return false;
@@ -216,7 +216,7 @@ router.get(
       }
     }
 
-    if (shop.shopType === "herb-shop") {
+    if (shop.shopType === "herbShop") {
       if (usage_traditionnel || forme_galenique) {
         filteredProducts = filteredProducts.filter((product) => {
           if (!product.attributes) return false;
@@ -310,7 +310,7 @@ router.post(
               throw createError("Stock obligatoire et doit être positif", 400);
             }
             break;
-          case "tea-shop":
+          case "teaShop":
             if (
               !parsedAttributes.origine_plantation ||
               !parsedAttributes.grade_qualite
@@ -324,7 +324,7 @@ router.post(
               throw createError("Stock obligatoire et doit être positif", 400);
             }
             break;
-          case "beauty-shop":
+          case "beatyShop":
             if (
               !parsedAttributes.type_peau ||
               !parsedAttributes.ingredients_actifs
@@ -338,7 +338,7 @@ router.post(
               throw createError("Stock obligatoire et doit être positif", 400);
             }
             break;
-          case "herb-shop":
+          case "herbShop":
             if (
               !parsedAttributes.principes_actifs ||
               !parsedAttributes.usage_traditionnel
@@ -576,7 +576,7 @@ router.get(
               }
               break;
 
-            case "tea-shop":
+            case "teaShop":
               if (attrs.origine_plantation) {
                 if (!specializedStats.origins) specializedStats.origins = {};
                 specializedStats.origins[attrs.origine_plantation] =
@@ -589,7 +589,7 @@ router.get(
               }
               break;
 
-            case "beauty-shop":
+            case "beatyShop":
               if (attrs.certification_bio !== undefined) {
                 if (!specializedStats.bioProducts)
                   specializedStats.bioProducts = { bio: 0, nonBio: 0 };
@@ -602,7 +602,7 @@ router.get(
               }
               break;
 
-            case "herb-shop":
+            case "herbShop":
               if (attrs.certification) {
                 if (!specializedStats.certifications)
                   specializedStats.certifications = {};
@@ -632,7 +632,7 @@ router.get(
         ) / specializedStats.alcoholDegrees.length;
     }
 
-    if (shop.shopType === "beauty-shop" && specializedStats.volumes) {
+    if (shop.shopType === "beatyShop" && specializedStats.volumes) {
       specializedStats.averageVolume =
         specializedStats.volumes.reduce((a: number, b: number) => a + b, 0) /
         specializedStats.volumes.length;

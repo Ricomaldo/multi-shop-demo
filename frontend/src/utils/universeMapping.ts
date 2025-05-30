@@ -47,17 +47,92 @@ export const getShopDisplayName = (universe: UniverseType): string => {
 /**
  * Obtenir l'icône de l'univers
  */
-export const getUniverseIcon = (universe: UniverseType): string => {
+export interface UniverseIcon {
+  emoji: string;
+  label: string;
+}
+
+export const getUniverseIcon = (universe: UniverseType): UniverseIcon => {
   switch (universe) {
     case "brewery":
-      return "🍺";
+      return { emoji: "🍺", label: "bière" };
     case "teaShop":
-      return "🍵";
+      return { emoji: "🍵", label: "thé" };
     case "beautyShop":
-      return "💄";
+      return { emoji: "💄", label: "beauté" };
     case "herbShop":
-      return "🌿";
+      return { emoji: "🌿", label: "herbes" };
     default:
-      return "🛍️";
+      return { emoji: "🛍️", label: "boutique" };
   }
+};
+
+/**
+ * Obtenir la couleur principale de l'univers (format hexadécimal)
+ */
+export const getUniverseColor = (universe: UniverseType): string => {
+  switch (universe) {
+    case "brewery":
+      return "#ffc107"; // Ambre/doré
+    case "teaShop":
+      return "#8bc34a"; // Vert naturel
+    case "beautyShop":
+      return "#e91e63"; // Rose/corail
+    case "herbShop":
+      return "#4caf50"; // Vert profond
+    default:
+      return "#2196f3"; // Bleu par défaut
+  }
+};
+
+/**
+ * Obtenir le colorScheme Chakra UI pour l'univers
+ */
+export const getUniverseColorScheme = (universe: UniverseType): string => {
+  switch (universe) {
+    case "brewery":
+      return "orange";
+    case "teaShop":
+      return "green";
+    case "beautyShop":
+      return "pink";
+    case "herbShop":
+      return "teal";
+    default:
+      return "blue";
+  }
+};
+
+/**
+ * Obtenir le nom lisible de l'univers (pour affichage)
+ */
+export const getUniverseName = (universe: UniverseType): string => {
+  switch (universe) {
+    case "brewery":
+      return "Brasserie";
+    case "teaShop":
+      return "Salon de thé";
+    case "beautyShop":
+      return "Institut beauté";
+    case "herbShop":
+      return "Herboristerie";
+    default:
+      return "Boutique";
+  }
+};
+
+/**
+ * Obtenir la couleur de fond claire de l'univers (pour cartes, etc.)
+ */
+export const getUniverseLightBg = (universe: UniverseType): string => {
+  const colorScheme = getUniverseColorScheme(universe);
+  return `${colorScheme}.50`;
+};
+
+/**
+ * Obtenir la couleur d'accentuation de l'univers (pour textes, bordures)
+ */
+export const getUniverseAccentColor = (universe: UniverseType): string => {
+  const colorScheme = getUniverseColorScheme(universe);
+  return `${colorScheme}.600`;
 };

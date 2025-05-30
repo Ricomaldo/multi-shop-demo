@@ -9,6 +9,7 @@ import {
 } from "@chakra-ui/react";
 import type { Shop } from "../../../../shared/types";
 import type { UniverseType } from "../../contexts/UniverseContext";
+import { type UniverseIcon } from "../../utils/universeMapping";
 
 interface SharedUniverseSelectorProps {
   mode: "shop" | "universe"; // Mode sélection boutique vs univers
@@ -30,7 +31,7 @@ interface SharedUniverseSelectorProps {
 interface UniverseOption {
   type: UniverseType;
   label: string;
-  icon: string;
+  icon: UniverseIcon;
   description: string;
   colorScheme: string;
 }
@@ -39,28 +40,28 @@ const universeOptions: UniverseOption[] = [
   {
     type: "brewery",
     label: "Houblon & Tradition",
-    icon: "🍺",
+    icon: { emoji: "🍺", label: "bière" },
     description: "Brasserie artisanale",
     colorScheme: "orange",
   },
   {
-    type: "tea-shop",
+    type: "teaShop",
     label: "Les Jardins de Darjeeling",
-    icon: "🍵",
+    icon: { emoji: "🍵", label: "thé" },
     description: "Salon de thé",
     colorScheme: "green",
   },
   {
-    type: "beauty-shop",
+    type: "beautyShop",
     label: "L'Écrin de Jade",
-    icon: "💄",
+    icon: { emoji: "💄", label: "beauté" },
     description: "Institut beauté",
     colorScheme: "pink",
   },
   {
-    type: "herb-shop",
+    type: "herbShop",
     label: "Herboristerie du Moulin Vert",
-    icon: "🌿",
+    icon: { emoji: "🌿", label: "herbes" },
     description: "Herboristerie traditionnelle",
     colorScheme: "teal",
   },
@@ -92,9 +93,9 @@ export default function SharedUniverseSelector({
   const borderColor = useColorModeValue("gray.200", "gray.600");
 
   // Utilitaires pour les boutiques
-  const getShopIcon = (shopType: string) => {
+  const getShopIcon = (shopType: string): UniverseIcon => {
     const option = universeOptions.find((opt) => opt.type === shopType);
-    return option?.icon || "🏪";
+    return option?.icon || { emoji: "🏪", label: "boutique" };
   };
 
   const getShopColor = (shopType: string) => {
@@ -162,7 +163,12 @@ export default function SharedUniverseSelector({
                   size={size}
                   leftIcon={
                     <Text fontSize={size === "sm" ? "md" : "lg"}>
-                      {getShopIcon(shop.shopType)}
+                      <span
+                        role="img"
+                        aria-label={getShopIcon(shop.shopType).label}
+                      >
+                        {getShopIcon(shop.shopType).emoji}
+                      </span>
                     </Text>
                   }
                 >
@@ -195,7 +201,12 @@ export default function SharedUniverseSelector({
             >
               <HStack spacing={2}>
                 <Text fontSize={size === "sm" ? "md" : "lg"}>
-                  {getShopIcon(selectedShop.shopType)}
+                  <span
+                    role="img"
+                    aria-label={getShopIcon(selectedShop.shopType).label}
+                  >
+                    {getShopIcon(selectedShop.shopType).emoji}
+                  </span>
                 </Text>
                 <VStack spacing={0} align="start" flex="1">
                   <Text
@@ -240,7 +251,13 @@ export default function SharedUniverseSelector({
             colorScheme={option.type === universe ? currentColorScheme : "gray"}
             variant={option.type === universe ? "solid" : variant}
             onClick={() => onUniverseChange?.(option.type)}
-            leftIcon={<span>{option.icon}</span>}
+            leftIcon={
+              <Text>
+                <span role="img" aria-label={option.icon.label}>
+                  {option.icon.emoji}
+                </span>
+              </Text>
+            }
             justifyContent="flex-start"
             w="full"
             fontSize={size === "sm" ? "xs" : "sm"}

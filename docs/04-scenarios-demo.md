@@ -24,7 +24,7 @@
 
 - **Gestion produits** : ajout, modification, suppression
 - **Organisation catégories** : structure flexible
-- **Switch multi-boutique** si pertinent (tea-shop, beauty-shop, herb-shop)
+- **Switch multi-boutique** si pertinent (teaShop, beatyShop, herbShop)
 - **Mise à jour instantanée** vitrine (refresh automatique)
 
 ### 3. Différenciation (3-5 min)

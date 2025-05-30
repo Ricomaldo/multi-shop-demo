@@ -30,8 +30,10 @@ import {
   useToast,
   VStack,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useUniverse } from "../../contexts/UniverseContext";
 import { useShopData } from "../../hooks";
+import { shopTypeToUniverse } from "../../utils/universeMapping";
 
 interface ShopSettings {
   name: string;
@@ -62,8 +64,18 @@ export default function Settings() {
   const [hasChanges, setHasChanges] = useState(false);
   const toast = useToast();
 
+  const { universe } = useUniverse();
+
   const { shops, products } = useShopData();
-  const currentShop = shops[0];
+
+  // Filtrer les boutiques selon l'univers sélectionné
+  const filteredShops = useMemo(
+    () =>
+      shops.filter((shop) => shopTypeToUniverse(shop.shopType) === universe),
+    [shops, universe]
+  );
+
+  const currentShop = filteredShops[0]; // Prendre la première boutique de l'univers
   const colorScheme = "purple";
 
   const handleInputChange = (
@@ -213,7 +225,9 @@ export default function Settings() {
           <CardBody>
             <Stat>
               <StatLabel>Produits</StatLabel>
-              <StatNumber>
+              <StatNumber
+                color={settings.allowOrders ? "green.500" : "orange.500"}
+              >
                 {products.filter((p) => p.shopId === currentShop?.id).length}
               </StatNumber>
               <StatHelpText>Total en ligne</StatHelpText>

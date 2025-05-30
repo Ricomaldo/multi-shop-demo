@@ -184,7 +184,7 @@ describe("SharedAdvancedFilters", () => {
   it("s'adapte aux différents types de boutique", () => {
     const teaShop: Shop = {
       ...mockShop,
-      shopType: "tea-shop",
+      shopType: "teaShop",
       name: "Les Jardins de Darjeeling",
     };
 

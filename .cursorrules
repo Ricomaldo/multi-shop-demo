@@ -26,7 +26,7 @@ Tu es **Alfred**, binôme IA calme, structuré, fiable. Majordome bienveillant d
 - Frontend: React + Vite + TypeScript + Chakra UI
 - Backend: Node.js + Express + Prisma + SQLite
 - Nomenclature: Store* (vitrine), Admin* (backoffice), Shared* (communs)
-- 4 univers: brewery, tea-shop, beauty-shop, herb-shop
+- 4 univers: brewery, teaShop, beatyShop, herbShop
 
 ## Communication obligatoire
 - **150 mots max** sauf indication contraire

@@ -130,7 +130,7 @@ import {
 } from "../../utils";
 
 // Détection automatique de l'univers
-const universe = shopTypeToUniverse("tea-shop"); // → "tea-shop"
+const universe = shopTypeToUniverse("teaShop"); // → "teaShop"
 const shopName = getShopDisplayName(universe); // → "Les Jardins de Darjeeling"
 const icon = getUniverseIcon(universe); // → "🍵"
 ```
@@ -160,7 +160,7 @@ interface AdminProductPreviewProps {
     category?: string;
   };
   hasChanges?: boolean; // Pour animations
-  shopType?: string; // 🚀 Nouveau : "brewery" | "tea-shop" | "beauty-shop" | "herb-shop"
+  shopType?: string; // 🚀 Nouveau : "brewery" | "teaShop" | "beatyShop" | "herbShop"
 }
 ```
 
@@ -184,12 +184,12 @@ getUniverseIcon(universe: UniverseType): string
 
 ### Mapping des univers
 
-| shopType      | universe      | Nom Commercial               | Icône | Couleur |
-| ------------- | ------------- | ---------------------------- | ----- | ------- |
-| `brewery`     | `brewery`     | Houblon & Tradition          | 🍺    | orange  |
-| `tea-shop`    | `tea-shop`    | Les Jardins de Darjeeling    | 🍵    | green   |
-| `beauty-shop` | `beauty-shop` | L'Écrin de Jade              | 💄    | pink    |
-| `herb-shop`   | `herb-shop`   | Herboristerie du Moulin Vert | 🌿    | teal    |
+| shopType    | universe    | Nom Commercial               | Icône | Couleur |
+| ----------- | ----------- | ---------------------------- | ----- | ------- |
+| `brewery`   | `brewery`   | Houblon & Tradition          | 🍺    | orange  |
+| `teaShop`   | `teaShop`   | Les Jardins de Darjeeling    | 🍵    | green   |
+| `beatyShop` | `beatyShop` | L'Écrin de Jade              | 💄    | pink    |
+| `herbShop`  | `herbShop`  | Herboristerie du Moulin Vert | 🌿    | teal    |
 
 ### UniverseProvider automatique
 
@@ -260,8 +260,8 @@ const highlightVariants = {
 ### Tests shopType
 
 ```typescript
-test("affiche le nom de boutique tea-shop quand shopType est tea-shop", () => {
-  render(<AdminProductPreview productData={mockData} shopType="tea-shop" />);
+test("affiche le nom de boutique teaShop quand shopType est teaShop", () => {
+  render(<AdminProductPreview productData={mockData} shopType="teaShop" />);
   expect(screen.getByText("🍵 Les Jardins de Darjeeling")).toBeInTheDocument();
 });
 
@@ -320,7 +320,7 @@ const universe = useMemo(() => shopTypeToUniverse(shopType), [shopType]);
 2. **Modifier nom** → Highlight immédiat côté aperçu avec vrai design
 3. **Changer prix** → Animation de mise à jour, formatage identique vitrine
 4. **Éditer description** → Aperçu se met à jour avec vraie troncature
-5. **Changer boutique** → Thème change automatiquement (brewery → tea-shop)
+5. **Changer boutique** → Thème change automatiquement (brewery → teaShop)
 6. **Sauvegarder** → Retour liste avec feedback succès
 
 ### Phrases d'accroche démo

@@ -120,15 +120,15 @@ interface AdminFormProps {
 
 - `colorScheme="orange"` composants Chakra
 
-### tea-shop
+### teaShop
 
 - `colorScheme="green"` composants Chakra
 
-### beauty-shop
+### beatyShop
 
 - `colorScheme="pink"` composants Chakra
 
-### herb-shop
+### herbShop
 
 - `colorScheme="teal"` composants Chakra
 
