@@ -1,6 +1,7 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import { Route, Routes } from "react-router-dom";
 import AdminLayout from "./components/admin/AdminLayout";
+import { AdminProvider } from "./contexts/AdminContext";
 import Categories from "./pages/admin/Categories";
 import Dashboard from "./pages/admin/Dashboard";
 import Products from "./pages/admin/Products";
@@ -19,7 +20,14 @@ export default function App() {
     <ChakraProvider theme={theme}>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route
+          path="/admin"
+          element={
+            <AdminProvider>
+              <AdminLayout />
+            </AdminProvider>
+          }
+        >
           <Route index element={<Dashboard />} />
           <Route path="products" element={<Products />} />
           <Route path="categories" element={<Categories />} />

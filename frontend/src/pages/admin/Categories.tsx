@@ -29,40 +29,53 @@ import {
   useToast,
   VStack,
 } from "@chakra-ui/react";
-import { useMemo, useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import type { Category } from "../../../../shared/types";
-import { useUniverse } from "../../contexts/UniverseContext";
+import { useAdminShop } from "../../contexts/AdminContext";
 import { useShopData } from "../../hooks";
-import { shopTypeToUniverse } from "../../utils/universeMapping";
 
 export default function Categories() {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState({ name: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [shopCategories, setShopCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
-  const { universe } = useUniverse();
+  const { shop: activeShop } = useAdminShop();
+  const { products, loading, error } = useShopData();
 
-  // Utiliser les hooks personnalisés pour la gestion des données
-  const { shops, products, loading, error } = useShopData();
+  // Contournement temporaire - Fetch catégories par API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      if (!activeShop?.id) return;
 
-  // Filtrer les boutiques selon l'univers sélectionné
-  const filteredShops = useMemo(
-    () =>
-      shops.filter((shop) => shopTypeToUniverse(shop.shopType) === universe),
-    [shops, universe]
-  );
+      setCategoriesLoading(true);
+      try {
+        const response = await axios.get(`http://localhost:3001/api/shops/${activeShop.id}`);
+        const shop = response.data;
 
-  const currentShop = filteredShops[0]; // Prendre la première boutique de l'univers
+        // Récupérer les catégories depuis les données shop
+        setShopCategories(shop.categories || []);
+      } catch (err) {
+        console.error('Erreur récupération catégories:', err);
+        setShopCategories([]);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
 
-  const shopCategories = useMemo(
-    () => currentShop?.categories || [],
-    [currentShop]
-  );
+    fetchCategories();
+  }, [activeShop?.id]);
 
   const getCategoryProductCount = (categoryId: string) => {
-    return products.filter((p) => p.categoryId === categoryId).length;
+    // Filtrer les produits de la boutique active uniquement
+    const shopProducts = products.filter((p) => p.shopId === activeShop?.id);
+
+    // Compter les produits qui appartiennent à cette catégorie
+    return shopProducts.filter((p) => p.category === categoryId).length;
   };
 
   const colorScheme = "green";
@@ -96,6 +109,12 @@ export default function Categories() {
       });
 
       onClose();
+
+      // Recharger les catégories après modification
+      if (activeShop?.id) {
+        const response = await axios.get(`http://localhost:3001/api/shops/${activeShop.id}`);
+        setShopCategories(response.data.categories || []);
+      }
     } catch {
       toast({
         title: "Erreur",
@@ -135,7 +154,7 @@ export default function Categories() {
     });
   };
 
-  if (loading) {
+  if (loading || categoriesLoading || !activeShop) {
     return (
       <Flex justify="center" align="center" h="400px">
         <VStack spacing={4}>
@@ -165,7 +184,7 @@ export default function Categories() {
         <CardBody>
           <VStack spacing={4}>
             <Text color="red.500" fontSize="lg">
-              ❌ Erreur: {error}
+              ❌ Erreur: {error.message || String(error)}
             </Text>
             <Button colorScheme="red" variant="outline">
               Réessayer
@@ -193,7 +212,7 @@ export default function Categories() {
                 🏷️ Gestion des Catégories
               </Heading>
               <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>
-                {currentShop?.name} • {shopCategories.length} catégorie
+                {activeShop?.name} • {shopCategories.length} catégorie
                 {shopCategories.length !== 1 ? "s" : ""}
               </Text>
             </VStack>
@@ -228,7 +247,7 @@ export default function Categories() {
             <Stat>
               <StatLabel>Produits total</StatLabel>
               <StatNumber>
-                {products.filter((p) => p.shopId === currentShop?.id).length}
+                {products.filter((p) => p.shopId === activeShop?.id).length}
               </StatNumber>
               <StatHelpText>Tous produits confondus</StatHelpText>
             </Stat>
@@ -242,7 +261,7 @@ export default function Categories() {
               <StatNumber>
                 {shopCategories.length > 0
                   ? Math.round(
-                      products.filter((p) => p.shopId === currentShop?.id)
+                      products.filter((p) => p.shopId === activeShop?.id)
                         .length / shopCategories.length
                     )
                   : 0}
@@ -270,7 +289,7 @@ export default function Categories() {
             </VStack>
           ) : (
             <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
-              {shopCategories.map((category) => {
+              {shopCategories.map((category: Category) => {
                 const productCount = getCategoryProductCount(category.id);
                 return (
                   <Card key={category.id} variant="outline">

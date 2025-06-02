@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Container,
-  Heading,
   SimpleGrid,
   Tab,
   TabList,
@@ -10,32 +9,32 @@ import {
   TabPanels,
   Tabs,
   Text,
-  VStack,
+  VStack
 } from "@chakra-ui/react";
 import { useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import type { Product } from "../../../../shared/types";
-import { SharedHeroHeader } from "../../components/shared/SharedHeroHeader";
 import { SharedProductCard } from "../../components/shared/SharedProductCard";
 import StoreHeroHeader from "../../components/store/StoreHeroHeader";
-import { useShopByType } from "../../hooks/useShopByType";
+import { useShopByType, useShopData, useStoreHandlers } from "../../hooks";
 
 const HERB_CATEGORIES = [
-  { id: "digestion", name: "Digestion", icon: "🌱" },
-  { id: "sommeil", name: "Sommeil", icon: "🌙" },
-  { id: "immunite", name: "Immunité", icon: "💪" },
-  { id: "stress", name: "Stress", icon: "🍃" },
+  { id: "digestion", name: "Digestion", icon: "🌱", description: "Plantes pour faciliter la digestion et soulager les troubles digestifs" },
+  { id: "sommeil", name: "Sommeil", icon: "🌙", description: "Plantes relaxantes pour retrouver un sommeil naturel et réparateur" },
+  { id: "immunite", name: "Immunité", icon: "💪", description: "Plantes fortifiantes pour renforcer les défenses naturelles" },
+  { id: "stress", name: "Stress", icon: "🍃", description: "Plantes adaptogènes pour gérer le stress et l'anxiété" },
 ];
 
 const StoreHerbShop = () => {
   const navigate = useNavigate();
   const { shop, products, loading } = useShopByType("herbShop");
+  const { handleAddToCart, handleViewProduct } = useStoreHandlers();
+  const { shops } = useShopData();
 
   useEffect(() => {
-    if (loading) {
+    if (!loading && !shop) {
       navigate("/404");
     }
-  }, [loading, navigate]);
+  }, [loading, shop, navigate]);
 
   // Grouper les produits par usage
   const productsByUsage = useMemo(() => {
@@ -52,79 +51,13 @@ const StoreHerbShop = () => {
     return <Box>Chargement...</Box>;
   }
 
-  const handleAddToCart = (product: Product) => {
-    console.log("Ajouter au panier:", product);
-  };
-
-  const handleViewProduct = (product: Product) => {
-    console.log("Voir produit:", product);
-  };
-
   return (
-    <Box>
-      <SharedHeroHeader
-        title={shop.name}
-        subtitle="Le meilleur de la nature pour votre bien-être"
-        imagePath="/images/store/herb-banner.jpg"
-        imageAlt="Bannière de l'herboristerie"
-      />
-
-      <VStack spacing={8} p={8}>
-        <Box textAlign="center" maxW="2xl" mx="auto">
-          <Heading size="lg" mb={4} color="green.600">
-            Nos Plantes & Préparations
-          </Heading>
-          <Text fontSize="lg" color="gray.600">
-            Des remèdes naturels traditionnels pour chaque besoin
-          </Text>
-        </Box>
-
-        <Tabs
-          variant="soft-rounded"
-          colorScheme="green"
-          align="center"
-          w="full"
-          maxW="1400px"
-          mx="auto"
-        >
-          <TabList mb={8}>
-            {HERB_CATEGORIES.map(({ id, name, icon }) => (
-              <Tab key={id} fontSize="lg">
-                {icon} {name}
-              </Tab>
-            ))}
-          </TabList>
-
-          <TabPanels>
-            {HERB_CATEGORIES.map(({ id }) => (
-              <TabPanel key={id}>
-                <SimpleGrid
-                  columns={{ base: 1, sm: 2, md: 3, lg: 4 }}
-                  spacing={6}
-                >
-                  {productsByUsage[id].map((product) => (
-                    <SharedProductCard
-                      key={product.id}
-                      product={product}
-                      shop={shop}
-                    />
-                  ))}
-                </SimpleGrid>
-              </TabPanel>
-            ))}
-          </TabPanels>
-        </Tabs>
-      </VStack>
-
+    <Box as="main">
       <StoreHeroHeader
         shop={shop}
-        imageSrc="/images/store/herb-hero.jpg"
-        imageAlt="Herboristerie du Moulin Vert - Plantes médicinales et préparations naturelles"
-        overlayOpacity={0.4}
-        overlayColor="green"
-        height="75vh"
-        ctaText="Découvrir nos plantes"
-        onCtaClick={() => navigate("/store/herbShop/products")}
+        title="L'Herbier Traditionnel"
+        subtitle="Plantes médicinales et préparations naturelles"
+        availableShops={shops}
       />
 
       <Container maxW="7xl" px={{ base: 4, md: 8 }}>

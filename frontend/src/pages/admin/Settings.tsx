@@ -1,11 +1,6 @@
-import { CheckIcon, WarningIcon } from "@chakra-ui/icons";
+import { CheckIcon } from "@chakra-ui/icons";
 import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
-  AlertTitle,
   Badge,
-  Box,
   Button,
   Card,
   CardBody,
@@ -16,8 +11,6 @@ import {
   FormHelperText,
   FormLabel,
   Heading,
-  HStack,
-  Input,
   Select,
   SimpleGrid,
   Stat,
@@ -26,21 +19,15 @@ import {
   StatNumber,
   Switch,
   Text,
-  Textarea,
   useToast,
-  VStack,
+  VStack
 } from "@chakra-ui/react";
 import { useMemo, useState } from "react";
-import { useUniverse } from "../../contexts/UniverseContext";
+import AdminShopForm from "../../components/admin/AdminShopForm";
+import { useAdminShop } from "../../contexts/AdminContext";
 import { useShopData } from "../../hooks";
-import { shopTypeToUniverse } from "../../utils/universeMapping";
 
 interface ShopSettings {
-  name: string;
-  description: string;
-  email: string;
-  phone: string;
-  address: string;
   isActive: boolean;
   allowOrders: boolean;
   currency: string;
@@ -49,11 +36,6 @@ interface ShopSettings {
 
 export default function Settings() {
   const [settings, setSettings] = useState<ShopSettings>({
-    name: "Houblon & Tradition",
-    description: "Brasserie artisanale depuis 1995",
-    email: "contact@houblon-tradition.fr",
-    phone: "+33 1 23 45 67 89",
-    address: "123 Rue de la Brasserie, 75001 Paris",
     isActive: true,
     allowOrders: true,
     currency: "EUR",
@@ -62,21 +44,24 @@ export default function Settings() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [shopFormLoading, setShopFormLoading] = useState(false);
   const toast = useToast();
 
-  const { universe } = useUniverse();
+  const { shop: activeShop } = useAdminShop();
+  const { products } = useShopData();
 
-  const { shops, products } = useShopData();
-
-  // Filtrer les boutiques selon l'univers sélectionné
-  const filteredShops = useMemo(
-    () =>
-      shops.filter((shop) => shopTypeToUniverse(shop.shopType) === universe),
-    [shops, universe]
-  );
-
-  const currentShop = filteredShops[0]; // Prendre la première boutique de l'univers
   const colorScheme = "purple";
+
+  // Calculer les stats de la boutique active
+  const shopStats = useMemo(() => {
+    if (!activeShop) return { products: 0, categories: 0 };
+
+    const shopProducts = products.filter((p) => p.shopId === activeShop.id);
+    return {
+      products: shopProducts.length,
+      categories: 0, // Temporaire en attendant la correction des types
+    };
+  }, [activeShop, products]);
 
   const handleInputChange = (
     field: keyof ShopSettings,
@@ -89,7 +74,7 @@ export default function Settings() {
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      // Simulation d'API call
+      // Simulation d'API call pour les settings techniques
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       toast({
@@ -114,13 +99,28 @@ export default function Settings() {
     }
   };
 
+  const handleShopSave = async () => {
+    if (!activeShop) return;
+
+    setShopFormLoading(true);
+    try {
+      // La logique de sauvegarde est gérée par AdminShopForm
+      toast({
+        title: "Boutique mise à jour",
+        description: "Les informations ont été sauvegardées",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Erreur sauvegarde boutique:", error);
+    } finally {
+      setShopFormLoading(false);
+    }
+  };
+
   const handleReset = () => {
     setSettings({
-      name: "Houblon & Tradition",
-      description: "Brasserie artisanale depuis 1995",
-      email: "contact@houblon-tradition.fr",
-      phone: "+33 1 23 45 67 89",
-      address: "123 Rue de la Brasserie, 75001 Paris",
       isActive: true,
       allowOrders: true,
       currency: "EUR",
@@ -128,6 +128,14 @@ export default function Settings() {
     });
     setHasChanges(false);
   };
+
+  if (!activeShop) {
+    return (
+      <VStack spacing={4} align="center" justify="center" h="400px">
+        <Text fontSize="lg">Chargement des paramètres...</Text>
+      </VStack>
+    );
+  }
 
   return (
     <VStack spacing={6} align="stretch">
@@ -146,7 +154,7 @@ export default function Settings() {
                 ⚙️ Paramètres de la boutique
               </Heading>
               <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>
-                Configuration générale • {currentShop?.name}
+                Configuration générale • {activeShop.name}
               </Text>
             </VStack>
 
@@ -225,10 +233,8 @@ export default function Settings() {
           <CardBody>
             <Stat>
               <StatLabel>Produits</StatLabel>
-              <StatNumber
-                color={settings.allowOrders ? "green.500" : "orange.500"}
-              >
-                {products.filter((p) => p.shopId === currentShop?.id).length}
+              <StatNumber color="blue.500">
+                {shopStats.products}
               </StatNumber>
               <StatHelpText>Total en ligne</StatHelpText>
             </Stat>
@@ -239,191 +245,94 @@ export default function Settings() {
           <CardBody>
             <Stat>
               <StatLabel>Catégories</StatLabel>
-              <StatNumber>{currentShop?.categories?.length || 0}</StatNumber>
+              <StatNumber>{shopStats.categories}</StatNumber>
               <StatHelpText>Organisées</StatHelpText>
             </Stat>
           </CardBody>
         </Card>
       </SimpleGrid>
 
-      {/* Alerte de statut */}
-      {!settings.isActive && (
-        <Alert status="warning">
-          <AlertIcon />
-          <Box>
-            <AlertTitle>Boutique inactive !</AlertTitle>
-            <AlertDescription>
-              Votre boutique n'est pas visible par les clients. Activez-la pour
-              commencer à vendre.
-            </AlertDescription>
-          </Box>
-        </Alert>
-      )}
+      {/* Formulaire informations boutique - AdminShopForm intégré */}
+      <AdminShopForm
+        shop={activeShop}
+        onSave={handleShopSave}
+        isLoading={shopFormLoading}
+      />
 
-      <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={6}>
-        {/* Informations générales */}
-        <Card>
-          <CardHeader>
-            <Heading size="md">📋 Informations générales</Heading>
-          </CardHeader>
-          <CardBody>
-            <VStack spacing={4} align="stretch">
-              <FormControl>
-                <FormLabel>Nom de la boutique</FormLabel>
-                <Input
-                  value={settings.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  placeholder="Nom de votre boutique"
-                />
-              </FormControl>
+      {/* Configuration technique uniquement */}
+      <Card>
+        <CardHeader>
+          <Heading size="md">🔧 Configuration technique</Heading>
+        </CardHeader>
+        <CardBody>
+          <VStack spacing={6} align="stretch">
+            <FormControl display="flex" alignItems="center">
+              <FormLabel htmlFor="shop-active" mb="0" flex={1}>
+                Boutique active
+              </FormLabel>
+              <Switch
+                id="shop-active"
+                colorScheme={colorScheme}
+                isChecked={settings.isActive}
+                onChange={(e) =>
+                  handleInputChange("isActive", e.target.checked)
+                }
+              />
+            </FormControl>
 
-              <FormControl>
-                <FormLabel>Description</FormLabel>
-                <Textarea
-                  value={settings.description}
-                  onChange={(e) =>
-                    handleInputChange("description", e.target.value)
-                  }
-                  placeholder="Décrivez votre boutique..."
-                  rows={3}
-                />
-                <FormHelperText>
-                  Cette description apparaîtra sur votre vitrine
-                </FormHelperText>
-              </FormControl>
+            <FormControl display="flex" alignItems="center">
+              <FormLabel htmlFor="allow-orders" mb="0" flex={1}>
+                Accepter les commandes
+              </FormLabel>
+              <Switch
+                id="allow-orders"
+                colorScheme={colorScheme}
+                isChecked={settings.allowOrders}
+                onChange={(e) =>
+                  handleInputChange("allowOrders", e.target.checked)
+                }
+              />
+            </FormControl>
 
-              <FormControl>
-                <FormLabel>Email de contact</FormLabel>
-                <Input
-                  type="email"
-                  value={settings.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  placeholder="contact@votreboutique.fr"
-                />
-              </FormControl>
+            <Divider />
 
-              <FormControl>
-                <FormLabel>Téléphone</FormLabel>
-                <Input
-                  value={settings.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                  placeholder="+33 1 23 45 67 89"
-                />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>Adresse</FormLabel>
-                <Textarea
-                  value={settings.address}
-                  onChange={(e) => handleInputChange("address", e.target.value)}
-                  placeholder="Adresse complète de votre boutique"
-                  rows={2}
-                />
-              </FormControl>
-            </VStack>
-          </CardBody>
-        </Card>
-
-        {/* Configuration technique */}
-        <Card>
-          <CardHeader>
-            <Heading size="md">🔧 Configuration technique</Heading>
-          </CardHeader>
-          <CardBody>
-            <VStack spacing={6} align="stretch">
-              <FormControl display="flex" alignItems="center">
-                <FormLabel htmlFor="shop-active" mb="0" flex={1}>
-                  Boutique active
-                </FormLabel>
-                <Switch
-                  id="shop-active"
-                  colorScheme={colorScheme}
-                  isChecked={settings.isActive}
-                  onChange={(e) =>
-                    handleInputChange("isActive", e.target.checked)
-                  }
-                />
-              </FormControl>
-
-              <FormControl display="flex" alignItems="center">
-                <FormLabel htmlFor="allow-orders" mb="0" flex={1}>
-                  Accepter les commandes
-                </FormLabel>
-                <Switch
-                  id="allow-orders"
-                  colorScheme={colorScheme}
-                  isChecked={settings.allowOrders}
-                  onChange={(e) =>
-                    handleInputChange("allowOrders", e.target.checked)
-                  }
-                />
-              </FormControl>
-
-              <Divider />
-
-              <FormControl>
-                <FormLabel>Devise</FormLabel>
-                <Select
-                  value={settings.currency}
-                  onChange={(e) =>
-                    handleInputChange("currency", e.target.value)
-                  }
-                >
-                  <option value="EUR">Euro (€)</option>
-                  <option value="USD">Dollar US ($)</option>
-                  <option value="GBP">Livre Sterling (£)</option>
-                  <option value="CHF">Franc Suisse (CHF)</option>
-                </Select>
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>Fuseau horaire</FormLabel>
-                <Select
-                  value={settings.timezone}
-                  onChange={(e) =>
-                    handleInputChange("timezone", e.target.value)
-                  }
-                >
-                  <option value="Europe/Paris">Europe/Paris (UTC+1)</option>
-                  <option value="Europe/London">Europe/London (UTC+0)</option>
-                  <option value="America/New_York">
-                    America/New_York (UTC-5)
-                  </option>
-                  <option value="Asia/Tokyo">Asia/Tokyo (UTC+9)</option>
-                </Select>
-                <FormHelperText>
-                  Utilisé pour l'affichage des dates et heures
-                </FormHelperText>
-              </FormControl>
-
-              {/* Zone de danger */}
-              <Box
-                p={4}
-                borderWidth={1}
-                borderColor="red.200"
-                borderRadius="md"
-                bg="red.50"
+            <FormControl>
+              <FormLabel>Devise</FormLabel>
+              <Select
+                value={settings.currency}
+                onChange={(e) =>
+                  handleInputChange("currency", e.target.value)
+                }
               >
-                <VStack spacing={3} align="stretch">
-                  <HStack>
-                    <WarningIcon color="red.500" />
-                    <Text fontWeight="bold" color="red.700">
-                      Zone de danger
-                    </Text>
-                  </HStack>
-                  <Text fontSize="sm" color="red.600">
-                    Actions irréversibles qui affectent définitivement votre
-                    boutique
-                  </Text>
-                  <Button colorScheme="red" variant="outline" size="sm">
-                    Supprimer la boutique
-                  </Button>
-                </VStack>
-              </Box>
-            </VStack>
-          </CardBody>
-        </Card>
-      </SimpleGrid>
+                <option value="EUR">Euro (€)</option>
+                <option value="USD">Dollar US ($)</option>
+                <option value="GBP">Livre Sterling (£)</option>
+                <option value="CHF">Franc Suisse (CHF)</option>
+              </Select>
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Fuseau horaire</FormLabel>
+              <Select
+                value={settings.timezone}
+                onChange={(e) =>
+                  handleInputChange("timezone", e.target.value)
+                }
+              >
+                <option value="Europe/Paris">Europe/Paris (UTC+1)</option>
+                <option value="Europe/London">Europe/London (UTC+0)</option>
+                <option value="America/New_York">
+                  America/New_York (UTC-5)
+                </option>
+                <option value="Asia/Tokyo">Asia/Tokyo (UTC+9)</option>
+              </Select>
+              <FormHelperText>
+                Utilisé pour l'affichage des dates et heures
+              </FormHelperText>
+            </FormControl>
+          </VStack>
+        </CardBody>
+      </Card>
     </VStack>
   );
 }

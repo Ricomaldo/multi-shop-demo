@@ -1,19 +1,29 @@
 import { PrismaClient } from "@prisma/client";
-import { Router } from "express";
+import { Request, Response, Router } from "express";
 import type { Shop } from "../../../../shared/types";
+import { asyncHandler } from "../../middleware/errorHandler";
 
 const router = Router();
 const prisma = new PrismaClient();
 
 // Route PUT pour mettre à jour les informations d'une boutique
-router.put("/:shopId", async (req, res) => {
-  try {
-    const { shopId } = req.params;
-    const shopData: Partial<Shop> = req.body;
+router.put("/:shopId", asyncHandler(async (req: Request, res: Response) => {
+  const { shopId } = req.params;
+  const shopData: Partial<Shop> = req.body;
 
-    // Vérification des données requises
-    if (!shopId) {
-      return res.status(400).json({ error: "ID boutique manquant" });
+  // Vérification des données requises
+  if (!shopId) {
+    return res.status(400).json({ error: "ID boutique manquant" });
+  }
+
+  try {
+    // Vérifier d'abord si la boutique existe
+    const existingShop = await prisma.shop.findUnique({
+      where: { id: shopId }
+    });
+
+    if (!existingShop) {
+      return res.status(404).json({ error: "Boutique non trouvée" });
     }
 
     // Mise à jour de la boutique
@@ -34,9 +44,9 @@ router.put("/:shopId", async (req, res) => {
 
     res.json(updatedShop);
   } catch (error) {
-    console.error("Erreur mise à jour boutique:", error);
+    console.error("Erreur update boutique:", error);
     res.status(500).json({ error: "Erreur serveur lors de la mise à jour" });
   }
-});
+}));
 
 export default router;

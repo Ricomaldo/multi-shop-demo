@@ -10,7 +10,7 @@ interface UseShopByTypeReturn {
 }
 
 export const useShopByType = (shopType: ShopType): UseShopByTypeReturn => {
-  const { shops, products, loading, error, getProductsByShop } = useShopData();
+  const { shops, loading, error, getProductsByShop } = useShopData();
 
   const result = useMemo(() => {
     const shop = shops.find((s) => s.shopType === shopType) || null;
@@ -22,7 +22,7 @@ export const useShopByType = (shopType: ShopType): UseShopByTypeReturn => {
       loading,
       error,
     };
-  }, [shops, products, loading, error, shopType, getProductsByShop]);
+  }, [shops, shopType, getProductsByShop, loading, error]);
 
   return result;
 };

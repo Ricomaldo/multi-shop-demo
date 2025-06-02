@@ -57,7 +57,6 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   onAddToCart,
   onGoBack,
 }) => {
-  const cardBg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const textColor = useColorModeValue("gray.600", "gray.300");
 
@@ -72,15 +71,6 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   const themeColor = getUniverseColorScheme(universe);
   const shopIcon = getUniverseIcon(universe);
   const shopTypeName = getUniverseName(universe);
-
-  // Grouper les attributs par catégorie
-  const attributesByCategory = allAttributes.reduce((acc, attr) => {
-    if (!acc[attr.category]) {
-      acc[attr.category] = [];
-    }
-    acc[attr.category].push(attr);
-    return acc;
-  }, {} as Record<string, typeof allAttributes>);
 
   return (
     <Container maxW="6xl" py={8}>
@@ -131,10 +121,10 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 overflow="hidden"
               >
                 {/* Si image, on l'affiche, sinon emoji univers */}
-                {product.image ? (
+                {product.imageUrl ? (
                   <Box
                     as="img"
-                    src={product.image}
+                    src={product.imageUrl}
                     alt={product.name}
                     maxH="360px"
                     maxW="100%"
@@ -220,9 +210,9 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
               {/* Détails produit */}
               <SimpleGrid columns={2} spacing={4}>
                 {allAttributes.map((attr, idx) => (
-                  <Box key={attr.id || attr.name + String(attr.value) + idx}>
+                  <Box key={attr.label + String(attr.value) + idx}>
                     <Text fontSize="sm" color={textColor} fontWeight="medium">
-                      {attr.name}
+                      {attr.label}
                     </Text>
                     <Text fontSize="md" fontWeight="bold">
                       {attr.value}

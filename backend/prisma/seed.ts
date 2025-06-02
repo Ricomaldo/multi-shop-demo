@@ -2,10 +2,47 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const shopConfigs = {
+interface Location {
+  city: string;
+  address: string;
+  phone: string;
+}
+
+interface Product {
+  name: string;
+  description?: string;
+  price: number;
+  image: string;
+  attributes: Record<string, unknown>;
+}
+
+interface Category {
+  name: string;
+  image: string;
+  products: Product[];
+}
+
+interface ShopConfig {
+  baseName: string;
+  shopCount: number;
+  locations: Location[];
+  description: string;
+  website: string;
+  openingHours: string;
+  categories: Category[];
+}
+
+const shopConfigs: Record<string, ShopConfig> = {
   brewery: {
-    name: "Houblon & Tradition",
-    shopCount: 1, // Artisan débutant
+    baseName: "Houblon & Tradition",
+    shopCount: 1,
+    locations: [
+      {
+        city: "Lille",
+        address: "45 rue de la Soif, 59000 Lille",
+        phone: "03 20 12 34 56",
+      }
+    ],
     description:
       "Brasserie artisanale perpétuant les traditions brassicoles depuis 2015. Nos bières sont brassées avec passion dans le respect des méthodes ancestrales.",
     website: "https://houblon-tradition.fr",
@@ -21,12 +58,12 @@ const shopConfigs = {
     categories: [
       {
         name: "Bières Blondes",
-        image: "/images/store/brewery-blondes.jpg",
+        image: "/images/products/brewery-blondes.jpg",
         products: [
           {
             name: "Blonde du Moulin",
             price: 4.5,
-            image: "/images/store/brewery-blondes.jpg",
+            image: "/images/products/brewery-blondes.jpg",
             attributes: {
               degre_alcool: "4.8%",
               amertume_ibu: "22 IBU",
@@ -40,7 +77,7 @@ const shopConfigs = {
           {
             name: "Dorée de Printemps",
             price: 4.2,
-            image: "/images/store/brewery-blondes.jpg",
+            image: "/images/products/brewery-blondes.jpg",
             attributes: {
               degre_alcool: "4.2%",
               amertume_ibu: "18 IBU",
@@ -54,7 +91,7 @@ const shopConfigs = {
           {
             name: "Cascade Blonde",
             price: 4.8,
-            image: "/images/store/brewery-blondes.jpg",
+            image: "/images/products/brewery-blondes.jpg",
             attributes: {
               degre_alcool: "5.2%",
               amertume_ibu: "35 IBU",
@@ -68,7 +105,7 @@ const shopConfigs = {
           {
             name: "Triple Dorée",
             price: 5.2,
-            image: "/images/store/brewery-blondes.jpg",
+            image: "/images/products/brewery-blondes.jpg",
             attributes: {
               degre_alcool: "7.5%",
               amertume_ibu: "28 IBU",
@@ -84,12 +121,12 @@ const shopConfigs = {
       },
       {
         name: "Bières Brunes",
-        image: "/images/store/brewery-brunes.jpg",
+        image: "/images/products/brewery-brunes.jpg",
         products: [
           {
             name: "Brune du Terroir",
             price: 4.6,
-            image: "/images/store/brewery-brunes.jpg",
+            image: "/images/products/brewery-brunes.jpg",
             attributes: {
               degre_alcool: "5.5%",
               amertume_ibu: "25 IBU",
@@ -103,7 +140,7 @@ const shopConfigs = {
           {
             name: "Porter aux Épices",
             price: 5.0,
-            image: "/images/store/brewery-brunes.jpg",
+            image: "/images/products/brewery-brunes.jpg",
             attributes: {
               degre_alcool: "6.2%",
               amertume_ibu: "32 IBU",
@@ -118,7 +155,7 @@ const shopConfigs = {
           {
             name: "Stout Imperial",
             price: 5.2,
-            image: "/images/store/brewery-brunes.jpg",
+            image: "/images/products/brewery-brunes.jpg",
             attributes: {
               degre_alcool: "8.2%",
               amertume_ibu: "45 IBU",
@@ -133,7 +170,7 @@ const shopConfigs = {
           {
             name: "Ambrée Traditionnelle",
             price: 4.9,
-            image: "/images/store/brewery-brunes.jpg",
+            image: "/images/products/brewery-brunes.jpg",
             attributes: {
               degre_alcool: "5.8%",
               amertume_ibu: "20 IBU",
@@ -148,12 +185,12 @@ const shopConfigs = {
       },
       {
         name: "India Pale Ales",
-        image: "/images/store/brewery-ipa.jpg",
+        image: "/images/products/brewery-ipa.jpg",
         products: [
           {
             name: "IPA Houblonnée",
             price: 5.5,
-            image: "/images/store/brewery-ipa.jpg",
+            image: "/images/products/brewery-ipa.jpg",
             attributes: {
               degre_alcool: "6.5%",
               amertume_ibu: "65 IBU",
@@ -167,7 +204,7 @@ const shopConfigs = {
           {
             name: "Session IPA",
             price: 4.8,
-            image: "/images/store/brewery-ipa.jpg",
+            image: "/images/products/brewery-ipa.jpg",
             attributes: {
               degre_alcool: "4.5%",
               amertume_ibu: "40 IBU",
@@ -181,7 +218,7 @@ const shopConfigs = {
           {
             name: "Double IPA Tradition",
             price: 6.2,
-            image: "/images/store/brewery-ipa.jpg",
+            image: "/images/products/brewery-ipa.jpg",
             attributes: {
               degre_alcool: "8.8%",
               amertume_ibu: "85 IBU",
@@ -196,7 +233,7 @@ const shopConfigs = {
           {
             name: "IPA aux Agrumes",
             price: 5.8,
-            image: "/images/store/brewery-ipa.jpg",
+            image: "/images/products/brewery-ipa.jpg",
             attributes: {
               degre_alcool: "6.0%",
               amertume_ibu: "55 IBU",
@@ -211,12 +248,12 @@ const shopConfigs = {
       },
       {
         name: "Bières Saisonnières",
-        image: "/images/store/brewery-saisonnieres.jpg",
+        image: "/images/products/brewery-saisonnieres.jpg",
         products: [
           {
             name: "Bière de Noël aux Épices",
             price: 5.0,
-            image: "/images/store/brewery-saisonnieres.jpg",
+            image: "/images/products/brewery-saisonnieres.jpg",
             attributes: {
               degre_alcool: "7.0%",
               amertume_ibu: "15 IBU",
@@ -230,7 +267,7 @@ const shopConfigs = {
           {
             name: "Blanche d'Été Bio",
             price: 4.4,
-            image: "/images/store/brewery-saisonnieres.jpg",
+            image: "/images/products/brewery-saisonnieres.jpg",
             attributes: {
               degre_alcool: "4.8%",
               amertume_ibu: "12 IBU",
@@ -245,7 +282,7 @@ const shopConfigs = {
           {
             name: "Bière de Garde d'Automne",
             price: 4.9,
-            image: "/images/store/brewery-saisonnieres.jpg",
+            image: "/images/products/brewery-saisonnieres.jpg",
             attributes: {
               degre_alcool: "6.5%",
               amertume_ibu: "22 IBU",
@@ -260,7 +297,7 @@ const shopConfigs = {
           {
             name: "Bière de Mars Artisanale",
             price: 4.7,
-            image: "/images/store/brewery-saisonnieres.jpg",
+            image: "/images/products/brewery-saisonnieres.jpg",
             attributes: {
               degre_alcool: "5.5%",
               amertume_ibu: "18 IBU",
@@ -276,8 +313,20 @@ const shopConfigs = {
     ],
   },
   teaShop: {
-    name: "Les Jardins de Darjeeling",
-    shopCount: 2, // Expansion locale
+    baseName: "Les Jardins de Darjeeling",
+    shopCount: 2,
+    locations: [
+      {
+        city: "Aix-en-Provence",
+        address: "15 cours Mirabeau, 13100 Aix-en-Provence",
+        phone: "04 42 26 35 98",
+      },
+      {
+        city: "Nice",
+        address: "7 rue Masséna, 06000 Nice",
+        phone: "04 93 85 62 31",
+      }
+    ],
     description:
       "Salon de thé raffiné proposant une sélection unique de thés d'exception provenant des meilleurs jardins d'Asie. Dégustation et vente de thés rares.",
     website: "https://jardins-darjeeling.fr",
@@ -293,12 +342,12 @@ const shopConfigs = {
     categories: [
       {
         name: "Thés Verts Premium",
-        image: "/images/store/tea-verts.jpg",
+        image: "/images/products/tea-verts.jpg",
         products: [
           {
             name: "Sencha Impérial du Japon",
             price: 18.5,
-            image: "/images/store/tea-verts.jpg",
+            image: "/images/products/tea-verts.jpg",
             attributes: {
               origine_plantation: "Shizuoka, Japon",
               altitude_culture: "400m",
@@ -313,7 +362,7 @@ const shopConfigs = {
           {
             name: "Gyokuro Première Récolte",
             price: 42.0,
-            image: "/images/store/tea-verts.jpg",
+            image: "/images/products/tea-verts.jpg",
             attributes: {
               origine_plantation: "Uji, Kyoto",
               altitude_culture: "200m",
@@ -329,7 +378,7 @@ const shopConfigs = {
           {
             name: "Matcha Cérémonial Uji",
             price: 55.0,
-            image: "/images/store/tea-verts.jpg",
+            image: "/images/products/tea-verts.jpg",
             attributes: {
               origine_plantation: "Uji, Japon",
               grade_qualite: "Cérémonial",
@@ -343,7 +392,7 @@ const shopConfigs = {
           {
             name: "Dragon Well Premium",
             price: 24.9,
-            image: "/images/store/tea-verts.jpg",
+            image: "/images/products/tea-verts.jpg",
             attributes: {
               origine_plantation: "Lac de l'Ouest, Hangzhou",
               altitude_culture: "300m",
@@ -359,12 +408,12 @@ const shopConfigs = {
       },
       {
         name: "Thés Noirs d'Excellence",
-        image: "/images/store/tea-noirs.jpg",
+        image: "/images/products/tea-noirs.jpg",
         products: [
           {
             name: "Earl Grey Bergamote Bio",
             price: 16.5,
-            image: "/images/store/tea-noirs.jpg",
+            image: "/images/products/tea-noirs.jpg",
             attributes: {
               origine_plantation: "Ceylan + Bergamote Calabria",
               grade_qualite: "FBOP Bio",
@@ -378,7 +427,7 @@ const shopConfigs = {
           {
             name: "Darjeeling FTGFOP1",
             price: 28.6,
-            image: "/images/store/tea-noirs.jpg",
+            image: "/images/products/tea-noirs.jpg",
             attributes: {
               origine_plantation: "Makaibari, Darjeeling",
               altitude_culture: "1500m",
@@ -393,7 +442,7 @@ const shopConfigs = {
           {
             name: "Assam Golden Tips",
             price: 22.2,
-            image: "/images/store/tea-noirs.jpg",
+            image: "/images/products/tea-noirs.jpg",
             attributes: {
               origine_plantation: "Brahmaputra Valley",
               altitude_culture: "600m",
@@ -408,7 +457,7 @@ const shopConfigs = {
           {
             name: "Ceylon Orange Pekoe",
             price: 19.8,
-            image: "/images/store/tea-noirs.jpg",
+            image: "/images/products/tea-noirs.jpg",
             attributes: {
               origine_plantation: "Nuwara Eliya, Sri Lanka",
               altitude_culture: "1800m",
@@ -423,12 +472,12 @@ const shopConfigs = {
       },
       {
         name: "Thés Blancs Rares",
-        image: "/images/store/tea-blancs.jpg",
+        image: "/images/products/tea-blancs.jpg",
         products: [
           {
             name: "Bai Mu Dan Impérial",
             price: 35.9,
-            image: "/images/store/tea-blancs.jpg",
+            image: "/images/products/tea-blancs.jpg",
             attributes: {
               origine_plantation: "Fujian, Chine",
               altitude_culture: "800m",
@@ -444,7 +493,7 @@ const shopConfigs = {
           {
             name: "Aiguilles d'Argent",
             price: 78.0,
-            image: "/images/store/tea-blancs.jpg",
+            image: "/images/products/tea-blancs.jpg",
             attributes: {
               origine_plantation: "Fuding, Fujian",
               grade_qualite: "Silver Needle Premium",
@@ -459,7 +508,7 @@ const shopConfigs = {
           {
             name: "Moonlight White du Yunnan",
             price: 45.5,
-            image: "/images/store/tea-blancs.jpg",
+            image: "/images/products/tea-blancs.jpg",
             attributes: {
               origine_plantation: "Monts du Yunnan",
               altitude_culture: "1200m",
@@ -473,7 +522,7 @@ const shopConfigs = {
           {
             name: "Shou Mei Vieilli 5 ans",
             price: 32.4,
-            image: "/images/store/tea-blancs.jpg",
+            image: "/images/products/tea-blancs.jpg",
             attributes: {
               origine_plantation: "Fujian, Chine",
               grade_qualite: "Shou Mei vieilli",
@@ -489,12 +538,12 @@ const shopConfigs = {
       },
       {
         name: "Infusions & Tisanes",
-        image: "/images/store/tea-infusions.jpg",
+        image: "/images/products/tea-infusions.jpg",
         products: [
           {
             name: "Camomille Romaine Bio",
             price: 12.2,
-            image: "/images/store/tea-infusions.jpg",
+            image: "/images/products/tea-infusions.jpg",
             attributes: {
               origine_plantation: "Provence, France",
               certification: "Agriculture Biologique",
@@ -508,7 +557,7 @@ const shopConfigs = {
           {
             name: "Verveine Citronnée Premium",
             price: 11.8,
-            image: "/images/store/tea-infusions.jpg",
+            image: "/images/products/tea-infusions.jpg",
             attributes: {
               origine_plantation: "Drôme, France",
               usage_traditionnel: "Digestion et relaxation",
@@ -521,7 +570,7 @@ const shopConfigs = {
           {
             name: "Rooibos Vanille Bourbon",
             price: 14.5,
-            image: "/images/store/tea-infusions.jpg",
+            image: "/images/products/tea-infusions.jpg",
             attributes: {
               origine_plantation: "Cederberg, Afrique du Sud",
               usage_traditionnel: "Sans théine, toute la journée",
@@ -534,7 +583,7 @@ const shopConfigs = {
           {
             name: "Mélange Détox aux 7 Plantes",
             price: 16.9,
-            image: "/images/store/tea-infusions.jpg",
+            image: "/images/products/tea-infusions.jpg",
             attributes: {
               origine_plantation: "Mélange européen",
               usage_traditionnel: "Drainage et purification",
@@ -550,8 +599,20 @@ const shopConfigs = {
     ],
   },
   beautyShop: {
-    name: "L'Écrin de Jade",
-    shopCount: 2, // Variante expansion
+    baseName: "L'Écrin de Jade",
+    shopCount: 2,
+    locations: [
+      {
+        city: "Paris",
+        address: "12 rue du Faubourg Saint-Honoré, 75008 Paris",
+        phone: "01 42 65 43 21",
+      },
+      {
+        city: "Lyon",
+        address: "8 rue de la République, 69002 Lyon",
+        phone: "04 72 41 23 45",
+      }
+    ],
     description:
       "Institut de beauté bio alliant cosmétiques naturels et soins traditionnels. Nos produits sont sélectionnés pour leur efficacité et leur respect de la peau.",
     website: "https://ecrin-jade.fr",
@@ -567,12 +628,12 @@ const shopConfigs = {
     categories: [
       {
         name: "Soins du Visage",
-        image: "/images/store/beauty-visage.jpg",
+        image: "/images/products/beauty-visage.jpg",
         products: [
           {
             name: "Crème Hydratante à l'Acide Hyaluronique",
             price: 32.9,
-            image: "/images/store/beauty-visage.jpg",
+            image: "/images/products/beauty-visage.jpg",
             attributes: {
               type_peau: "Tous types de peau",
               ingredients_actifs: "Acide Hyaluronique 1.5%",
@@ -587,7 +648,7 @@ const shopConfigs = {
           {
             name: "Sérum Anti-Âge au Rétinol",
             price: 48.5,
-            image: "/images/store/beauty-visage.jpg",
+            image: "/images/products/beauty-visage.jpg",
             attributes: {
               type_peau: "Peaux matures",
               ingredients_actifs: "Rétinol encapsulé 0.5%",
@@ -602,7 +663,7 @@ const shopConfigs = {
           {
             name: "Masque Purifiant à l'Argile Verte",
             price: 24.8,
-            image: "/images/store/beauty-visage.jpg",
+            image: "/images/products/beauty-visage.jpg",
             attributes: {
               type_peau: "Peaux mixtes à grasses",
               ingredients_actifs: "Argile verte Montmorillonite",
@@ -617,7 +678,7 @@ const shopConfigs = {
           {
             name: "Eau Micellaire Démaquillante",
             price: 18.9,
-            image: "/images/store/beauty-visage.jpg",
+            image: "/images/products/beauty-visage.jpg",
             attributes: {
               type_peau: "Peaux sensibles",
               ingredients_actifs: "Micelles douces sans sulfates",
@@ -632,12 +693,12 @@ const shopConfigs = {
       },
       {
         name: "Soins du Corps",
-        image: "/images/store/beauty-corps.jpg",
+        image: "/images/products/beauty-corps.jpg",
         products: [
           {
             name: "Lait Corporel Nourrissant au Karité",
             price: 22.5,
-            image: "/images/store/beauty-corps.jpg",
+            image: "/images/products/beauty-corps.jpg",
             attributes: {
               type_peau: "Peaux sèches",
               ingredients_actifs: "Beurre de Karité 15%",
@@ -652,7 +713,7 @@ const shopConfigs = {
           {
             name: "Gommage Exfoliant aux Cristaux de Sel",
             price: 28.0,
-            image: "/images/store/beauty-corps.jpg",
+            image: "/images/products/beauty-corps.jpg",
             attributes: {
               type_peau: "Tous types de peau",
               ingredients_actifs: "Cristaux de sel de mer",
@@ -666,7 +727,7 @@ const shopConfigs = {
           {
             name: "Huile de Massage Relaxante Lavande",
             price: 34.9,
-            image: "/images/store/beauty-corps.jpg",
+            image: "/images/products/beauty-corps.jpg",
             attributes: {
               type_peau: "Tous types de peau",
               ingredients_actifs: "Huile essentielle Lavande",
@@ -681,7 +742,7 @@ const shopConfigs = {
           {
             name: "Baume Réparateur Multi-Usages",
             price: 26.8,
-            image: "/images/store/beauty-corps.jpg",
+            image: "/images/products/beauty-corps.jpg",
             attributes: {
               type_peau: "Peaux abîmées",
               ingredients_actifs: "Cire d'abeille, Calendula",
@@ -696,12 +757,12 @@ const shopConfigs = {
       },
       {
         name: "Soins Capillaires",
-        image: "/images/store/beauty-cheveux.jpg",
+        image: "/images/products/beauty-cheveux.jpg",
         products: [
           {
             name: "Shampooing Nutrition Intense Argan",
             price: 19.9,
-            image: "/images/store/beauty-cheveux.jpg",
+            image: "/images/products/beauty-cheveux.jpg",
             attributes: {
               type_cheveux: "Cheveux secs et abîmés",
               ingredients_actifs: "Huile d'Argan du Maroc",
@@ -715,7 +776,7 @@ const shopConfigs = {
           {
             name: "Masque Réparateur Protéines de Soie",
             price: 35.5,
-            image: "/images/store/beauty-cheveux.jpg",
+            image: "/images/products/beauty-cheveux.jpg",
             attributes: {
               type_cheveux: "Cheveux fragilisés",
               ingredients_actifs: "Protéines de soie hydrolysées",
@@ -728,7 +789,7 @@ const shopConfigs = {
           {
             name: "Huile Capillaire Précieuse 5 Huiles",
             price: 28.9,
-            image: "/images/store/beauty-cheveux.jpg",
+            image: "/images/products/beauty-cheveux.jpg",
             attributes: {
               type_cheveux: "Tous types de cheveux",
               ingredients_actifs: "Argan, Jojoba, Avocat, Coco, Ricin",
@@ -742,7 +803,7 @@ const shopConfigs = {
           {
             name: "Spray Démêlant Protection Thermique",
             price: 16.8,
-            image: "/images/store/beauty-cheveux.jpg",
+            image: "/images/products/beauty-cheveux.jpg",
             attributes: {
               type_cheveux: "Cheveux emmêlés",
               ingredients_actifs: "Complexe thermo-protecteur",
@@ -756,12 +817,12 @@ const shopConfigs = {
       },
       {
         name: "Maquillage Bio",
-        image: "/images/store/beauty-maquillage.jpg",
+        image: "/images/products/beauty-maquillage.jpg",
         products: [
           {
             name: "Fond de Teint Naturel Longue Tenue",
             price: 38.9,
-            image: "/images/store/beauty-maquillage.jpg",
+            image: "/images/products/beauty-maquillage.jpg",
             attributes: {
               type_peau: "Tous types de peau",
               ingredients_actifs: "Pigments minéraux naturels",
@@ -776,7 +837,7 @@ const shopConfigs = {
           {
             name: "Rouge à Lèvres Mat Hydratant",
             price: 22.5,
-            image: "/images/store/beauty-maquillage.jpg",
+            image: "/images/products/beauty-maquillage.jpg",
             attributes: {
               ingredients_actifs: "Beurre de Karité, Cire de Candelilla",
               certification_bio: "Cosmos Organic",
@@ -788,7 +849,7 @@ const shopConfigs = {
           {
             name: "Mascara Volumisant Fibres Naturelles",
             price: 28.9,
-            image: "/images/store/beauty-maquillage.jpg",
+            image: "/images/products/beauty-maquillage.jpg",
             attributes: {
               ingredients_actifs: "Fibres de riz, Cires végétales",
               certification_bio: "Ecocert",
@@ -801,7 +862,7 @@ const shopConfigs = {
           {
             name: "Palette Ombres à Paupières Nude",
             price: 42.9,
-            image: "/images/store/beauty-maquillage.jpg",
+            image: "/images/products/beauty-maquillage.jpg",
             attributes: {
               ingredients_actifs: "Pigments naturels, Mica",
               certification_bio: "Natrue",
@@ -815,8 +876,30 @@ const shopConfigs = {
     ],
   },
   herbShop: {
-    name: "Herboristerie du Moulin Vert",
-    shopCount: 4, // Entrepreneur confirmé
+    baseName: "Herboristerie du Moulin",
+    shopCount: 4,
+    locations: [
+      {
+        city: "Bordeaux",
+        address: "25 cours de l'Intendance, 33000 Bordeaux",
+        phone: "05 56 52 45 67",
+      },
+      {
+        city: "Nantes",
+        address: "3 rue Crébillon, 44000 Nantes",
+        phone: "02 40 35 67 89",
+      },
+      {
+        city: "Toulouse",
+        address: "45 rue Saint-Rome, 31000 Toulouse",
+        phone: "05 61 23 45 67",
+      },
+      {
+        city: "Strasbourg",
+        address: "15 rue des Grandes Arcades, 67000 Strasbourg",
+        phone: "03 88 32 45 67",
+      }
+    ],
     description:
       "Herboristerie traditionnelle proposant des plantes médicinales de qualité et des préparations sur-mesure. Conseils personnalisés par nos experts en phytothérapie.",
     website: "https://moulin-vert-herboriste.fr",
@@ -832,12 +915,12 @@ const shopConfigs = {
     categories: [
       {
         name: "Bien-être Digestif",
-        image: "/images/store/herb-digestion.jpg",
+        image: "/images/products/herb-digestion.jpg",
         products: [
           {
             name: "Tisane Digestive aux 4 Plantes",
             price: 12.9,
-            image: "/images/store/herb-digestion.jpg",
+            image: "/images/products/herb-digestion.jpg",
             attributes: {
               principes_actifs: "Menthe, Fenouil, Anis, Mélisse",
               usage_traditionnel: "Facilite la digestion",
@@ -852,7 +935,7 @@ const shopConfigs = {
           {
             name: "Gélules Charbon Végétal Activé",
             price: 18.5,
-            image: "/images/store/herb-digestion.jpg",
+            image: "/images/products/herb-digestion.jpg",
             attributes: {
               principes_actifs: "Charbon de coque de noix de coco",
               usage_traditionnel: "Ballonnements, flatulences",
@@ -866,7 +949,7 @@ const shopConfigs = {
           {
             name: "Huile Essentielle Menthe Poivrée",
             price: 15.8,
-            image: "/images/store/herb-digestion.jpg",
+            image: "/images/products/herb-digestion.jpg",
             attributes: {
               principes_actifs: "Menthol 40%",
               usage_traditionnel: "Digestion difficile",
@@ -881,7 +964,7 @@ const shopConfigs = {
           {
             name: "Infusion Fenouil Doux Bio",
             price: 10.9,
-            image: "/images/store/herb-digestion.jpg",
+            image: "/images/products/herb-digestion.jpg",
             attributes: {
               principes_actifs: "Graines de fenouil",
               usage_traditionnel: "Digestion, allaitement",
@@ -896,12 +979,12 @@ const shopConfigs = {
       },
       {
         name: "Sommeil & Relaxation",
-        image: "/images/store/herb-sommeil.jpg",
+        image: "/images/products/herb-sommeil.jpg",
         products: [
           {
             name: "Tisane Nuit Paisible Camomille Lavande",
             price: 14.5,
-            image: "/images/store/herb-sommeil.jpg",
+            image: "/images/products/herb-sommeil.jpg",
             attributes: {
               principes_actifs: "Camomille, Lavande, Tilleul",
               usage_traditionnel: "Favorise l'endormissement",
@@ -915,7 +998,7 @@ const shopConfigs = {
           {
             name: "Spray d'Oreiller Relaxant aux Huiles",
             price: 19.9,
-            image: "/images/store/herb-sommeil.jpg",
+            image: "/images/products/herb-sommeil.jpg",
             attributes: {
               principes_actifs: "HE Lavande, Orange douce",
               usage_traditionnel: "Ambiance apaisante",
@@ -928,7 +1011,7 @@ const shopConfigs = {
           {
             name: "Gélules Mélatonine Naturelle",
             price: 24.9,
-            image: "/images/store/herb-sommeil.jpg",
+            image: "/images/products/herb-sommeil.jpg",
             attributes: {
               principes_actifs: "Mélatonine 1.9mg",
               usage_traditionnel: "Régulation sommeil",
@@ -942,7 +1025,7 @@ const shopConfigs = {
           {
             name: "Huile de Massage Nocturne Apaisante",
             price: 28.5,
-            image: "/images/store/herb-sommeil.jpg",
+            image: "/images/products/herb-sommeil.jpg",
             attributes: {
               principes_actifs: "HE Lavande vraie, Petit grain",
               usage_traditionnel: "Détente musculaire",
@@ -956,12 +1039,12 @@ const shopConfigs = {
       },
       {
         name: "Défenses Naturelles",
-        image: "/images/store/herb-immunite.jpg",
+        image: "/images/products/herb-immunite.jpg",
         products: [
           {
             name: "Sirop Échinacée Propolis Miel",
             price: 22.8,
-            image: "/images/store/herb-immunite.jpg",
+            image: "/images/products/herb-immunite.jpg",
             attributes: {
               principes_actifs: "Échinacée, Propolis, Miel",
               usage_traditionnel: "Renforcement immunité",
@@ -975,7 +1058,7 @@ const shopConfigs = {
           {
             name: "Gélules Propolis Française Premium",
             price: 26.9,
-            image: "/images/store/herb-immunite.jpg",
+            image: "/images/products/herb-immunite.jpg",
             attributes: {
               principes_actifs: "Propolis française 400mg",
               usage_traditionnel: "Défenses naturelles",
@@ -989,7 +1072,7 @@ const shopConfigs = {
           {
             name: "Tisane Immunité Thym Romarin",
             price: 13.5,
-            image: "/images/store/herb-immunite.jpg",
+            image: "/images/products/herb-immunite.jpg",
             attributes: {
               principes_actifs: "Thym, Romarin, Eucalyptus",
               usage_traditionnel: "Période hivernale",
@@ -1003,7 +1086,7 @@ const shopConfigs = {
           {
             name: "Vitamine C Naturelle Acérola",
             price: 28.9,
-            image: "/images/store/herb-immunite.jpg",
+            image: "/images/products/herb-immunite.jpg",
             attributes: {
               principes_actifs: "Acérola titré 17% Vit C",
               usage_traditionnel: "Fatigue, immunité",
@@ -1017,12 +1100,12 @@ const shopConfigs = {
       },
       {
         name: "Équilibre & Vitalité",
-        image: "/images/store/herb-stress.jpg",
+        image: "/images/products/herb-stress.jpg",
         products: [
           {
             name: "Infusion Équilibre Verveine Mélisse",
             price: 11.8,
-            image: "/images/store/herb-stress.jpg",
+            image: "/images/products/herb-stress.jpg",
             attributes: {
               principes_actifs: "Verveine, Mélisse, Passiflore",
               usage_traditionnel: "Équilibre nerveux",
@@ -1036,7 +1119,7 @@ const shopConfigs = {
           {
             name: "Huile Essentielle Lavande Fine AOP",
             price: 18.9,
-            image: "/images/store/herb-stress.jpg",
+            image: "/images/products/herb-stress.jpg",
             attributes: {
               principes_actifs: "Linalol, Acétate de linalyle",
               usage_traditionnel: "Stress, agitation",
@@ -1050,7 +1133,7 @@ const shopConfigs = {
           {
             name: "Gélules Rhodiola Anti-Stress",
             price: 34.5,
-            image: "/images/store/herb-stress.jpg",
+            image: "/images/products/herb-stress.jpg",
             attributes: {
               principes_actifs: "Rhodiola rosea 500mg",
               usage_traditionnel: "Adaptation au stress",
@@ -1064,7 +1147,7 @@ const shopConfigs = {
           {
             name: "Baume Détente Muscles et Articulations",
             price: 24.9,
-            image: "/images/store/herb-stress.jpg",
+            image: "/images/products/herb-stress.jpg",
             attributes: {
               principes_actifs: "Arnica, Gaulthérie, Menthe",
               usage_traditionnel: "Confort musculaire",
@@ -1098,98 +1181,63 @@ async function main() {
   let totalProducts = 0;
   let totalShops = 0;
 
-  // Création des boutiques selon la stratégie DemoForge
   for (const [shopType, config] of Object.entries(shopConfigs)) {
-    console.log(
-      `\n🏪 Création des boutiques ${config.name} (${
-        config.shopCount
-      } boutique${config.shopCount > 1 ? "s" : ""})...`
-    );
+    console.log(`🏪 Création des boutiques ${config.baseName}...`);
 
-    // Création du nombre de boutiques défini pour chaque type
-    for (let i = 1; i <= config.shopCount; i++) {
-      const shopName =
-        config.shopCount === 1
-          ? config.name
-          : `${config.name} ${
-              i === 1 ? "Centre" : i === 2 ? "Nord" : i === 3 ? "Sud" : "Est"
-            }`;
-
-      const address = `${10 + i} rue du Commerce, 7500${i} Paris`;
-      const phone = `01 23 45 6${i} ${i}0`;
-      const email = `contact${i}@${shopName
-        .toLowerCase()
-        .replace(/[\s&]/g, "-")}.fr`;
-      const website = config.website.replace("https://", `https://${i}-`);
-      const description = `${config.description} Boutique ${
-        i === 1 ? "principale" : `n°${i}`
-      } située en plein cœur de Paris.`;
-
+    for (const location of config.locations) {
+      const shopName = `${config.baseName} ${location.city}`;
       const shop = await prisma.shop.create({
         data: {
           name: shopName,
-          shopType: shopType,
+          shopType,
           merchantId: merchant.id,
-          address,
-          phone,
-          email,
-          website,
-          description,
+          address: location.address,
+          phone: location.phone,
+          email: `contact.${location.city.toLowerCase()}@${config.website.replace("https://", "")}`,
+          website: config.website,
+          description: config.description,
           openingHours: config.openingHours,
         },
       });
-      totalShops++;
 
-      // Création des catégories pour chaque boutique
-      for (const categoryData of config.categories) {
-        const category = await prisma.category.create({
+      console.log(`📦 Création des catégories et produits pour ${shopName}...`);
+      for (const category of config.categories) {
+        const createdCategory = await prisma.category.create({
           data: {
-            name: categoryData.name,
-            image: categoryData.image,
+            name: category.name,
+            image: category.image,
             shopId: shop.id,
           },
         });
 
-        // Création des produits pour cette catégorie
-        const categoryProducts = categoryData.products;
-        for (const productData of categoryProducts) {
-          // Stock totalement indépendant par boutique
-          const adjustedStock = Math.floor(Math.random() * 66) + 15;
-
+        for (const product of category.products) {
           await prisma.product.create({
             data: {
-              name: productData.name,
-              description: `${productData.name} - Produit d'exception de notre collection ${categoryData.name}. ${shopName}.`,
-              price: productData.price,
-              image: categoryData.image,
-              attributes: JSON.stringify({
-                ...productData.attributes,
-                stock: adjustedStock,
-                boutique: shopName,
-                featured: Math.random() > 0.8,
-              }),
-              categoryId: category.id,
+              name: product.name,
+              description: product.description,
+              price: product.price,
+              imageUrl: product.image,
+              attributes: JSON.stringify(product.attributes),
+              categoryId: createdCategory.id,
               shopId: shop.id,
             },
           });
           totalProducts++;
         }
       }
+      totalShops++;
     }
   }
 
-  console.log("\n✅ Base de données DemoForge initialisée avec succès!");
-  console.log(`📊 Statistiques de création :`);
-  console.log(`   • 1 commerçant principal`);
-  console.log(`   • ${totalShops} boutiques réparties sur 4 univers`);
-  console.log(`   • ${totalProducts} produits avec attributs métier`);
-  console.log(`   • Architecture multi-boutique : 1-2-2-4`);
-  console.log(`\n🎯 DemoForge prêt pour les démonstrations commerciales!`);
+  console.log(`✨ Seed terminé avec succès !`);
+  console.log(`📊 Statistiques :`);
+  console.log(`   - ${totalShops} boutiques créées`);
+  console.log(`   - ${totalProducts} produits créés`);
 }
 
 main()
-  .catch((e: Error) => {
-    console.error("❌ Erreur lors de l'initialisation:", e);
+  .catch((e) => {
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {

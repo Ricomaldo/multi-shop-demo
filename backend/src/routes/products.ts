@@ -56,7 +56,7 @@ router.get(
 router.post(
   "/",
   asyncHandler(async (req: Request, res: Response) => {
-    const { name, description, price, image, attributes, categoryId, shopId } =
+    const { name, description, price, imageUrl, attributes, categoryId, shopId } =
       req.body;
 
     // Validation basique
@@ -89,7 +89,7 @@ router.post(
         name,
         description,
         price,
-        image,
+        imageUrl,
         attributes: attributes ? JSON.stringify(attributes) : null,
         categoryId,
         shopId,
@@ -109,7 +109,7 @@ router.put(
   "/:id",
   asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { name, description, price, image, attributes } = req.body;
+    const { name, description, price, imageUrl, attributes } = req.body;
 
     // Vérifier que le produit existe
     const existingProduct = await prisma.product.findUnique({ where: { id } });
@@ -126,7 +126,7 @@ router.put(
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
     if (price !== undefined) updateData.price = price;
-    if (image !== undefined) updateData.image = image;
+    if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
     if (attributes !== undefined)
       updateData.attributes = JSON.stringify(attributes);
 

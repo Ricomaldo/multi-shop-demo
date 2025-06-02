@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express, { NextFunction, Request, Response } from "express";
 import { errorHandler } from "./middleware/errorHandler";
+import adminRouter from "./routes/admin";
 import categoriesRouter from "./routes/categories";
 import productsRouter from "./routes/products";
 
@@ -39,14 +40,38 @@ app.get("/api/shops", async (req, res) => {
   }
 });
 
+app.get("/api/shops/:shopId", async (req, res) => {
+  try {
+    const { shopId } = req.params;
+    const shop = await prisma.shop.findUnique({
+      where: { id: shopId },
+      include: { categories: true },
+    });
+
+    if (!shop) {
+      res.status(404).json({ error: "Boutique non trouvée" });
+      return;
+    }
+
+    res.json(shop);
+  } catch (error) {
+    console.error("Erreur /api/shops/:shopId:", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
 app.get("/api/shops/:shopId/products", async (req, res) => {
   try {
     const { shopId } = req.params;
+
+
     const products = await prisma.product.findMany({
       where: { shopId },
       include: { category: true },
     });
+
     res.json(products);
+
   } catch (error) {
     console.error("Erreur /api/shops/:shopId/products:", error);
     res.status(500).json({ error: "Erreur serveur" });
@@ -54,6 +79,7 @@ app.get("/api/shops/:shopId/products", async (req, res) => {
 });
 
 // Routes modulaires CRUD
+app.use("/api/admin", adminRouter);
 app.use("/api/products", productsRouter);
 app.use("/api/categories", categoriesRouter);
 

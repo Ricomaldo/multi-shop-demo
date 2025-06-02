@@ -15,7 +15,7 @@ model Merchant {
   name  String
   email String @unique
   shops Shop[]
-  
+
   @@map("merchants")
 }
 
@@ -33,7 +33,7 @@ model Shop {
   merchantId String
   products   Product[]
   categories Category[]
-  
+
   @@map("shops")
 }
 
@@ -44,7 +44,7 @@ model Category {
   shop     Shop      @relation(fields: [shopId], references: [id])
   shopId   String
   products Product[]
-  
+
   @@map("categories")
 }
 
@@ -53,12 +53,12 @@ model Product {
   name        String
   description String?
   price       Float
-  image       String?
+  imageUrl    String?
   attributes  String?  // JSON string for flexible attributes
   category    Category @relation(fields: [categoryId], references: [id])
   categoryId  String
   shop        Shop     @relation(fields: [shopId], references: [id])
   shopId      String
-  
+
   @@map("products")
 }

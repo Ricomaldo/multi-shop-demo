@@ -103,7 +103,7 @@ export default function StoreContact() {
         shop={currentShop}
         title="Contactez-nous"
         subtitle="Une question ? Un conseil ? Nous sommes là pour vous répondre"
-        ctaText="Nous contacter"
+        availableShops={shops}
       />
 
       {/* Formulaire de contact */}

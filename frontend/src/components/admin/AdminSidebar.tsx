@@ -9,18 +9,17 @@ import {
   useBreakpointValue,
 } from "@chakra-ui/react";
 import {
+  FiChevronLeft,
+  FiChevronRight,
   FiHome,
-  FiMenu,
   FiPackage,
   FiSettings,
-  FiTag,
-  FiX,
+  FiTag
 } from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
-import type { UniverseType } from "../../contexts/UniverseContext";
-import { useUniverse } from "../../contexts/UniverseContext";
+import { useAdminShop } from "../../contexts/AdminContext";
 import { useShopData } from "../../hooks";
-import AdminUniverseQuickSelector from "./AdminUniverseQuickSelector";
+import AdminShopSelector from "./AdminShopSelector";
 
 const menuItems = [
   { icon: FiHome, label: "Dashboard", path: "/admin" },
@@ -47,154 +46,125 @@ export default function AdminSidebar({
   onToggleCollapse,
 }: AdminSidebarProps) {
   const location = useLocation();
-  const isMobile = useBreakpointValue({ base: true, md: false });
-  const { loading } = useShopData();
-  const { universe, setUniverse } = useUniverse();
+  const { shops } = useShopData();
+  const {
+    universe,
+    setUniverse,
+    shop,
+    setShop,
+  } = useAdminShop();
 
-  const handleUniverseChange = (newUniverse: UniverseType) => {
-    setUniverse(newUniverse);
-    console.log("Univers sélectionné:", newUniverse);
-  };
-
-  // Sur mobile, on utilise isOpen, sur desktop on utilise isCollapsed
-  const shouldShowLabels = isMobile ? isOpen : !isCollapsed;
-  const sidebarWidth = isMobile
-    ? isOpen
-      ? "250px"
-      : "0px"
-    : isCollapsed
-    ? "70px"
-    : "250px";
+  // Responsive
+  const sidebarWidth = useBreakpointValue({ base: "full", md: isCollapsed ? "80px" : "280px" });
+  const showLabels = !isCollapsed;
 
   return (
-    <>
-      {/* Overlay mobile */}
-      {isMobile && isOpen && (
-        <Box
-          position="fixed"
-          top="0"
-          left="0"
-          w="100vw"
-          h="100vh"
-          bg="blackAlpha.600"
-          zIndex="998"
-          onClick={onToggle}
-        />
-      )}
-
-      {/* Sidebar */}
-      <Box
-        w={sidebarWidth}
-        bg="white"
-        borderRight="1px"
-        borderColor="gray.200"
-        h="100vh"
-        position={isMobile ? "fixed" : "sticky"}
-        top="0"
-        left="0"
-        zIndex="999"
-        transition="all 0.3s ease"
-        overflow="hidden"
-        boxShadow={isMobile ? "lg" : "none"}
-      >
-        <VStack spacing={1} align="stretch" p={4}>
-          {/* En-tête avec toggle */}
-          <Flex justify="space-between" align="center" mb={4}>
-            {shouldShowLabels && (
-              <Text
-                fontSize="lg"
-                fontWeight="bold"
-                color="gray.700"
-                noOfLines={1}
-              >
-                🏪 DemoForge
-              </Text>
-            )}
-
-            {/* Toggle button - visible sur desktop seulement */}
-            {!isMobile && (
-              <Tooltip
-                label={isCollapsed ? "Étendre" : "Réduire"}
-                placement="right"
-              >
-                <IconButton
-                  aria-label="Toggle sidebar"
-                  icon={<FiMenu />}
-                  size="sm"
-                  variant="ghost"
-                  onClick={onToggleCollapse}
-                />
-              </Tooltip>
-            )}
-
-            {/* Close button - visible sur mobile seulement */}
-            {isMobile && (
-              <IconButton
-                aria-label="Fermer menu"
-                icon={<FiX />}
-                size="sm"
-                variant="ghost"
-                onClick={onToggle}
-              />
-            )}
-          </Flex>
-
-          {/* Sélecteur d'univers compact - masqué si collapsed */}
-          {shouldShowLabels && (
-            <AdminUniverseQuickSelector
-              selectedUniverse={universe}
-              onUniverseChange={handleUniverseChange}
-              loading={loading}
-            />
+    <Box
+      as="nav"
+      pos="fixed"
+      top={0}
+      left={isOpen ? 0 : "-100%"}
+      h="100vh"
+      w={sidebarWidth}
+      bg="white"
+      borderRight="1px"
+      borderColor="gray.200"
+      transition="all 0.3s"
+      zIndex={20}
+      _dark={{
+        bg: "gray.800",
+        borderColor: "gray.700",
+      }}
+    >
+      <VStack h="full" spacing={0}>
+        {/* Header avec bouton toggle */}
+        <Flex
+          w="full"
+          h="16"
+          align="center"
+          justify="space-between"
+          px={4}
+          borderBottom="1px"
+          borderColor="gray.200"
+          _dark={{ borderColor: "gray.700" }}
+        >
+          {showLabels && (
+            <Text
+              fontSize="lg"
+              fontWeight="bold"
+              color="gray.800"
+              _dark={{ color: "white" }}
+            >
+              DemoForge Admin
+            </Text>
           )}
+          <IconButton
+            aria-label={isCollapsed ? "Étendre le menu" : "Réduire le menu"}
+            icon={isCollapsed ? <FiChevronRight /> : <FiChevronLeft />}
+            onClick={onToggleCollapse}
+            variant="ghost"
+            size="sm"
+          />
+        </Flex>
 
-          {/* Menu items */}
-          <VStack spacing={1} align="stretch" mt={shouldShowLabels ? 4 : 2}>
-            {menuItems.map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <Tooltip
-                  key={item.path}
-                  label={item.label}
-                  placement="right"
-                  isDisabled={shouldShowLabels}
+        {/* Sélecteur de boutique */}
+        <Box w="full" p={4} borderBottom="1px" borderColor="gray.200">
+          <AdminShopSelector
+            selectedUniverse={universe}
+            selectedShop={shop}
+            shops={shops}
+            onUniverseChange={setUniverse}
+            onShopChange={setShop}
+            size="sm"
+            isCollapsed={isCollapsed}
+          />
+        </Box>
+
+        {/* Menu principal */}
+        <VStack spacing={1} align="stretch" flex={1} w="full" py={4}>
+          {menuItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Tooltip
+                key={item.path}
+                label={item.label}
+                placement="right"
+                isDisabled={showLabels}
+              >
+                <Box
+                  as={Link}
+                  to={item.path}
+                  px={4}
+                  py={3}
+                  display="flex"
+                  alignItems="center"
+                  color={isActive ? "blue.500" : "gray.600"}
+                  bg={isActive ? "blue.50" : "transparent"}
+                  _hover={{
+                    bg: "gray.50",
+                    color: "blue.500",
+                  }}
+                  _dark={{
+                    color: isActive ? "blue.200" : "gray.300",
+                    bg: isActive ? "gray.700" : "transparent",
+                    _hover: {
+                      bg: "gray.700",
+                      color: "blue.200",
+                    },
+                  }}
                 >
-                  <Box
-                    as={Link}
-                    to={item.path}
-                    p={3}
-                    borderRadius="md"
-                    bg={isActive ? "blue.50" : "transparent"}
-                    color={isActive ? "blue.600" : "gray.600"}
-                    _hover={{
-                      bg: isActive ? "blue.100" : "gray.50",
-                      color: isActive ? "blue.700" : "gray.700",
-                    }}
-                    transition="all 0.2s"
-                    onClick={isMobile ? onToggle : undefined}
-                  >
-                    <Flex
-                      align="center"
-                      gap={3}
-                      justify={shouldShowLabels ? "flex-start" : "center"}
-                    >
-                      <Icon as={item.icon} boxSize={5} />
-                      {shouldShowLabels && (
-                        <Text
-                          fontWeight={isActive ? "semibold" : "normal"}
-                          noOfLines={1}
-                        >
-                          {item.label}
-                        </Text>
-                      )}
-                    </Flex>
-                  </Box>
-                </Tooltip>
-              );
-            })}
-          </VStack>
+                  <Icon as={item.icon} boxSize={5} />
+                  {showLabels && (
+                    <Text ml={4} fontSize="sm">
+                      {item.label}
+                    </Text>
+                  )}
+                </Box>
+              </Tooltip>
+            );
+          })}
         </VStack>
-      </Box>
-    </>
+      </VStack>
+    </Box>
   );
 }

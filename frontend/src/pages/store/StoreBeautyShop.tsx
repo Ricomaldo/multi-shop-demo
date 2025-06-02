@@ -8,16 +8,13 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { motion } from "framer-motion";
 import { useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { Product } from "../../../../shared/types";
 import { SharedHeroHeader } from "../../components/shared/SharedHeroHeader";
 import { SharedProductCard } from "../../components/shared/SharedProductCard";
 import BeautySection from "../../components/store/sections/BeautySection";
-import { useShopByType } from "../../hooks/useShopByType";
-
-const MotionBox = motion(Box);
+import { useShopByType } from "../../hooks";
 
 // Configuration de la mosaïque par catégorie
 type BeautyCategory = "visage" | "corps" | "cheveux" | "maquillage";
@@ -37,10 +34,10 @@ const StoreBeautyShop = () => {
   const { shop, products, loading } = useShopByType("beautyShop");
 
   useEffect(() => {
-    if (loading) {
+    if (!loading && !shop) {
       navigate("/404");
     }
-  }, [loading, navigate]);
+  }, [loading, shop, navigate]);
 
   // Répartir les produits en sections pour la mosaïque
   const mosaicProducts = useMemo(() => {

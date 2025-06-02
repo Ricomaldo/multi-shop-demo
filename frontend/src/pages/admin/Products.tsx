@@ -18,15 +18,13 @@ import {
 } from "@chakra-ui/react";
 import { useMemo, useState } from "react";
 import type { Product } from "../../../../shared/types";
-import { AdminProductList } from "../../components/admin";
 import { AdminProductForm } from "../../components/admin/AdminProductForm";
+import AdminProductList from "../../components/admin/AdminProductList";
+import { useAdminShop } from "../../contexts/AdminContext";
 import { useUniverse } from "../../contexts/UniverseContext";
 import { useAdvancedProductFilters, useShopData } from "../../hooks";
 import type { ProductFilters } from "../../services/adminProductService";
-import {
-  getUniverseColorScheme,
-  shopTypeToUniverse,
-} from "../../utils/universeMapping";
+import { getUniverseColorScheme } from "../../utils/universeMapping";
 
 export default function Products() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -36,19 +34,13 @@ export default function Products() {
   const toast = useToast();
 
   const { universe } = useUniverse();
-  const { shops, products, loading, refreshData } = useShopData();
+  const { shop: activeShop } = useAdminShop();
+  const { products, loading, refreshData } = useShopData();
 
-  // Filtrer les boutiques selon l'univers sélectionné
-  const filteredShops = useMemo(
-    () =>
-      shops.filter((shop) => shopTypeToUniverse(shop.shopType) === universe),
-    [shops, universe]
-  );
-
-  const currentShop = filteredShops[0]; // Prendre la première boutique de l'univers
+  // Filtrer les produits pour la boutique active
   const shopProducts = useMemo(
-    () => products.filter((p) => p.shopId === currentShop?.id),
-    [products, currentShop]
+    () => products.filter((p) => p.shopId === activeShop?.id),
+    [products, activeShop]
   );
 
   // Hook de filtrage avancé
@@ -59,7 +51,7 @@ export default function Products() {
     setSelectedCategoryId,
     resetFilters,
     applyAdvancedFilters,
-  } = useAdvancedProductFilters(shopProducts, currentShop?.id);
+  } = useAdvancedProductFilters(shopProducts, activeShop?.id);
 
   // Thème couleur selon l'univers
   const colorScheme = getUniverseColorScheme(universe);
@@ -111,7 +103,7 @@ export default function Products() {
     setEditingProduct(null);
   };
 
-  if (loading || !currentShop) {
+  if (loading || !activeShop) {
     return (
       <Box p={8}>
         <Text>Chargement...</Text>
@@ -170,7 +162,7 @@ export default function Products() {
             {editingProduct ? (
               <AdminProductForm
                 product={editingProduct}
-                shop={currentShop}
+                shop={activeShop}
                 onSave={handleSave}
                 onCancel={handleCancel}
                 isLoading={isLoading}
@@ -178,7 +170,7 @@ export default function Products() {
             ) : (
               <AdminProductList
                 products={filteredProducts}
-                shop={currentShop}
+                shop={activeShop}
                 onEdit={handleEdit}
               />
             )}

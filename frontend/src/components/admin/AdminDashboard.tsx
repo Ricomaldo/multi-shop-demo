@@ -29,11 +29,15 @@ import {
   isTeaShopAttributes,
   parseProductAttributes,
 } from "../../utils/productAttributes";
-import { type UniverseIcon } from "../../utils/universeMapping";
 
 interface AdminDashboardProps {
   shops: Shop[];
   products: Product[];
+}
+
+interface ShopIconData {
+  emoji: string;
+  label: string;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -52,7 +56,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       ? products.reduce((sum, p) => sum + p.price, 0) / products.length
       : 0;
 
-  // Statistiques par type de boutique
+  // Statistiques par type de boutique avec gestion d'erreurs sécurisée
   const getShopTypeStats = (shopType: string) => {
     const shopProducts = products.filter((p) => {
       const shop = shops.find((s) => s.id === p.shopId);
@@ -69,32 +73,42 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       outOfStock: shopProducts.filter(isOutOfStock).length,
     };
 
+    // Parsing sécurisé des attributs avec gestion d'erreurs
+    const parseProductsSafely = () => {
+      return shopProducts
+        .map((p) => {
+          try {
+            const attributes = parseProductAttributes(p);
+            return attributes ? { product: p, attributes } : null;
+          } catch (error) {
+            console.warn(`Erreur parsing attributs produit ${p.id}:`, error);
+            return null;
+          }
+        })
+        .filter(Boolean);
+    };
+
     // Statistiques spécialisées selon le type
     switch (shopType) {
       case "brewery": {
-        const breweryProducts = shopProducts
-          .map((p) => ({
-            product: p,
-            attributes: parseProductAttributes(p),
-          }))
-          .filter(
-            ({ attributes }) => attributes && isBreweryAttributes(attributes)
-          );
+        const breweryProducts = parseProductsSafely().filter(
+          (item) => item && isBreweryAttributes(item.attributes)
+        );
 
         if (breweryProducts.length > 0) {
           const avgAlcohol =
             breweryProducts.reduce(
-              (sum, { attributes }) =>
+              (sum, item) =>
                 sum +
-                (isBreweryAttributes(attributes!)
-                  ? attributes.degre_alcool
+                (item && isBreweryAttributes(item.attributes)
+                  ? item.attributes.degre_alcool || 0
                   : 0),
               0
             ) / breweryProducts.length;
 
-          const hopTypes = breweryProducts.reduce((acc, { attributes }) => {
-            if (isBreweryAttributes(attributes!)) {
-              const hop = attributes.type_houblon;
+          const hopTypes = breweryProducts.reduce((acc, item) => {
+            if (item && isBreweryAttributes(item.attributes)) {
+              const hop = item.attributes.type_houblon || "Non spécifié";
               acc[hop] = (acc[hop] || 0) + 1;
             }
             return acc;
@@ -117,19 +131,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       }
 
       case "teaShop": {
-        const teaProducts = shopProducts
-          .map((p) => ({
-            product: p,
-            attributes: parseProductAttributes(p),
-          }))
-          .filter(
-            ({ attributes }) => attributes && isTeaShopAttributes(attributes)
-          );
+        const teaProducts = parseProductsSafely().filter(
+          (item) => item && isTeaShopAttributes(item.attributes)
+        );
 
         if (teaProducts.length > 0) {
-          const origins = teaProducts.reduce((acc, { attributes }) => {
-            if (isTeaShopAttributes(attributes!)) {
-              const origin = attributes.origine_plantation;
+          const origins = teaProducts.reduce((acc, item) => {
+            if (item && isTeaShopAttributes(item.attributes)) {
+              const origin = item.attributes.origine_plantation || "Non spécifiée";
               acc[origin] = (acc[origin] || 0) + 1;
             }
             return acc;
@@ -139,16 +148,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             Object.entries(origins).sort(([, a], [, b]) => b - a)[0]?.[0] ||
             "N/A";
 
+          const premiumTeas = teaProducts.filter(
+            (item) =>
+              item &&
+              isTeaShopAttributes(item.attributes) &&
+              item.attributes.grade_qualite?.includes("FTGFOP")
+          ).length;
+
           return {
             ...stats,
             specialized: {
               topOrigin,
               originVarieties: Object.keys(origins).length,
-              premiumTeas: teaProducts.filter(
-                ({ attributes }) =>
-                  isTeaShopAttributes(attributes!) &&
-                  attributes.grade_qualite.includes("FTGFOP")
-              ).length,
+              premiumTeas,
             },
           };
         }
@@ -156,28 +168,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       }
 
       case "beautyShop": {
-        const beautyProducts = shopProducts
-          .map((p) => ({
-            product: p,
-            attributes: parseProductAttributes(p),
-          }))
-          .filter(
-            ({ attributes }) => attributes && isBeautyShopAttributes(attributes)
-          );
+        const beautyProducts = parseProductsSafely().filter(
+          (item) => item && isBeautyShopAttributes(item.attributes)
+        );
 
         if (beautyProducts.length > 0) {
           const bioProducts = beautyProducts.filter(
-            ({ attributes }) =>
-              isBeautyShopAttributes(attributes!) &&
-              attributes.certification_bio
+            (item) =>
+              item &&
+              isBeautyShopAttributes(item.attributes) &&
+              item.attributes.certification_bio === true
           ).length;
 
           const avgVolume =
             beautyProducts.reduce(
-              (sum, { attributes }) =>
+              (sum, item) =>
                 sum +
-                (isBeautyShopAttributes(attributes!)
-                  ? attributes.contenance_ml
+                (item && isBeautyShopAttributes(item.attributes)
+                  ? item.attributes.contenance_ml || 0
                   : 0),
               0
             ) / beautyProducts.length;
@@ -198,19 +206,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       }
 
       case "herbShop": {
-        const herbProducts = shopProducts
-          .map((p) => ({
-            product: p,
-            attributes: parseProductAttributes(p),
-          }))
-          .filter(
-            ({ attributes }) => attributes && isHerbShopAttributes(attributes)
-          );
+        const herbProducts = parseProductsSafely().filter(
+          (item) => item && isHerbShopAttributes(item.attributes)
+        );
 
         if (herbProducts.length > 0) {
-          const certifications = herbProducts.reduce((acc, { attributes }) => {
-            if (isHerbShopAttributes(attributes!)) {
-              const cert = attributes.certification;
+          const certifications = herbProducts.reduce((acc, item) => {
+            if (item && isHerbShopAttributes(item.attributes)) {
+              const cert = item.attributes.certification || "Non certifié";
               acc[cert] = (acc[cert] || 0) + 1;
             }
             return acc;
@@ -221,16 +224,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               ([, a], [, b]) => b - a
             )[0]?.[0] || "N/A";
 
+          const organicProducts = herbProducts.filter(
+            (item) =>
+              item &&
+              isHerbShopAttributes(item.attributes) &&
+              item.attributes.certification?.includes("Biologique")
+          ).length;
+
           return {
             ...stats,
             specialized: {
               topCertification,
               certificationTypes: Object.keys(certifications).length,
-              organicProducts: herbProducts.filter(
-                ({ attributes }) =>
-                  isHerbShopAttributes(attributes!) &&
-                  attributes.certification.includes("Biologique")
-              ).length,
+              organicProducts,
             },
           };
         }
@@ -242,7 +248,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   // Icônes par type de boutique
-  const getShopIcon = (shopType: string): UniverseIcon => {
+  const getShopIcon = (shopType: string): ShopIconData => {
     switch (shopType) {
       case "brewery":
         return { emoji: "🍺", label: "bière" };
@@ -382,7 +388,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                   <Divider />
 
-                  {/* Stats spécialisées */}
+                  {/* Stats spécialisées avec accès sécurisé */}
                   {"specialized" in stats && stats.specialized && (
                     <Box>
                       <Text fontSize="sm" fontWeight="medium" mb={2}>

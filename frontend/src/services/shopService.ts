@@ -7,7 +7,7 @@ export const loadShops = async (): Promise<Shop[]> => {
   try {
     const response = await axios.get<Shop[]>(`${API_BASE_URL}/shops`);
     return response.data;
-  } catch (error) {
+  } catch {
     throw new Error("Impossible de charger les boutiques");
   }
 };
@@ -31,7 +31,7 @@ export const loadProducts = async (shopIds: string[]): Promise<Product[]> => {
     );
 
     return uniqueProducts;
-  } catch (error) {
+  } catch {
     throw new Error("Impossible de charger les produits");
   }
 };

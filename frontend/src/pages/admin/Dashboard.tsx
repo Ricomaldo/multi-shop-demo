@@ -8,237 +8,122 @@ import {
   StatHelpText,
   StatLabel,
   StatNumber,
+  Text,
   VStack,
 } from "@chakra-ui/react";
-import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
-import type { Shop } from "../../../../shared/types";
-import AdminShopForm from "../../components/admin/AdminShopForm";
-import { useUniverse } from "../../contexts/UniverseContext";
-import { shopTypeToUniverse } from "../../utils/universeMapping";
-
-interface ShopWithStats {
-  id: string;
-  name: string;
-  shopType: string;
-  categories: unknown[];
-  productCount: number;
-  // Nouvelles infos business
-  address?: string;
-  phone?: string;
-  email?: string;
-  website?: string;
-  description?: string;
-  openingHours: string;
-}
+import type { Product } from "../../../../shared/types";
+import { AdminDashboard } from "../../components/admin";
+import { useAdminShop } from "../../contexts/AdminContext";
+import { useShopData } from "../../hooks";
+import {
+  getShopDisplayName,
+  getUniverseIcon,
+  shopTypeToUniverse
+} from "../../utils/universeMapping";
 
 export default function Dashboard() {
-  const [allStats, setAllStats] = useState({
-    totalProducts: 0,
-    totalShops: 0,
-    totalCategories: 0,
-    allShops: [] as ShopWithStats[],
-  });
+  const [shopProducts, setShopProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
-  const [shopFormLoading, setShopFormLoading] = useState(false);
 
-  const { universe } = useUniverse();
+  const { shop: activeShop } = useAdminShop();
+  const { products } = useShopData();
 
-  // Filtrer les statistiques selon l'univers sélectionné
-  const filteredStats = useMemo(() => {
-    const universeShops = allStats.allShops.filter(
-      (shop) => shopTypeToUniverse(shop.shopType) === universe
-    );
+  // Filtrer les produits de la boutique active
+  const activeShopProducts = useMemo(() => {
+    if (!activeShop) return [];
+    return products.filter(p => p.shopId === activeShop.id);
+  }, [activeShop, products]);
+
+  // Stats de la boutique active
+  const shopStats = useMemo(() => {
+    if (!activeShop) return null;
+
+    const totalProducts = activeShopProducts.length;
+    const averagePrice = totalProducts > 0
+      ? activeShopProducts.reduce((sum, p) => sum + p.price, 0) / totalProducts
+      : 0;
 
     return {
-      totalShops: universeShops.length,
-      totalProducts: universeShops.reduce(
-        (sum, shop) => sum + (shop.productCount || 0),
-        0
-      ),
-      totalCategories: universeShops.reduce(
-        (sum, shop) => sum + (shop.categories?.length || 0),
-        0
-      ),
-      shops: universeShops,
+      totalProducts,
+      averagePrice,
+      shopName: activeShop.name,
+      shopType: activeShop.shopType,
+      universe: shopTypeToUniverse(activeShop.shopType),
     };
-  }, [allStats, universe]);
+  }, [activeShop, activeShopProducts]);
 
   useEffect(() => {
-    loadStats();
-  }, []);
-
-  // Ajout d'un useEffect pour recharger quand l'univers change
-  useEffect(() => {
-    loadStats();
-    // Réinitialiser la boutique sélectionnée
-    setSelectedShop(null);
-  }, [universe]);
-
-  useEffect(() => {
-    // Sélectionner automatiquement la première boutique de l'univers
-    if (filteredStats.shops.length > 0 && !selectedShop) {
-      const firstShop = filteredStats.shops[0];
-      // Conversion en objet Shop complet
-      setSelectedShop({
-        id: firstShop.id,
-        name: firstShop.name,
-        shopType: firstShop.shopType,
-        categories: firstShop.categories,
-        address: firstShop.address,
-        phone: firstShop.phone,
-        email: firstShop.email,
-        website: firstShop.website,
-        description: firstShop.description,
-        openingHours: firstShop.openingHours,
-      } as Shop);
-    }
-  }, [filteredStats.shops, selectedShop]);
-
-  const loadStats = async () => {
-    try {
-      setLoading(true);
-      const shopsResponse = await axios.get("http://localhost:3001/api/shops");
-      const shops = shopsResponse.data;
-
-      let totalProducts = 0;
-      let totalCategories = 0;
-      const shopDetails: ShopWithStats[] = [];
-
-      for (const shop of shops) {
-        const productsResponse = await axios.get(
-          `http://localhost:3001/api/shops/${shop.id}/products`
-        );
-        const products = productsResponse.data;
-        const productCount = products.length;
-        totalProducts += productCount;
-        totalCategories += shop.categories.length;
-
-        // Calculer les stats de stock pour chaque boutique
-        let lowStock = 0;
-        let outOfStock = 0;
-
-        products.forEach((product: { attributes?: string }) => {
-          if (product.attributes) {
-            try {
-              const attrs = JSON.parse(product.attributes);
-              const stock = attrs.stock || 0;
-              if (stock === 0) outOfStock++;
-              else if (stock <= 3) lowStock++;
-            } catch {
-              // Ignore les erreurs de parsing
-            }
-          }
-        });
-
-        // Ajouter toutes les informations de la boutique
-        shopDetails.push({
-          id: shop.id,
-          name: shop.name,
-          shopType: shop.shopType,
-          categories: shop.categories,
-          productCount,
-          // Ajout des infos business
-          address: shop.address,
-          phone: shop.phone,
-          email: shop.email,
-          website: shop.website,
-          description: shop.description,
-          openingHours: shop.openingHours,
-        });
-      }
-
-      setAllStats({
-        totalProducts,
-        totalShops: shops.length,
-        totalCategories,
-        allShops: shopDetails,
-      });
+    if (activeShop && products.length > 0) {
+      setShopProducts(activeShopProducts);
+      setLoading(false);
       setError(null);
-    } catch (error) {
-      console.error("Erreur:", error);
-      setError("Impossible de charger les statistiques");
-    } finally {
+    } else if (!activeShop) {
+      setError("Aucune boutique sélectionnée");
       setLoading(false);
     }
-  };
-
-  const handleShopSave = async (shopData: Partial<Shop>) => {
-    if (!selectedShop) return;
-
-    setShopFormLoading(true);
-    try {
-      // Simuler la sauvegarde API
-      await axios.put(
-        `http://localhost:3001/api/shops/${selectedShop.id}`,
-        shopData
-      );
-
-      // Recharger les données
-      await loadStats();
-
-      // Mettre à jour la boutique sélectionnée
-      setSelectedShop((prev) => (prev ? { ...prev, ...shopData } : null));
-    } finally {
-      setShopFormLoading(false);
-    }
-  };
+  }, [activeShop, activeShopProducts, products]);
 
   if (loading) {
-    return <Box>Chargement...</Box>;
+    return (
+      <VStack spacing={4} align="center" justify="center" h="400px">
+        <Text fontSize="lg">Chargement du tableau de bord...</Text>
+      </VStack>
+    );
   }
 
-  if (error) {
+  if (error || !activeShop || !shopStats) {
     return (
-      <Alert status="error">
-        <AlertIcon />
-        {error}
-      </Alert>
+      <VStack spacing={4} align="stretch">
+        <Alert status="warning">
+          <AlertIcon />
+          {error || "Veuillez sélectionner une boutique pour voir le tableau de bord"}
+        </Alert>
+      </VStack>
     );
   }
 
   return (
     <VStack spacing={6} align="stretch">
       <Box>
-        <Heading size="lg" mb={6}>
-          📊 Tableau de Bord
+        <Heading size="lg" mb={2}>
+          {getUniverseIcon(shopStats.universe)} Tableau de Bord
         </Heading>
+        <Text color="gray.600" fontSize="md" mb={6}>
+          {getShopDisplayName(shopStats.universe)} • Boutique active
+        </Text>
 
-        {/* Statistiques filtrées par univers */}
+        {/* Statistiques de la boutique active */}
         <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} mb={6}>
           <Stat p={6} bg="white" borderRadius="md" shadow="sm">
-            <StatLabel>Boutiques Actives</StatLabel>
-            <StatNumber color="blue.500">{filteredStats.totalShops}</StatNumber>
-            <StatHelpText>Univers {universe}</StatHelpText>
+            <StatLabel>Produits en ligne</StatLabel>
+            <StatNumber color="blue.500">{shopStats.totalProducts}</StatNumber>
+            <StatHelpText>Dans cette boutique</StatHelpText>
           </Stat>
 
           <Stat p={6} bg="white" borderRadius="md" shadow="sm">
-            <StatLabel>Produits Total</StatLabel>
+            <StatLabel>Prix moyen</StatLabel>
             <StatNumber color="green.500">
-              {filteredStats.totalProducts}
+              {shopStats.averagePrice.toFixed(2)} €
             </StatNumber>
-            <StatHelpText>Cet univers</StatHelpText>
+            <StatHelpText>Catalogue actuel</StatHelpText>
           </Stat>
 
           <Stat p={6} bg="white" borderRadius="md" shadow="sm">
-            <StatLabel>Catégories</StatLabel>
+            <StatLabel>Univers</StatLabel>
             <StatNumber color="purple.500">
-              {filteredStats.totalCategories}
+              {shopStats.universe}
             </StatNumber>
-            <StatHelpText>Cet univers</StatHelpText>
+            <StatHelpText>Type de boutique</StatHelpText>
           </Stat>
         </SimpleGrid>
 
-        {/* Formulaire de gestion boutique */}
-        {selectedShop && (
-          <AdminShopForm
-            shop={selectedShop}
-            onSave={handleShopSave}
-            isLoading={shopFormLoading}
-          />
-        )}
+        {/* Dashboard détaillé pour la boutique active */}
+        <AdminDashboard
+          shops={activeShop ? [activeShop] : []}
+          products={shopProducts}
+        />
       </Box>
     </VStack>
   );

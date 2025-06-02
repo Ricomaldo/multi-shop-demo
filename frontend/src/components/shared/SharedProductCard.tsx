@@ -29,9 +29,8 @@ export const SharedProductCard: React.FC<SharedProductCardProps> = ({
 }) => {
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");
-  const shadowHover = isHighlighted
-    ? "2xl"
-    : useColorModeValue("lg", "dark-lg");
+  const baseHoverShadow = useColorModeValue("lg", "dark-lg");
+  const shadowHover = isHighlighted ? "2xl" : baseHoverShadow;
 
   return (
     <Box
@@ -53,6 +52,7 @@ export const SharedProductCard: React.FC<SharedProductCardProps> = ({
         height={imageHeight}
         width="100%"
         objectFit="cover"
+        onError={() => console.log("❌ Erreur image:", product.imageUrl)}
       />
 
       <VStack p={4} spacing={3} align="stretch">

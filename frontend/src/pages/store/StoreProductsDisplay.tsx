@@ -18,13 +18,13 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import type { Product } from "../../../../shared/types";
+import type { Product, Shop } from "../../../../shared/types";
 import { ProductDetailView } from "../../components/shared/ProductDetailView";
 import SharedAdvancedFilters from "../../components/shared/SharedAdvancedFilters";
 import SharedCategoryFilter from "../../components/shared/SharedCategoryFilter";
 import { SharedProductCard } from "../../components/shared/SharedProductCard";
 import StoreHeroHeader from "../../components/store/StoreHeroHeader";
-import { useShopData } from "../../hooks/useShopData";
+import { useShopData, useStoreHandlers } from "../../hooks";
 import type { ProductFilters } from "../../services/adminProductService";
 
 // Configuration des couleurs par type de boutique
@@ -47,62 +47,80 @@ type ShopType = keyof typeof SHOP_COLORS;
 
 export default function StoreProductsDisplay() {
   const { shopType = "" } = useParams<{ shopType: string }>();
+  const { shops, products: allProducts, loading, getShopByType } = useShopData();
+  const { handleAddToCart, handleViewProduct } = useStoreHandlers();
   const navigate = useNavigate();
-  const { products, loading, getShopByType } = useShopData();
+
+  // État local pour la boutique courante
+  const [currentShop, setCurrentShop] = useState<Shop | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
-    null
-  );
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [filters, setFilters] = useState<ProductFilters>({});
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const currentShop = shopType
-    ? getShopByType(shopType as ShopType)
-    : undefined;
-  const colorScheme =
-    shopType && (shopType as ShopType) in SHOP_COLORS
-      ? SHOP_COLORS[shopType as ShopType]
-      : "gray";
-
-  // Gérer la redirection si pas de boutique
+  // Initialiser la boutique courante
   useEffect(() => {
-    if (!loading && !currentShop) {
-      navigate("/");
+    if (!loading) {
+      const shop = getShopByType(shopType);
+      if (!shop) {
+        navigate("/404");
+      } else {
+        setCurrentShop(shop);
+      }
     }
-  }, [loading, currentShop, navigate]);
+  }, [loading, shopType, getShopByType, navigate]);
 
-  if (loading) return null;
-  if (!currentShop) return null;
-
-  const handleAddToCart = (product: Product) => {
-    console.log("Ajouter au panier:", product);
-  };
-
-  const handleViewProduct = (product: Product) => {
-    setSelectedProduct(product);
-    onOpen();
-  };
-
-  const handleCloseModal = () => {
-    setSelectedProduct(null);
-    onClose();
-  };
+  // Si chargement ou pas de boutique, afficher un loader
+  if (loading || !currentShop) {
+    return <Box>Chargement...</Box>;
+  }
 
   // Obtenir les produits de la boutique
-  const shopProducts = products.filter((p) => p.shopId === currentShop.id);
+  const shopProducts = allProducts.filter((p) => p.shopId === currentShop.id);
 
-  // Obtenir les catégories uniques avec des clés uniques
-  const categories = currentShop.categories || [];
+  // Obtenir les catégories uniques
+  const categories = Array.from(
+    new Set(shopProducts.map((p) => p.category))
+  ).map((name) => ({
+    id: name,
+    name,
+  }));
 
-  // Filtrer les produits
-  const filteredProducts = shopProducts
-    .filter(
-      (p) =>
-        (p.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (p.description || "").toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .filter((p) => !selectedCategoryId || p.categoryId === selectedCategoryId);
+  // Filtrer les produits selon les critères
+  const filteredProducts = shopProducts.filter((product) => {
+    // Filtre par recherche
+    if (
+      searchTerm &&
+      !product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    ) {
+      return false;
+    }
+
+    // Filtre par catégorie
+    if (selectedCategoryId && product.category !== selectedCategoryId) {
+      return false;
+    }
+
+    // Filtres avancés
+    for (const [key, value] of Object.entries(filters)) {
+      if (value && product.attributes?.[key] !== value) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  const handleShopChange = (newShop: Shop) => {
+    // Réinitialiser les filtres
+    setSearchTerm("");
+    setSelectedCategoryId(null);
+    setFilters({});
+
+    // Mettre à jour la boutique
+    setCurrentShop(newShop);
+  };
 
   const handleFiltersChange = (newFilters: ProductFilters) => {
     setFilters(newFilters);
@@ -118,29 +136,35 @@ export default function StoreProductsDisplay() {
     setSelectedCategoryId(categoryId);
   };
 
+  // Handler personnalisé pour ouvrir la modale
+  const handleProductModalOpen = (product: Product) => {
+    setSelectedProduct(product);
+    onOpen();
+  };
+
+  const handleCloseModal = () => {
+    setSelectedProduct(null);
+    onClose();
+  };
+
   return (
     <Box as="main" bg="gray.50" minH="100vh">
       <StoreHeroHeader
         shop={currentShop}
-        imageSrc={
-          HERO_IMAGES[shopType as ShopType] || "/images/store/default-hero.jpg"
-        }
-        imageAlt={`${currentShop.name} - Catalogue complet`}
-        overlayOpacity={0.5}
-        overlayColor={colorScheme}
-        height="50vh"
         title={`Catalogue ${currentShop.name}`}
         subtitle="Découvrez tous nos produits"
+        availableShops={shops}
+        onShopChange={handleShopChange}
       />
 
-      <Container maxW="8xl" px={{ base: 4, md: 8 }} py={8}>
+      <Container maxW="7xl" py={8}>
         {/* Header de la page */}
         <VStack spacing={2} mb={8} textAlign="center">
-          <Heading size="xl" color={`${colorScheme}.600`} fontWeight="bold">
+          <Heading size="xl" color={`${currentShop.shopType}.600`} fontWeight="bold">
             Nos Produits
           </Heading>
           <Text color="gray.600" fontSize="lg">
-            {shopProducts.length} produits disponibles
+            {filteredProducts.length} produits disponibles
           </Text>
         </VStack>
 
@@ -159,7 +183,7 @@ export default function StoreProductsDisplay() {
                 onCategoryChange={handleCategoryChange}
                 onResetFilters={handleResetFilters}
                 productCount={filteredProducts.length}
-                colorScheme={colorScheme}
+                colorScheme={currentShop.shopType}
                 mode="store"
               />
 
@@ -176,7 +200,7 @@ export default function StoreProductsDisplay() {
             </VStack>
           </GridItem>
 
-          {/* Zone principale des produits */}
+          {/* Grille de produits */}
           <GridItem>
             <VStack spacing={6} align="stretch">
               {/* Barre de résultats */}
@@ -196,7 +220,7 @@ export default function StoreProductsDisplay() {
                 </Text>
 
                 {(searchTerm || selectedCategoryId) && (
-                  <Text fontSize="sm" color={`${colorScheme}.600`}>
+                  <Text fontSize="sm" color={`${currentShop.shopType}.600`}>
                     Filtres actifs
                   </Text>
                 )}
@@ -222,7 +246,7 @@ export default function StoreProductsDisplay() {
                         product={product}
                         shop={currentShop}
                         onAddToCart={handleAddToCart}
-                        onView={handleViewProduct}
+                        onView={handleProductModalOpen}
                       />
                     </Box>
                   ))}
@@ -244,7 +268,7 @@ export default function StoreProductsDisplay() {
                   </Text>
                   <Text
                     fontSize="sm"
-                    color={`${colorScheme}.600`}
+                    color={`${currentShop.shopType}.600`}
                     cursor="pointer"
                     textDecoration="underline"
                     onClick={handleResetFilters}
@@ -269,12 +293,12 @@ export default function StoreProductsDisplay() {
           <ModalOverlay bg="blackAlpha.600" />
           <ModalContent borderRadius="xl" overflow="hidden" maxH="90vh">
             <ModalHeader
-              bg={`${colorScheme}.50`}
+              bg={`${currentShop.shopType}.50`}
               borderBottom="1px"
-              borderColor={`${colorScheme}.100`}
+              borderColor={`${currentShop.shopType}.100`}
             >
               <Text
-                color={`${colorScheme}.700`}
+                color={`${currentShop.shopType}.700`}
                 fontSize="xl"
                 fontWeight="bold"
               >
@@ -282,8 +306,8 @@ export default function StoreProductsDisplay() {
               </Text>
             </ModalHeader>
             <ModalCloseButton
-              color={`${colorScheme}.600`}
-              _hover={{ bg: `${colorScheme}.100` }}
+              color={`${currentShop.shopType}.600`}
+              _hover={{ bg: `${currentShop.shopType}.100` }}
             />
             <ModalBody p={0}>
               <ProductDetailView

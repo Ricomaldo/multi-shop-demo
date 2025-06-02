@@ -8,14 +8,13 @@ interface AdminLayoutProps {
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
-  const { isOpen, onToggle } = useDisclosure();
   const { isOpen: isCollapsed, onToggle: onToggleCollapse } = useDisclosure();
 
   return (
     <Flex h="100vh" bg="gray.50">
       <AdminSidebar
-        isOpen={isOpen}
-        onToggle={onToggle}
+        isOpen={true}
+        onToggle={() => {}}
         isCollapsed={isCollapsed}
         onToggleCollapse={onToggleCollapse}
       />

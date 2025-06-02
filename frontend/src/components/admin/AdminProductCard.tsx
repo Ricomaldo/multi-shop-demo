@@ -46,13 +46,12 @@ export const AdminProductCard: React.FC<AdminProductCardProps> = ({
           {/* Image produit */}
           <GridItem>
             <Image
-              src={product.image}
+              src={product.imageUrl}
               alt={product.name}
-              fallbackSrc="/images/store/product-placeholder.jpg"
-              borderRadius="md"
+              height="200px"
+              width="100%"
               objectFit="cover"
-              w="full"
-              h="200px"
+              borderRadius="md"
             />
           </GridItem>
 

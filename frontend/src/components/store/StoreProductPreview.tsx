@@ -50,10 +50,12 @@ export const StoreProductPreview: React.FC<StoreProductPreviewProps> = ({
       {...animation}
     >
       <Image
-        src={product.image}
+        src={product.imageUrl}
         alt={product.name}
-        __css={styles.image}
-        fallbackSrc="/images/store/product-placeholder.jpg"
+        height="250px"
+        width="100%"
+        objectFit="cover"
+        borderRadius="lg"
       />
 
       <Box __css={styles.content}>

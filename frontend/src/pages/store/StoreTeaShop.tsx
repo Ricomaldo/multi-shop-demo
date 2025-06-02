@@ -1,65 +1,40 @@
 import {
   Box,
   Button,
-  Collapse,
+  Container,
   Heading,
   SimpleGrid,
-  Text,
-  VStack,
-  useDisclosure,
+  VStack
 } from "@chakra-ui/react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import type { Product, Shop } from "../../../../shared/types";
-import { SharedHeroHeader } from "../../components/shared/SharedHeroHeader";
 import { SharedProductCard } from "../../components/shared/SharedProductCard";
-import { useShopByType } from "../../hooks/useShopByType";
-
-interface CategoryCollapseProps {
-  category: string;
-  products: Product[];
-  shop: Shop;
-}
-
-const CategoryCollapse: React.FC<CategoryCollapseProps> = ({
-  category,
-  products,
-  shop,
-}) => {
-  const { isOpen, onToggle } = useDisclosure();
-
-  return (
-    <Box>
-      <Button
-        onClick={onToggle}
-        variant="ghost"
-        colorScheme="teal"
-        size="lg"
-        width="100%"
-        justifyContent="space-between"
-        mb={4}
-      >
-        <Heading size="md">{category}</Heading>
-        <Text>{isOpen ? "▼" : "▶"}</Text>
-      </Button>
-
-      <Collapse in={isOpen} animateOpacity>
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6} pb={6}>
-          {products.map((product) => (
-            <SharedProductCard key={product.id} product={product} shop={shop} />
-          ))}
-        </SimpleGrid>
-      </Collapse>
-    </Box>
-  );
-};
+import StoreHeroHeader from "../../components/store/StoreHeroHeader";
+import { useShopByType, useShopData, useStoreHandlers } from "../../hooks";
 
 const StoreTeaShop = () => {
-  const { shop, products, loading } = useShopByType("teaShop");
+  const navigate = useNavigate();
+  const { shop: initialShop, products, loading } = useShopByType("teaShop");
+  const { handleAddToCart, handleViewProduct } = useStoreHandlers();
+  const { shops } = useShopData();
+  const [currentShop, setCurrentShop] = useState<Shop | null>(null);
+
+  // Initialiser la boutique courante
+  useEffect(() => {
+    if (!loading && initialShop) {
+      setCurrentShop(initialShop);
+    } else if (!loading && !initialShop) {
+      navigate("/404");
+    }
+  }, [loading, initialShop, navigate]);
 
   // Grouper les produits par catégorie
   const productsByCategory = useMemo(() => {
+    if (!currentShop) return {};
+    const shopProducts = products.filter((p) => p.shopId === currentShop.id);
     const grouped: Record<string, Product[]> = {};
-    products.forEach((product) => {
+    shopProducts.forEach((product) => {
       const category = product.category || "Autres";
       if (!grouped[category]) {
         grouped[category] = [];
@@ -67,33 +42,71 @@ const StoreTeaShop = () => {
       grouped[category].push(product);
     });
     return grouped;
-  }, [products]);
+  }, [products, currentShop]);
 
-  if (loading || !shop) {
+  // Si chargement ou pas de boutique, afficher un loader
+  if (loading || !currentShop) {
     return <Box>Chargement...</Box>;
   }
 
+  const handleShopChange = (newShop: Shop) => {
+    setCurrentShop(newShop);
+  };
+
   return (
-    <Box>
-      <SharedHeroHeader
-        title={shop.name}
+    <Box as="main">
+      <StoreHeroHeader
+        shop={currentShop}
+        title={currentShop.name}
         subtitle="Découvrez notre sélection de thés d'exception"
-        imagePath="/images/store/tea-banner.jpg"
-        imageAlt="Bannière du salon de thé"
+        availableShops={shops}
+        onShopChange={handleShopChange}
       />
 
-      <VStack spacing={8} align="stretch" p={8}>
-        {Object.entries(productsByCategory).map(
-          ([category, categoryProducts]) => (
-            <CategoryCollapse
-              key={category}
-              category={category}
-              products={categoryProducts}
-              shop={shop}
-            />
-          )
-        )}
-      </VStack>
+      <Container maxW="7xl" py={12}>
+        <VStack spacing={12}>
+          {Object.entries(productsByCategory).map(([category, products]) => (
+            <Box key={category} w="full">
+              <Heading
+                as="h2"
+                size="lg"
+                mb={6}
+                color="green.700"
+                textAlign="center"
+              >
+                {category}
+              </Heading>
+
+              <SimpleGrid
+                columns={{ base: 1, sm: 2, md: 3, lg: 4 }}
+                spacing={6}
+              >
+                {products.map((product) => (
+                  <SharedProductCard
+                    key={product.id}
+                    product={product}
+                    shop={currentShop}
+                    onAddToCart={handleAddToCart}
+                    onView={handleViewProduct}
+                  />
+                ))}
+              </SimpleGrid>
+            </Box>
+          ))}
+
+          {/* Bouton catalogue complet */}
+          <Button
+            as={Link}
+            to="/store/teaShop/products"
+            colorScheme="green"
+            size="lg"
+            variant="outline"
+            px={8}
+          >
+            Voir tout le catalogue
+          </Button>
+        </VStack>
+      </Container>
     </Box>
   );
 };
