@@ -1,91 +1,125 @@
-import { Box, Image, Text, useMultiStyleConfig } from "@chakra-ui/react";
-import { motion } from "framer-motion";
-import React from "react";
+import {
+  Badge,
+  Box,
+  Button,
+  HStack,
+  Image,
+  Text,
+  useColorModeValue,
+  VStack,
+} from "@chakra-ui/react";
 import type { Product, Shop } from "../../../../shared/types";
-import { storeAnimations } from "../../theme/components/shared";
 
-interface SharedProductCardProps {
-  /** Produit à afficher */
+export interface SharedProductCardProps {
   product: Product;
-  /** Boutique pour la thématisation automatique */
   shop: Shop;
-  /** Active le mode admin avec actions d'édition */
-  isAdminMode?: boolean;
-  /** Callback pour éditer le produit (admin) */
-  onEdit?: (product: Product) => void;
-  /** Callback pour ajouter au panier (vitrine) */
   onAddToCart?: (product: Product) => void;
-  /** Callback pour voir les détails */
   onView?: (product: Product) => void;
-  /** Callback pour supprimer (admin) */
-  onDelete?: (product: Product) => void;
-  /** Affiche ou masque les boutons d'action */
-  showActions?: boolean;
+  imageHeight?: string;
+  isHighlighted?: boolean;
 }
 
-const MotionBox = motion(Box);
-
-// Mapping des types de boutique vers les clés d'animation
-const shopTypeToAnimationKey = {
-  brewery: "brewery",
-  teaShop: "tea",
-  beautyShop: "beauty",
-  herbShop: "herb",
-} as const;
-
-/**
- * Composant partagé universel pour afficher une carte produit
- * S'adapte automatiquement au thème de l'univers et affiche les attributs métier
- * Utilisé partout : vitrine, admin, splitView, dashboard
- *
- * @example
- * ```tsx
- * // Mode vitrine
- * <SharedProductCard
- *   product={product}
- *   shop={shop}
- *   onAddToCart={handleAddToCart}
- *   onView={handleView}
- * />
- *
- * // Mode admin
- * <SharedProductCard
- *   product={product}
- *   shop={shop}
- *   isAdminMode
- *   onEdit={handleEdit}
- *   onDelete={handleDelete}
- * />
- * ```
- */
 export const SharedProductCard: React.FC<SharedProductCardProps> = ({
   product,
   shop,
+  onAddToCart,
   onView,
+  imageHeight = "200px",
+  isHighlighted = false,
 }) => {
-  const styles = useMultiStyleConfig("SharedProductCard", {
-    variant: shop.shopType,
-  });
-
-  // Utilisation du mapping pour obtenir la bonne clé d'animation
-  const animationKey = shopTypeToAnimationKey[shop.shopType] || "brewery";
-  const animation = storeAnimations[animationKey];
+  const bgColor = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const shadowHover = isHighlighted
+    ? "2xl"
+    : useColorModeValue("lg", "dark-lg");
 
   return (
-    <MotionBox
-      role="group"
-      as="article"
-      cursor="pointer"
-      onClick={() => onView?.(product)}
-      __css={styles.card}
-      {...animation}
+    <Box
+      bg={bgColor}
+      borderWidth="1px"
+      borderColor={borderColor}
+      borderRadius="lg"
+      overflow="hidden"
+      transition="all 0.3s"
+      _hover={{
+        transform: "translateY(-4px)",
+        shadow: shadowHover,
+      }}
+      height="100%"
     >
-      <Image src={product.image} alt={product.name} __css={styles.image} />
+      <Image
+        src={product.imageUrl}
+        alt={product.name}
+        height={imageHeight}
+        width="100%"
+        objectFit="cover"
+      />
 
-      <Box __css={styles.content}>
-        <Text __css={styles.title}>{product.name}</Text>
-        <Text __css={styles.price}>{product.price.toFixed(2)}€</Text>
-      </Box>
-    </MotionBox>
+      <VStack p={4} spacing={3} align="stretch">
+        <Text
+          fontSize={isHighlighted ? "xl" : "lg"}
+          fontWeight="semibold"
+          noOfLines={2}
+        >
+          {product.name}
+        </Text>
+
+        <Text fontSize="sm" color="gray.600" noOfLines={2}>
+          {product.description}
+        </Text>
+
+        <HStack justify="space-between" align="center">
+          <Text
+            fontSize={isHighlighted ? "xl" : "lg"}
+            fontWeight="bold"
+            color={`${shop.themeColor}.600`}
+          >
+            {product.price}€
+          </Text>
+
+          {product.stockStatus && (
+            <Badge
+              colorScheme={
+                product.stockStatus === "in_stock"
+                  ? "green"
+                  : product.stockStatus === "low_stock"
+                  ? "orange"
+                  : "red"
+              }
+            >
+              {product.stockStatus === "in_stock"
+                ? "En stock"
+                : product.stockStatus === "low_stock"
+                ? "Stock faible"
+                : "Rupture"}
+            </Badge>
+          )}
+        </HStack>
+
+        <HStack spacing={2}>
+          {onView && (
+            <Button
+              variant="outline"
+              colorScheme={shop.themeColor}
+              size={isHighlighted ? "md" : "sm"}
+              flex="1"
+              onClick={() => onView(product)}
+            >
+              Voir
+            </Button>
+          )}
+          {onAddToCart && product.stockStatus !== "out_of_stock" && (
+            <Button
+              colorScheme={shop.themeColor}
+              size={isHighlighted ? "md" : "sm"}
+              flex="1"
+              onClick={() => onAddToCart(product)}
+            >
+              Ajouter
+            </Button>
+          )}
+        </HStack>
+      </VStack>
+    </Box>
   );
 };

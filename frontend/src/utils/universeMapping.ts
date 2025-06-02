@@ -47,23 +47,18 @@ export const getShopDisplayName = (universe: UniverseType): string => {
 /**
  * Obtenir l'icône de l'univers
  */
-export interface UniverseIcon {
-  emoji: string;
-  label: string;
-}
-
-export const getUniverseIcon = (universe: UniverseType): UniverseIcon => {
+export const getUniverseIcon = (universe: UniverseType): string => {
   switch (universe) {
     case "brewery":
-      return { emoji: "🍺", label: "bière" };
+      return "🍺";
     case "teaShop":
-      return { emoji: "🍵", label: "thé" };
+      return "🍵";
     case "beautyShop":
-      return { emoji: "💄", label: "beauté" };
+      return "💄";
     case "herbShop":
-      return { emoji: "🌿", label: "herbes" };
+      return "🌿";
     default:
-      return { emoji: "🛍️", label: "boutique" };
+      return "🛍️";
   }
 };
 

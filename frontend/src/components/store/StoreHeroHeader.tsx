@@ -120,7 +120,11 @@ export default function StoreHeroHeader({
             <Button
               size="lg"
               colorScheme={colorScheme}
-              onClick={onCtaClick}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onCtaClick();
+              }}
               mt={6}
             >
               {ctaText}

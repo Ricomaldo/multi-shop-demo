@@ -29,7 +29,7 @@ interface AdminPreviewLayoutProps {
   onPreviewUpdate?: () => void;
 }
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 /**
  * Layout split view pour l'admin avec aperçu temps réel

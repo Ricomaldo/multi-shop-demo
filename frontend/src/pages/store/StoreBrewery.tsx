@@ -1,6 +1,17 @@
-import { Box, Button, Container, Text, VStack } from "@chakra-ui/react";
+import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
+import {
+  Box,
+  Button,
+  Container,
+  Flex,
+  IconButton,
+  Text,
+  useBreakpointValue,
+  VStack,
+} from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import type { Product } from "../../../../shared/types";
 import { SharedProductCard } from "../../components/shared/SharedProductCard";
 import StoreHeroHeader from "../../components/store/StoreHeroHeader";
@@ -11,8 +22,24 @@ const MotionBox = motion(Box);
 export default function StoreBrewery() {
   const { products, loading, getShopByType } = useShopData();
   const breweryShop = getShopByType("brewery");
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const navigate = useNavigate();
+
+  // Nombre de produits à afficher selon la taille d'écran
+  const itemsToShow = useBreakpointValue({ base: 1, md: 2, lg: 3 }) || 1;
 
   if (loading || !breweryShop) return null;
+
+  const filteredProducts = products.filter((p) => p.shopId === breweryShop.id);
+  const maxIndex = Math.max(0, filteredProducts.length - itemsToShow);
+
+  const handlePrevious = () => {
+    setCurrentIndex((prev) => Math.max(0, prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => Math.min(maxIndex, prev + 1));
+  };
 
   const handleAddToCart = (product: Product) => {
     console.log("Ajouter au panier:", product);
@@ -36,7 +63,10 @@ export default function StoreBrewery() {
           overlayOpacity={0.6}
           height="60vh"
           ctaText="Découvrir nos bières"
-          onCtaClick={() => console.log("CTA clicked")}
+          onCtaClick={() => {
+            console.log("CTA clicked - navigating to /store/brewery/products");
+            navigate("/store/brewery/products");
+          }}
         />
       </MotionBox>
 
@@ -53,19 +83,57 @@ export default function StoreBrewery() {
               </Text>
             </VStack>
 
-            <VStack spacing={8} w="full">
-              {products
-                .filter((p) => p.shopId === breweryShop.id)
-                .map((product) => (
-                  <SharedProductCard
-                    key={product.id}
-                    product={product}
-                    shop={breweryShop}
-                    onAddToCart={handleAddToCart}
-                    onView={handleViewProduct}
-                  />
-                ))}
-            </VStack>
+            {/* Carousel de produits */}
+            <Box position="relative" w="full" py={8}>
+              <Flex justify="center" align="center">
+                <IconButton
+                  aria-label="Produit précédent"
+                  icon={<ChevronLeftIcon />}
+                  onClick={handlePrevious}
+                  isDisabled={currentIndex === 0}
+                  variant="ghost"
+                  colorScheme="orange"
+                  size="lg"
+                  mx={2}
+                />
+
+                <Flex
+                  flex={1}
+                  gap={4}
+                  transition="transform 0.3s ease"
+                  maxW={{ base: "300px", md: "600px", lg: "900px" }}
+                  overflow="hidden"
+                >
+                  {filteredProducts
+                    .slice(currentIndex, currentIndex + itemsToShow)
+                    .map((product) => (
+                      <Box
+                        key={product.id}
+                        flex={1}
+                        minW={{ base: "300px", md: "280px" }}
+                      >
+                        <SharedProductCard
+                          product={product}
+                          shop={breweryShop}
+                          onAddToCart={handleAddToCart}
+                          onView={handleViewProduct}
+                        />
+                      </Box>
+                    ))}
+                </Flex>
+
+                <IconButton
+                  aria-label="Produit suivant"
+                  icon={<ChevronRightIcon />}
+                  onClick={handleNext}
+                  isDisabled={currentIndex >= maxIndex}
+                  variant="ghost"
+                  colorScheme="orange"
+                  size="lg"
+                  mx={2}
+                />
+              </Flex>
+            </Box>
           </VStack>
 
           {/* Footer spécialisé */}

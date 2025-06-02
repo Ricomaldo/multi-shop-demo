@@ -8,11 +8,7 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   Button,
-  Card,
-  CardBody,
-  CardHeader,
   Container,
-  Divider,
   Grid,
   GridItem,
   Heading,
@@ -132,10 +128,27 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 position="relative"
                 border="1px solid"
                 borderColor={borderColor}
+                overflow="hidden"
               >
-                <Text fontSize="8xl" opacity={0.3}>
-                  {shopIcon}
-                </Text>
+                {/* Si image, on l'affiche, sinon emoji univers */}
+                {product.image ? (
+                  <Box
+                    as="img"
+                    src={product.image}
+                    alt={product.name}
+                    maxH="360px"
+                    maxW="100%"
+                    objectFit="contain"
+                    m="auto"
+                    borderRadius="md"
+                    boxShadow="md"
+                    bg="white"
+                  />
+                ) : (
+                  <Text fontSize="8xl" opacity={0.3}>
+                    {shopIcon}
+                  </Text>
+                )}
 
                 {/* Badge stock en overlay */}
                 <Badge
@@ -198,4 +211,29 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 <Text
                   fontSize="3xl"
                   fontWeight="bold"
-                  color={`${themeColor}.500`
+                  color={`${themeColor}.500`}
+                >
+                  {product.name}
+                </Text>
+              </Box>
+
+              {/* Détails produit */}
+              <SimpleGrid columns={2} spacing={4}>
+                {allAttributes.map((attr, idx) => (
+                  <Box key={attr.id || attr.name + String(attr.value) + idx}>
+                    <Text fontSize="sm" color={textColor} fontWeight="medium">
+                      {attr.name}
+                    </Text>
+                    <Text fontSize="md" fontWeight="bold">
+                      {attr.value}
+                    </Text>
+                  </Box>
+                ))}
+              </SimpleGrid>
+            </VStack>
+          </GridItem>
+        </Grid>
+      </VStack>
+    </Container>
+  );
+};

@@ -1,15 +1,19 @@
 // shared/types.ts
+export type ShopType = "brewery" | "teaShop" | "beautyShop" | "herbShop";
+
+export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
+
 export interface Shop {
   id: string;
   name: string;
-  shopType: "brewery" | "teaShop" | "beautyShop" | "herbShop";
-  categories: Category[];
+  shopType: ShopType;
+  themeColor: string;
+  description?: string;
   address?: string;
   phone?: string;
   email?: string;
   website?: string;
   openingHours?: OpeningHours | string;
-  description?: string;
   geoLocation?: {
     latitude: number;
     longitude: number;
@@ -25,14 +29,14 @@ export interface Category {
 export interface Product {
   id: string;
   name: string;
-  description?: string;
+  description: string;
   price: number;
-  image?: string;
-  attributes?: string;
-  categoryId: string;
+  imageUrl: string;
   shopId: string;
-  category?: Category;
-  shop?: Shop;
+  category?: string;
+  stockStatus: StockStatus;
+  featured?: boolean;
+  attributes?: Record<string, unknown>;
 }
 
 export interface BreweryAttributes {
