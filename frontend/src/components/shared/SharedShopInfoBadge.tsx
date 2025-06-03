@@ -1,6 +1,8 @@
+// frontend/src/components/shared/SharedShopInfoBadge.tsx
 import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
-import { Box, HStack, IconButton, Text, VStack } from "@chakra-ui/react";
+import { Badge, Box, HStack, IconButton, Text, Tooltip, VStack } from "@chakra-ui/react";
 import type { Shop } from "../../../../shared/types";
+import { useOpeningStatus } from "../../hooks/useOpeningStatus";
 import {
   getUniverseColorScheme,
   getUniverseIcon,
@@ -8,31 +10,15 @@ import {
 } from "../../utils/universeMapping";
 
 interface SharedShopInfoBadgeProps {
-  /** Liste des boutiques disponibles */
   shops: Shop[];
-  /** Boutique actuellement sélectionnée */
   currentShop: Shop;
-  /** Callback lors du changement de boutique */
   onShopChange: (shop: Shop) => void;
-  /** Données de stock par boutique */
-  stockByShop?: Record<
-    string,
-    {
-      total: number;
-      lowStock: number;
-      outOfStock: number;
-    }
-  >;
-  /** Taille du composant */
+  stockByShop?: Record<string, { total: number; lowStock: number; outOfStock: number; }>;
   size?: "sm" | "md" | "lg";
-  /** Variante d'affichage */
   variant?: "compact" | "full";
+  showOpeningStatus?: boolean; // ⭐ NOUVEAU
 }
 
-/**
- * Badge d'information boutique partagé avec navigation
- * Permet de voir le stock d'un produit dans différentes boutiques du même type
- */
 export const SharedShopInfoBadge: React.FC<SharedShopInfoBadgeProps> = ({
   shops,
   currentShop,
@@ -40,61 +26,43 @@ export const SharedShopInfoBadge: React.FC<SharedShopInfoBadgeProps> = ({
   stockByShop = {},
   size = "md",
   variant = "full",
+  showOpeningStatus = false, // ⭐ NOUVEAU
 }) => {
-  // Protection contre les erreurs
-  if (!currentShop?.shopType) {
-    return null;
-  }
+  // Hook horaires intégré ⭐
+  const { isOpen, nextOpeningTime } = useOpeningStatus(currentShop.openingHours);
 
-  // Filtrer les boutiques du même type
-  const compatibleShops = shops.filter(
-    (shop) => shop.shopType === currentShop.shopType
-  );
+  if (!currentShop?.shopType) return null;
 
-  // Utilisation du helper centralisé pour l'univers
+  const compatibleShops = shops.filter(shop => shop.shopType === currentShop.shopType);
   const universe = shopTypeToUniverse(currentShop.shopType);
   const themeColor = getUniverseColorScheme(universe);
   const shopIcon = getUniverseIcon(universe);
 
-  // Trouver l'index de la boutique actuelle
-  const currentIndex = compatibleShops.findIndex(
-    (shop) => shop.id === currentShop.id
-  );
+  const currentIndex = compatibleShops.findIndex(shop => shop.id === currentShop.id);
   const showNavigation = compatibleShops.length > 1;
 
-  // Navigation entre boutiques compatibles
   const handlePrevious = () => {
-    const newIndex =
-      currentIndex > 0 ? currentIndex - 1 : compatibleShops.length - 1;
+    const newIndex = currentIndex > 0 ? currentIndex - 1 : compatibleShops.length - 1;
     onShopChange(compatibleShops[newIndex]);
   };
 
   const handleNext = () => {
-    const newIndex =
-      currentIndex < compatibleShops.length - 1 ? currentIndex + 1 : 0;
+    const newIndex = currentIndex < compatibleShops.length - 1 ? currentIndex + 1 : 0;
     onShopChange(compatibleShops[newIndex]);
   };
 
-  // Données de stock pour la boutique actuelle
-  const stockData = stockByShop[currentShop.id] || {
-    total: 0,
-    lowStock: 0,
-    outOfStock: 0,
-  };
-
-  // Calcul du stock disponible
+  const stockData = stockByShop[currentShop.id] || { total: 0, lowStock: 0, outOfStock: 0 };
   const availableStock = stockData.total - stockData.outOfStock;
 
+  const sizeStyles = {
+    sm: { px: 2, py: 1, fontSize: "xs" },
+    md: { px: 3, py: 1, fontSize: "sm" },
+    lg: { px: 4, py: 2, fontSize: "md" },
+  };
+
   return (
-    <Box
-      bg={`${themeColor}.50`}
-      p={2}
-      borderRadius="md"
-      border="1px solid"
-      borderColor={`${themeColor}.200`}
-    >
+    <Box bg={`${themeColor}.50`} p={2} borderRadius="md" border="1px solid" borderColor={`${themeColor}.200`}>
       <HStack justify="space-between" align="center" spacing={2}>
-        {/* Flèche gauche */}
         {showNavigation && (
           <IconButton
             aria-label="Boutique précédente"
@@ -106,36 +74,42 @@ export const SharedShopInfoBadge: React.FC<SharedShopInfoBadgeProps> = ({
           />
         )}
 
-        {/* Infos boutique */}
         <VStack spacing={0} align="start" flex={1}>
-          <Text
-            fontSize={size === "sm" ? "xs" : "sm"}
-            color={`${themeColor}.700`}
-            fontWeight="medium"
-          >
-            {variant === "compact"
-              ? currentShop.name
-              : `Boutique : ${currentShop.name}`}
+          <Text fontSize={size === "sm" ? "xs" : "sm"} color={`${themeColor}.700`} fontWeight="medium">
+            {variant === "compact" ? currentShop.name : `Boutique : ${currentShop.name}`}
           </Text>
+
+          {/* Badge ouverture intégré ⭐ */}
+          {showOpeningStatus && (
+            <Tooltip
+              label={!isOpen && nextOpeningTime ? `Prochaine ouverture : ${nextOpeningTime}` : undefined}
+              hasArrow
+            >
+              <Badge
+                colorScheme={isOpen ? "green" : "red"}
+                variant="solid"
+                borderRadius="full"
+                {...sizeStyles[size]}
+              >
+                {isOpen ? "Ouvert maintenant" : "Fermé"}
+              </Badge>
+            </Tooltip>
+          )}
+
           <HStack spacing={1}>
-            <Text fontSize="xs" color="gray.600">
-              Stock :
-            </Text>
+            <Text fontSize="xs" color="gray.600">Stock :</Text>
             <Text
               fontSize="xs"
               fontWeight="bold"
               color={availableStock > 0 ? `${themeColor}.600` : "red.500"}
             >
-              {availableStock} unité{availableStock > 1 ? "s" : ""} disponible
-              {availableStock > 1 ? "s" : ""}
+              {availableStock} unité{availableStock > 1 ? "s" : ""} disponible{availableStock > 1 ? "s" : ""}
             </Text>
           </HStack>
         </VStack>
 
-        {/* Icône boutique */}
         <Text fontSize={size === "sm" ? "md" : "lg"}>{shopIcon}</Text>
 
-        {/* Flèche droite */}
         {showNavigation && (
           <IconButton
             aria-label="Boutique suivante"
