@@ -192,11 +192,11 @@ storybook-static/
 # ============
 .nuxt/
 
-# ============
-# Gatsby (si utilisé plus tard)
-# ============
-.cache/
-public/
+# # ============
+# # Gatsby (si utilisé plus tard)
+# # ============
+# .cache/
+# public/
 
 # ============
 # Serverless
