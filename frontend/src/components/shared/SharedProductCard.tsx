@@ -16,9 +16,11 @@ export interface SharedProductCardProps {
   onAddToCart?: (product: Product) => void;
   onView?: (product: Product) => void;
   onEdit?: (product: Product) => void;
+  onDelete?: (product: Product) => void;
   imageHeight?: string;
   isHighlighted?: boolean;
   isAdminMode?: boolean;
+  showActions?: boolean;
 }
 
 export const SharedProductCard: React.FC<SharedProductCardProps> = ({
@@ -26,12 +28,12 @@ export const SharedProductCard: React.FC<SharedProductCardProps> = ({
   shop,
   onAddToCart,
   onView,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onEdit,
+  onDelete,
   imageHeight = "200px",
   isHighlighted = false,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isAdminMode = false,
+  showActions = true,
 }) => {
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");
@@ -103,7 +105,7 @@ export const SharedProductCard: React.FC<SharedProductCardProps> = ({
         </HStack>
 
         <HStack spacing={2}>
-          {onView && (
+          {!isAdminMode && onView && (
             <Button
               variant="outline"
               colorScheme={shop.themeColor}
@@ -114,14 +116,39 @@ export const SharedProductCard: React.FC<SharedProductCardProps> = ({
               Voir
             </Button>
           )}
-          {onAddToCart && product.stockStatus !== "out_of_stock" && (
+          {!isAdminMode &&
+            onAddToCart &&
+            product.stockStatus !== "out_of_stock" && (
+              <Button
+                colorScheme={shop.themeColor}
+                size={isHighlighted ? "md" : "sm"}
+                flex="1"
+                onClick={() => onAddToCart(product)}
+              >
+                Ajouter
+              </Button>
+            )}
+
+          {isAdminMode && showActions && onEdit && (
             <Button
-              colorScheme={shop.themeColor}
-              size={isHighlighted ? "md" : "sm"}
+              variant="outline"
+              colorScheme="blue"
+              size="sm"
               flex="1"
-              onClick={() => onAddToCart(product)}
+              onClick={() => onEdit(product)}
             >
-              Ajouter
+              Modifier
+            </Button>
+          )}
+          {isAdminMode && showActions && onDelete && (
+            <Button
+              variant="outline"
+              colorScheme="red"
+              size="sm"
+              flex="1"
+              onClick={() => onDelete(product)}
+            >
+              Supprimer
             </Button>
           )}
         </HStack>

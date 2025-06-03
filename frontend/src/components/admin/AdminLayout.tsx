@@ -18,7 +18,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         onToggleCollapse={onToggleCollapse}
       />
 
-      <Box flex="1" overflow="auto" bg="gray.50">
+      <Box
+        flex="1"
+        overflow="auto"
+        bg="gray.50"
+        ml={isCollapsed ? "80px" : "280px"}
+      >
         <Box p={{ base: 4, md: 6 }}>{children || <Outlet />}</Box>
       </Box>
     </Flex>

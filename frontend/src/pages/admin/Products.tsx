@@ -74,6 +74,33 @@ export default function Products() {
     setEditingProduct(product);
   };
 
+  const handleDelete = async (product: Product) => {
+    setIsLoading(true);
+    try {
+      // Simulation API - Dans un vrai projet, appel backend
+      console.log("Suppression du produit:", product.id);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      toast({
+        title: "Produit supprimé",
+        description: `Le produit "${product.name}" a été supprimé avec succès`,
+        status: "success",
+        duration: 3000,
+      });
+
+      refreshData();
+    } catch {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le produit",
+        status: "error",
+        duration: 3000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSave = async (productData: Partial<Product>) => {
     setIsLoading(true);
     try {
@@ -175,6 +202,7 @@ export default function Products() {
                 products={filteredProducts}
                 shop={activeShop}
                 onEdit={handleEdit}
+                onDelete={handleDelete}
               />
             )}
           </CardBody>

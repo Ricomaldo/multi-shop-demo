@@ -5,6 +5,7 @@ interface AdminProductListProps {
   products: Product[];
   shop: Shop;
   onEdit: (product: Product) => void;
+  onDelete?: (product: Product) => void;
 }
 
 /**
@@ -15,12 +16,14 @@ export default function AdminProductList({
   products,
   shop,
   onEdit,
+  onDelete,
 }: AdminProductListProps) {
   return (
     <SharedProductGrid
       products={products}
       shop={shop}
       onEdit={onEdit}
+      onDelete={onDelete}
       columns={{ base: 1, md: 2, lg: 3 }}
       spacing={4}
       isAdminMode={true}

@@ -77,7 +77,7 @@ export default function AdminSidebar({
           w="full"
           h="16"
           align="center"
-          justify="space-between"
+          justify={isCollapsed ? "center" : "space-between"}
           px={4}
           borderBottom="1px"
           borderColor="gray.200"
@@ -103,17 +103,19 @@ export default function AdminSidebar({
         </Flex>
 
         {/* Sélecteur de boutique */}
-        <Box w="full" p={4} borderBottom="1px" borderColor="gray.200">
-          <AdminShopSelector
-            selectedUniverse={universe}
-            selectedShop={shop}
-            shops={shops}
-            onUniverseChange={setUniverse}
-            onShopChange={setShop}
-            size="sm"
-            isCollapsed={isCollapsed}
-          />
-        </Box>
+        {!isCollapsed && (
+          <Box w="full" p={4} borderBottom="1px" borderColor="gray.200">
+            <AdminShopSelector
+              selectedUniverse={universe}
+              selectedShop={shop}
+              shops={shops}
+              onUniverseChange={setUniverse}
+              onShopChange={setShop}
+              size="sm"
+              isCollapsed={isCollapsed}
+            />
+          </Box>
+        )}
 
         {/* Menu principal */}
         <VStack spacing={1} align="stretch" flex={1} w="full" py={4}>
@@ -129,10 +131,11 @@ export default function AdminSidebar({
                 <Box
                   as={Link}
                   to={item.path}
-                  px={4}
+                  px={isCollapsed ? 2 : 4}
                   py={3}
                   display="flex"
                   alignItems="center"
+                  justifyContent={isCollapsed ? "center" : "flex-start"}
                   color={isActive ? "blue.500" : "gray.600"}
                   bg={isActive ? "blue.50" : "transparent"}
                   _hover={{
