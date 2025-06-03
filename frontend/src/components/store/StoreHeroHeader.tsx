@@ -14,16 +14,14 @@ import SharedShopInfoBadge from "../shared/SharedShopInfoBadge";
 import StoreLocationSelector from "./StoreLocationSelector";
 
 interface StoreHeroHeaderProps {
-  /** La boutique courante */
   shop: Shop;
-  /** Titre personnalisé (sinon utilise le nom de la boutique) */
   title?: string;
-  /** Sous-titre personnalisé (sinon utilise la description de la boutique) */
   subtitle?: string;
-  /** Liste des boutiques disponibles */
   availableShops: Shop[];
-  /** Callback appelé quand l'utilisateur change de boutique */
   onShopChange?: (shop: Shop) => void;
+  variant?: "simple" | "full"; // ⭐ AJOUTER
+  imagePath?: string; // ⭐ AJOUTER
+  height?: string; // ⭐ AJOUTER
 }
 
 /**
@@ -36,6 +34,9 @@ export default function StoreHeroHeader({
   subtitle,
   availableShops,
   onShopChange,
+  variant = "full", // ⭐ AJOUTER
+  imagePath,
+  height = "50vh",
 }: StoreHeroHeaderProps) {
   const [currentShop, setCurrentShop] = useState(shop);
   const universe = shopTypeToUniverse(shop.shopType);
@@ -69,6 +70,34 @@ export default function StoreHeroHeader({
     setCurrentShop(newShop);
     onShopChange?.(newShop);
   };
+
+  if (variant === "simple") {
+    return (
+      <Box
+        as="header"
+        position="relative"
+        height={height}
+        backgroundImage={imagePath ? `url(${imagePath})` : undefined}
+        backgroundSize="cover"
+        backgroundPosition="center"
+        mb={8}
+      >
+        <Box position="absolute" top={0} left={0} right={0} bottom={0} bg="blackAlpha.600" />
+        <Container maxW="7xl" height="100%" position="relative" zIndex={1}>
+          <VStack height="100%" justify="center" align="center" spacing={4} textAlign="center" color="white">
+            <Heading as="h1" size="2xl" fontWeight="bold" textShadow="2px 2px 4px rgba(0,0,0,0.4)">
+              {title || currentShop.name}
+            </Heading>
+            {subtitle && (
+              <Text fontSize="xl" maxW="2xl" textShadow="1px 1px 2px rgba(0,0,0,0.4)">
+                {subtitle}
+              </Text>
+            )}
+          </VStack>
+        </Container>
+      </Box>
+    );
+  }
 
   return (
     <Box as="header" bgGradient={bgGradient} pt={8} pb={12}>

@@ -74,7 +74,7 @@ export default function StoreContact() {
   if (error)
     return (
       <Box p={8}>
-        <Text color="red.500">Erreur: {error}</Text>
+        <Text color="red.500">Erreur: {error.message}</Text>
       </Box>
     );
   if (!currentShop)

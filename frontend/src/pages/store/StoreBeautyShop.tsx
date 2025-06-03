@@ -11,9 +11,9 @@ import {
 import { useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { Product } from "../../../../shared/types";
-import { SharedHeroHeader } from "../../components/shared/SharedHeroHeader";
 import { SharedProductCard } from "../../components/shared/SharedProductCard";
 import BeautySection from "../../components/store/sections/BeautySection";
+import StoreHeroHeader from "../../components/store/StoreHeroHeader";
 import { useShopByType } from "../../hooks";
 
 // Configuration de la mosaïque par catégorie
@@ -70,12 +70,15 @@ const StoreBeautyShop = () => {
 
   return (
     <Box>
-      <SharedHeroHeader
-        title={shop.name}
-        subtitle="Votre beauté naturelle sublimée"
-        imagePath="/images/store/beauty-banner.jpg"
-        imageAlt="Bannière de l'institut de beauté"
-      />
+<StoreHeroHeader
+  shop={currentShop}
+  title="L'Écrin de Jade"
+  subtitle="Institut de beauté bio..."
+  availableShops={availableShops}
+  onShopChange={handleShopChange}
+  variant="simple"
+  imagePath="/images/hero/beauty-hero.jpg"
+/>
 
       <VStack spacing={8} p={8}>
         <Box textAlign="center" maxW="2xl" mx="auto">
