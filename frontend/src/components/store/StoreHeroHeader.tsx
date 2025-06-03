@@ -10,7 +10,7 @@ import {
 import { useState } from "react";
 import type { Shop } from "../../../../shared/types";
 import { shopTypeToUniverse } from "../../utils/universeMapping";
-import OpeningBadge from "../shared/OpeningBadge";
+import SharedShopInfoBadge from "../shared/SharedShopInfoBadge";
 import StoreLocationSelector from "./StoreLocationSelector";
 
 interface StoreHeroHeaderProps {
@@ -102,7 +102,13 @@ export default function StoreHeroHeader({
 
             {/* Informations boutique */}
             <VStack spacing={2} pt={4}>
-              <OpeningBadge openingHours={currentShop.openingHours} />
+              <SharedShopInfoBadge
+                shops={[currentShop]}
+                currentShop={currentShop}
+                onShopChange={() => {}}
+                showOpeningStatus={true}
+                variant="compact"
+              />
 
               <Text fontSize="sm" color={mutedColor}>
                 📍 {currentShop.address}

@@ -11,7 +11,7 @@ import {
   getUniverseColorScheme,
   getUniverseIcon,
 } from "../../utils/universeMapping";
-import OpeningBadge from "./OpeningBadge";
+import SharedShopInfoBadge from "./SharedShopInfoBadge";
 
 interface SharedFooterProps {
   shop: Shop;
@@ -79,7 +79,13 @@ export default function SharedFooter({ shop }: SharedFooterProps) {
             {shop.openingHours && (
               <HStack>
                 <Text>🕒</Text>
-                <OpeningBadge openingHours={shop.openingHours} size="md" />
+                <SharedShopInfoBadge
+                  shops={[shop]}
+                  currentShop={shop}
+                  onShopChange={() => {}}
+                  showOpeningStatus={true}
+                  variant="compact"
+                />
               </HStack>
             )}
           </HStack>

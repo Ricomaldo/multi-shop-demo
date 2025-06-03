@@ -12,7 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import OpeningBadge from "../../components/shared/OpeningBadge";
+import SharedShopInfoBadge from "../../components/shared/SharedShopInfoBadge";
 import StoreHeroHeader from "../../components/store/StoreHeroHeader";
 import StoreLayout from "../../components/store/StoreLayout";
 import { useShopData } from "../../hooks";
@@ -221,7 +221,13 @@ export default function StoreContact() {
           <Text>
             <HStack>
               <Text>🕒</Text>
-              <OpeningBadge openingHours={currentShop.openingHours} size="md" />
+              <SharedShopInfoBadge
+                shops={[currentShop]}
+                currentShop={currentShop}
+                onShopChange={() => {}}
+                showOpeningStatus={true}
+                variant="compact"
+              />
             </HStack>
           </Text>
         </VStack>
