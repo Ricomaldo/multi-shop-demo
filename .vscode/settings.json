@@ -28,14 +28,5 @@
 
   // Git
   "git.enableSmartCommit": true,
-  "git.confirmSync": false,
-
-  // Thème DemoForge - couleurs sophistiquées
-  "workbench.colorCustomizations": {
-    "statusBar.background": "#0f4c75",
-    "statusBar.foreground": "#ffffff",
-    "activityBar.background": "#f8f9fa",
-    "activityBar.foreground": "#212529",
-    "sideBar.background": "#f8f9fa"
-  }
+  "git.confirmSync": false
 }

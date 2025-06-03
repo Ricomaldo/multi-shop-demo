@@ -17,6 +17,7 @@
 - Utiliser Chakra UI exclusivement
 - TypeScript strict (pas de `any`)
 - Composants nommés: Store*, Admin*, Shared\*
+- Utiliser Yarn exclusivement (yarn classique)
 
 ### CE QUE TU NE FAIS PAS
 

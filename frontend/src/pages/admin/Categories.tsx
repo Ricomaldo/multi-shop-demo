@@ -29,16 +29,30 @@ import {
   useToast,
   VStack,
 } from "@chakra-ui/react";
-import axios from "axios";
 import { useEffect, useState } from "react";
-import type { Category } from "../../../../shared/types";
 import { useAdminShop, useShopData } from "../../hooks";
+import adminCategoriesService, {
+  type CategoryWithStats,
+} from "../../services/adminCategoriesService";
+
+// Helper pour extraire les messages d'erreur
+const getErrorMessage = (error: unknown, defaultMessage: string): string => {
+  if (error && typeof error === "object" && "response" in error) {
+    const response = (error as { response?: { data?: { error?: string } } })
+      .response;
+    if (response?.data?.error) {
+      return response.data.error;
+    }
+  }
+  return defaultMessage;
+};
 
 export default function Categories() {
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingCategory, setEditingCategory] =
+    useState<CategoryWithStats | null>(null);
   const [formData, setFormData] = useState({ name: "" });
   const [isLoading, setIsLoading] = useState(false);
-  const [shopCategories, setShopCategories] = useState<Category[]>([]);
+  const [shopCategories, setShopCategories] = useState<CategoryWithStats[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
@@ -46,42 +60,50 @@ export default function Categories() {
   const { shop: activeShop } = useAdminShop();
   const { products, loading, error } = useShopData();
 
-  // Contournement temporaire - Fetch catégories par API
+  const colorScheme = "green";
+
+  // Charger les catégories via l'API admin
+  const fetchCategories = async () => {
+    if (!activeShop?.id) return;
+
+    setCategoriesLoading(true);
+    try {
+      const categories = await adminCategoriesService.getCategories(
+        activeShop.id,
+        true
+      );
+      setShopCategories(categories);
+    } catch (err) {
+      console.error("Erreur récupération catégories:", err);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les catégories",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchCategories = async () => {
-      if (!activeShop?.id) return;
-
-      setCategoriesLoading(true);
-      try {
-        const response = await axios.get(
-          `http://localhost:3001/api/shops/${activeShop.id}`
-        );
-        const shop = response.data;
-
-        // Récupérer les catégories depuis les données shop
-        setShopCategories(shop.categories || []);
-      } catch (err) {
-        console.error("Erreur récupération catégories:", err);
-        setShopCategories([]);
-      } finally {
-        setCategoriesLoading(false);
-      }
-    };
-
     fetchCategories();
   }, [activeShop?.id]);
 
   const getCategoryProductCount = (categoryId: string) => {
-    // Filtrer les produits de la boutique active uniquement
-    const shopProducts = products.filter((p) => p.shopId === activeShop?.id);
+    // Utiliser le productCount de l'API si disponible
+    const category = shopCategories.find((c) => c.id === categoryId);
+    if (category && typeof category.productCount === "number") {
+      return category.productCount;
+    }
 
-    // Compter les produits qui appartiennent à cette catégorie
+    // Fallback vers le calcul local
+    const shopProducts = products.filter((p) => p.shopId === activeShop?.id);
     return shopProducts.filter((p) => p.categoryId === categoryId).length;
   };
 
-  const colorScheme = "green";
-
-  const handleEdit = (category: Category) => {
+  const handleEdit = (category: CategoryWithStats) => {
     setEditingCategory(category);
     setFormData({ name: category.name });
     onOpen();
@@ -94,34 +116,48 @@ export default function Categories() {
   };
 
   const handleSave = async () => {
+    if (!activeShop?.id || !formData.name.trim()) return;
+
     setIsLoading(true);
     try {
-      // Simulation d'API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      toast({
-        title: editingCategory ? "Catégorie modifiée" : "Catégorie créée",
-        description: `${formData.name} a été ${
-          editingCategory ? "mise à jour" : "créée"
-        } avec succès`,
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
+      if (editingCategory) {
+        // Mise à jour
+        await adminCategoriesService.updateCategory(editingCategory.id, {
+          name: formData.name.trim(),
+        });
+        toast({
+          title: "Catégorie modifiée",
+          description: `${formData.name} a été mise à jour avec succès`,
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      } else {
+        // Création
+        await adminCategoriesService.createCategory({
+          name: formData.name.trim(),
+          shopId: activeShop.id,
+        });
+        toast({
+          title: "Catégorie créée",
+          description: `${formData.name} a été créée avec succès`,
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
 
       onClose();
-
-      // Recharger les catégories après modification
-      if (activeShop?.id) {
-        const response = await axios.get(
-          `http://localhost:3001/api/shops/${activeShop.id}`
-        );
-        setShopCategories(response.data.categories || []);
-      }
-    } catch {
+      // Recharger les catégories
+      await fetchCategories();
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(
+        error,
+        "Impossible de sauvegarder la catégorie"
+      );
       toast({
         title: "Erreur",
-        description: "Impossible de sauvegarder la catégorie",
+        description: errorMessage,
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -131,7 +167,7 @@ export default function Categories() {
     }
   };
 
-  const handleDelete = async (category: Category) => {
+  const handleDelete = async (category: CategoryWithStats) => {
     const productCount = getCategoryProductCount(category.id);
 
     if (productCount > 0) {
@@ -139,7 +175,7 @@ export default function Categories() {
         title: "Suppression impossible",
         description: `Cette catégorie contient ${productCount} produit${
           productCount > 1 ? "s" : ""
-        }`,
+        }. Vous devez d'abord déplacer ou supprimer les produits.`,
         status: "warning",
         duration: 5000,
         isClosable: true,
@@ -147,14 +183,30 @@ export default function Categories() {
       return;
     }
 
-    // Simulation suppression
-    toast({
-      title: "Catégorie supprimée",
-      description: `${category.name} a été supprimée`,
-      status: "info",
-      duration: 3000,
-      isClosable: true,
-    });
+    try {
+      await adminCategoriesService.deleteCategory(category.id);
+      toast({
+        title: "Catégorie supprimée",
+        description: `${category.name} a été supprimée avec succès`,
+        status: "info",
+        duration: 3000,
+        isClosable: true,
+      });
+      // Recharger les catégories
+      await fetchCategories();
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(
+        error,
+        "Impossible de supprimer la catégorie"
+      );
+      toast({
+        title: "Erreur",
+        description: errorMessage,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   if (loading || categoriesLoading || !activeShop) {
@@ -189,7 +241,11 @@ export default function Categories() {
             <Text color="red.500" fontSize="lg">
               ❌ Erreur: {error.message || String(error)}
             </Text>
-            <Button colorScheme="red" variant="outline">
+            <Button
+              colorScheme="red"
+              variant="outline"
+              onClick={fetchCategories}
+            >
               Réessayer
             </Button>
           </VStack>
@@ -250,7 +306,10 @@ export default function Categories() {
             <Stat>
               <StatLabel>Produits total</StatLabel>
               <StatNumber>
-                {products.filter((p) => p.shopId === activeShop?.id).length}
+                {shopCategories.reduce(
+                  (total, cat) => total + getCategoryProductCount(cat.id),
+                  0
+                )}
               </StatNumber>
               <StatHelpText>Tous produits confondus</StatHelpText>
             </Stat>
@@ -264,8 +323,10 @@ export default function Categories() {
               <StatNumber>
                 {shopCategories.length > 0
                   ? Math.round(
-                      products.filter((p) => p.shopId === activeShop?.id)
-                        .length / shopCategories.length
+                      shopCategories.reduce(
+                        (total, cat) => total + getCategoryProductCount(cat.id),
+                        0
+                      ) / shopCategories.length
                     )
                   : 0}
               </StatNumber>
@@ -292,7 +353,7 @@ export default function Categories() {
             </VStack>
           ) : (
             <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
-              {shopCategories.map((category: Category) => {
+              {shopCategories.map((category: CategoryWithStats) => {
                 const productCount = getCategoryProductCount(category.id);
                 return (
                   <Card key={category.id} variant="outline">
