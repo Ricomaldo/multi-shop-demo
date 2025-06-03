@@ -20,9 +20,12 @@ import { useMemo, useState } from "react";
 import type { Product } from "../../../../shared/types";
 import { AdminProductForm } from "../../components/admin/AdminProductForm";
 import AdminProductList from "../../components/admin/AdminProductList";
-import { useAdminShop } from "../../contexts/AdminContext";
-import { useUniverse } from "../../contexts/UniverseContext";
-import { useAdvancedProductFilters, useShopData } from "../../hooks";
+import {
+  useAdminShop,
+  useAdvancedProductFilters,
+  useShopData,
+  useUniverse,
+} from "../../hooks";
 import type { ProductFilters } from "../../services/adminProductService";
 import { getUniverseColorScheme } from "../../utils/universeMapping";
 

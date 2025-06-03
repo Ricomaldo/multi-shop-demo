@@ -18,7 +18,12 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import type { Product, Shop } from "../../../../shared/types";
+import type {
+  Category,
+  Product,
+  Shop,
+  ShopType,
+} from "../../../../shared/types";
 import { ProductDetailView } from "../../components/shared/ProductDetailView";
 import SharedAdvancedFilters from "../../components/shared/SharedAdvancedFilters";
 import SharedCategoryFilter from "../../components/shared/SharedCategoryFilter";
@@ -27,42 +32,31 @@ import StoreHeroHeader from "../../components/store/StoreHeroHeader";
 import { useShopData, useStoreHandlers } from "../../hooks";
 import type { ProductFilters } from "../../services/adminProductService";
 
-// Configuration des couleurs par type de boutique
-const SHOP_COLORS = {
-  brewery: "orange",
-  teaShop: "green",
-  beautyShop: "pink",
-  herbShop: "teal",
-} as const;
-
-// Mapping des images hero existantes
-const HERO_IMAGES = {
-  brewery: "/images/store/brewery-hero.jpg",
-  teaShop: "/images/store/tea-hero.jpg",
-  beautyShop: "/images/store/beauty-hero.jpg",
-  herbShop: "/images/store/herb-hero.jpg",
-} as const;
-
-type ShopType = keyof typeof SHOP_COLORS;
-
 export default function StoreProductsDisplay() {
-  const { shopType = "" } = useParams<{ shopType: string }>();
-  const { shops, products: allProducts, loading, getShopByType } = useShopData();
-  const { handleAddToCart, handleViewProduct } = useStoreHandlers();
+  const { shopType } = useParams<{ shopType: string }>();
+  const {
+    shops,
+    products: allProducts,
+    loading,
+    getShopByType,
+  } = useShopData();
+  const { handleAddToCart } = useStoreHandlers();
   const navigate = useNavigate();
 
   // État local pour la boutique courante
   const [currentShop, setCurrentShop] = useState<Shop | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
+    null
+  );
   const [filters, setFilters] = useState<ProductFilters>({});
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   // Initialiser la boutique courante
   useEffect(() => {
-    if (!loading) {
-      const shop = getShopByType(shopType);
+    if (!loading && shopType) {
+      const shop = getShopByType(shopType as ShopType);
       if (!shop) {
         navigate("/404");
       } else {
@@ -80,12 +74,19 @@ export default function StoreProductsDisplay() {
   const shopProducts = allProducts.filter((p) => p.shopId === currentShop.id);
 
   // Obtenir les catégories uniques
-  const categories = Array.from(
-    new Set(shopProducts.map((p) => p.category))
-  ).map((name) => ({
-    id: name,
-    name,
-  }));
+  const categories: Category[] = Array.from(
+    new Set(
+      shopProducts.filter((p) => p.category?.name).map((p) => p.category!.name)
+    )
+  ).map((name) => {
+    // Trouver le premier produit avec cette catégorie pour obtenir l'ID
+    const product = shopProducts.find((p) => p.category?.name === name);
+    return {
+      id: product?.categoryId || name,
+      name,
+      shopId: currentShop.id,
+    };
+  });
 
   // Filtrer les produits selon les critères
   const filteredProducts = shopProducts.filter((product) => {
@@ -98,14 +99,17 @@ export default function StoreProductsDisplay() {
     }
 
     // Filtre par catégorie
-    if (selectedCategoryId && product.category !== selectedCategoryId) {
+    if (selectedCategoryId && product.categoryId !== selectedCategoryId) {
       return false;
     }
 
     // Filtres avancés
-    for (const [key, value] of Object.entries(filters)) {
-      if (value && product.attributes?.[key] !== value) {
-        return false;
+    if (product.attributes) {
+      const productAttributes = JSON.parse(product.attributes);
+      for (const [key, value] of Object.entries(filters)) {
+        if (value && productAttributes[key] !== value) {
+          return false;
+        }
       }
     }
 
@@ -160,7 +164,11 @@ export default function StoreProductsDisplay() {
       <Container maxW="7xl" py={8}>
         {/* Header de la page */}
         <VStack spacing={2} mb={8} textAlign="center">
-          <Heading size="xl" color={`${currentShop.shopType}.600`} fontWeight="bold">
+          <Heading
+            size="xl"
+            color={`${currentShop.shopType}.600`}
+            fontWeight="bold"
+          >
             Nos Produits
           </Heading>
           <Text color="gray.600" fontSize="lg">

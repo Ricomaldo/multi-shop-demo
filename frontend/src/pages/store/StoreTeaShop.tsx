@@ -4,7 +4,7 @@ import {
   Container,
   Heading,
   SimpleGrid,
-  VStack
+  VStack,
 } from "@chakra-ui/react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -35,7 +35,7 @@ const StoreTeaShop = () => {
     const shopProducts = products.filter((p) => p.shopId === currentShop.id);
     const grouped: Record<string, Product[]> = {};
     shopProducts.forEach((product) => {
-      const category = product.category || "Autres";
+      const category = product.category?.name || "Autres";
       if (!grouped[category]) {
         grouped[category] = [];
       }

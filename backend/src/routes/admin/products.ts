@@ -100,7 +100,7 @@ router.get(
       filteredProducts = filteredProducts.filter((product) => {
         if (!product.attributes) return false;
         try {
-          const attrs = JSON.parse(product.attributes);
+          const attrs = JSON.parse(product.attributes || "{}");
           const stock = attrs.stock || 0;
 
           switch (stockStatus) {
@@ -131,7 +131,7 @@ router.get(
         filteredProducts = filteredProducts.filter((product) => {
           if (!product.attributes) return false;
           try {
-            const attrs = JSON.parse(product.attributes);
+            const attrs = JSON.parse(product.attributes || "{}");
 
             if (
               degre_alcool_min &&
@@ -174,7 +174,7 @@ router.get(
         filteredProducts = filteredProducts.filter((product) => {
           if (!product.attributes) return false;
           try {
-            const attrs = JSON.parse(product.attributes);
+            const attrs = JSON.parse(product.attributes || "{}");
 
             if (
               origine_plantation &&
@@ -194,12 +194,12 @@ router.get(
       }
     }
 
-    if (shop.shopType === "beatyShop") {
+    if (shop.shopType === "beautyShop") {
       if (type_peau || certification_bio) {
         filteredProducts = filteredProducts.filter((product) => {
           if (!product.attributes) return false;
           try {
-            const attrs = JSON.parse(product.attributes);
+            const attrs = JSON.parse(product.attributes || "{}");
 
             if (type_peau && attrs.type_peau !== type_peau) return false;
             if (
@@ -221,7 +221,7 @@ router.get(
         filteredProducts = filteredProducts.filter((product) => {
           if (!product.attributes) return false;
           try {
-            const attrs = JSON.parse(product.attributes);
+            const attrs = JSON.parse(product.attributes || "{}");
 
             if (
               usage_traditionnel &&
@@ -324,7 +324,7 @@ router.post(
               throw createError("Stock obligatoire et doit être positif", 400);
             }
             break;
-          case "beatyShop":
+          case "beautyShop":
             if (
               !parsedAttributes.type_peau ||
               !parsedAttributes.ingredients_actifs
@@ -555,7 +555,7 @@ router.get(
       // Analyse du stock et stats spécialisées
       if (product.attributes) {
         try {
-          const attrs = JSON.parse(product.attributes);
+          const attrs = JSON.parse(product.attributes || "{}");
           const stock = attrs.stock || 0;
 
           if (stock === 0) outOfStockProducts++;
@@ -589,7 +589,7 @@ router.get(
               }
               break;
 
-            case "beatyShop":
+            case "beautyShop":
               if (attrs.certification_bio !== undefined) {
                 if (!specializedStats.bioProducts)
                   specializedStats.bioProducts = { bio: 0, nonBio: 0 };
@@ -632,7 +632,7 @@ router.get(
         ) / specializedStats.alcoholDegrees.length;
     }
 
-    if (shop.shopType === "beatyShop" && specializedStats.volumes) {
+    if (shop.shopType === "beautyShop" && specializedStats.volumes) {
       specializedStats.averageVolume =
         specializedStats.volumes.reduce((a: number, b: number) => a + b, 0) /
         specializedStats.volumes.length;

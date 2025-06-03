@@ -134,7 +134,8 @@ class StoreProductService {
 
         // Ajouter la catégorie si elle correspond
         if (
-          product.category?.name.toLowerCase().includes(query.toLowerCase())
+          product.category?.name &&
+          product.category.name.toLowerCase().includes(query.toLowerCase())
         ) {
           suggestions.add(product.category.name);
         }
@@ -142,7 +143,7 @@ class StoreProductService {
         // Ajouter des attributs métier pertinents
         if (product.attributes) {
           try {
-            const attrs = JSON.parse(product.attributes);
+            const attrs = JSON.parse(product.attributes || "{}");
             Object.entries(attrs).forEach(([, value]) => {
               if (
                 typeof value === "string" &&
@@ -174,7 +175,7 @@ class StoreProductService {
       response.products.forEach((product) => {
         if (product.attributes) {
           try {
-            const attrs = JSON.parse(product.attributes);
+            const attrs = JSON.parse(product.attributes || "{}");
 
             // Extraire les valeurs populaires selon le type de boutique
             Object.entries(attrs).forEach(([attributeKey, value]) => {

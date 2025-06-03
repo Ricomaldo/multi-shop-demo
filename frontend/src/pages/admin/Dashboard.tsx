@@ -14,12 +14,11 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import type { Product } from "../../../../shared/types";
 import { AdminDashboard } from "../../components/admin";
-import { useAdminShop } from "../../contexts/AdminContext";
-import { useShopData } from "../../hooks";
+import { useAdminShop, useShopData } from "../../hooks";
 import {
   getShopDisplayName,
   getUniverseIcon,
-  shopTypeToUniverse
+  shopTypeToUniverse,
 } from "../../utils/universeMapping";
 
 export default function Dashboard() {
@@ -33,7 +32,7 @@ export default function Dashboard() {
   // Filtrer les produits de la boutique active
   const activeShopProducts = useMemo(() => {
     if (!activeShop) return [];
-    return products.filter(p => p.shopId === activeShop.id);
+    return products.filter((p) => p.shopId === activeShop.id);
   }, [activeShop, products]);
 
   // Stats de la boutique active
@@ -41,9 +40,11 @@ export default function Dashboard() {
     if (!activeShop) return null;
 
     const totalProducts = activeShopProducts.length;
-    const averagePrice = totalProducts > 0
-      ? activeShopProducts.reduce((sum, p) => sum + p.price, 0) / totalProducts
-      : 0;
+    const averagePrice =
+      totalProducts > 0
+        ? activeShopProducts.reduce((sum, p) => sum + p.price, 0) /
+          totalProducts
+        : 0;
 
     return {
       totalProducts,
@@ -78,7 +79,8 @@ export default function Dashboard() {
       <VStack spacing={4} align="stretch">
         <Alert status="warning">
           <AlertIcon />
-          {error || "Veuillez sélectionner une boutique pour voir le tableau de bord"}
+          {error ||
+            "Veuillez sélectionner une boutique pour voir le tableau de bord"}
         </Alert>
       </VStack>
     );
@@ -112,9 +114,7 @@ export default function Dashboard() {
 
           <Stat p={6} bg="white" borderRadius="md" shadow="sm">
             <StatLabel>Univers</StatLabel>
-            <StatNumber color="purple.500">
-              {shopStats.universe}
-            </StatNumber>
+            <StatNumber color="purple.500">{shopStats.universe}</StatNumber>
             <StatHelpText>Type de boutique</StatHelpText>
           </Stat>
         </SimpleGrid>

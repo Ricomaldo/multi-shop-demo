@@ -14,11 +14,10 @@ import {
   FiHome,
   FiPackage,
   FiSettings,
-  FiTag
+  FiTag,
 } from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
-import { useAdminShop } from "../../contexts/AdminContext";
-import { useShopData } from "../../hooks";
+import { useAdminShop, useShopData } from "../../hooks";
 import AdminShopSelector from "./AdminShopSelector";
 
 const menuItems = [
@@ -30,7 +29,6 @@ const menuItems = [
 
 interface AdminSidebarProps {
   isOpen: boolean;
-  onToggle: () => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
 }
@@ -41,21 +39,18 @@ interface AdminSidebarProps {
  */
 export default function AdminSidebar({
   isOpen,
-  onToggle,
   isCollapsed,
   onToggleCollapse,
 }: AdminSidebarProps) {
   const location = useLocation();
   const { shops } = useShopData();
-  const {
-    universe,
-    setUniverse,
-    shop,
-    setShop,
-  } = useAdminShop();
+  const { universe, setUniverse, shop, setShop } = useAdminShop();
 
   // Responsive
-  const sidebarWidth = useBreakpointValue({ base: "full", md: isCollapsed ? "80px" : "280px" });
+  const sidebarWidth = useBreakpointValue({
+    base: "full",
+    md: isCollapsed ? "80px" : "280px",
+  });
   const showLabels = !isCollapsed;
 
   return (

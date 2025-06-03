@@ -2,7 +2,7 @@ import { Box, Heading, SimpleGrid, Text } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { storeAnimations } from "../../../theme/components/shared";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 export default function BrewerySection() {
   const animation = storeAnimations.brewery;

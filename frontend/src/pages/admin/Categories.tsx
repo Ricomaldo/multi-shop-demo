@@ -32,8 +32,7 @@ import {
 import axios from "axios";
 import { useEffect, useState } from "react";
 import type { Category } from "../../../../shared/types";
-import { useAdminShop } from "../../contexts/AdminContext";
-import { useShopData } from "../../hooks";
+import { useAdminShop, useShopData } from "../../hooks";
 
 export default function Categories() {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -54,13 +53,15 @@ export default function Categories() {
 
       setCategoriesLoading(true);
       try {
-        const response = await axios.get(`http://localhost:3001/api/shops/${activeShop.id}`);
+        const response = await axios.get(
+          `http://localhost:3001/api/shops/${activeShop.id}`
+        );
         const shop = response.data;
 
         // Récupérer les catégories depuis les données shop
         setShopCategories(shop.categories || []);
       } catch (err) {
-        console.error('Erreur récupération catégories:', err);
+        console.error("Erreur récupération catégories:", err);
         setShopCategories([]);
       } finally {
         setCategoriesLoading(false);
@@ -75,7 +76,7 @@ export default function Categories() {
     const shopProducts = products.filter((p) => p.shopId === activeShop?.id);
 
     // Compter les produits qui appartiennent à cette catégorie
-    return shopProducts.filter((p) => p.category === categoryId).length;
+    return shopProducts.filter((p) => p.categoryId === categoryId).length;
   };
 
   const colorScheme = "green";
@@ -112,7 +113,9 @@ export default function Categories() {
 
       // Recharger les catégories après modification
       if (activeShop?.id) {
-        const response = await axios.get(`http://localhost:3001/api/shops/${activeShop.id}`);
+        const response = await axios.get(
+          `http://localhost:3001/api/shops/${activeShop.id}`
+        );
         setShopCategories(response.data.categories || []);
       }
     } catch {

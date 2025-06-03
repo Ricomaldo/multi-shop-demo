@@ -10,7 +10,6 @@ import {
 import type { Shop } from "../../../../shared/types";
 import type { UniverseType } from "../../contexts/UniverseContext";
 
-
 interface SharedUniverseSelectorProps {
   mode: "shop" | "universe"; // Mode sélection boutique vs univers
   // Props pour mode shop
@@ -31,7 +30,7 @@ interface SharedUniverseSelectorProps {
 interface UniverseOption {
   type: UniverseType;
   label: string;
-  icon: string;
+  icon: { emoji: string; label: string };
   description: string;
   colorScheme: string;
 }
@@ -93,7 +92,7 @@ export default function SharedUniverseSelector({
   const borderColor = useColorModeValue("gray.200", "gray.600");
 
   // Utilitaires pour les boutiques
-  const getShopIcon = (shopType: string): string  => {
+  const getShopIcon = (shopType: string): { emoji: string; label: string } => {
     const option = universeOptions.find((opt) => opt.type === shopType);
     return option?.icon || { emoji: "🏪", label: "boutique" };
   };

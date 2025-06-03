@@ -20,12 +20,11 @@ import {
   Switch,
   Text,
   useToast,
-  VStack
+  VStack,
 } from "@chakra-ui/react";
 import { useMemo, useState } from "react";
 import AdminShopForm from "../../components/admin/AdminShopForm";
-import { useAdminShop } from "../../contexts/AdminContext";
-import { useShopData } from "../../hooks";
+import { useAdminShop, useShopData } from "../../hooks";
 
 interface ShopSettings {
   isActive: boolean;
@@ -233,9 +232,7 @@ export default function Settings() {
           <CardBody>
             <Stat>
               <StatLabel>Produits</StatLabel>
-              <StatNumber color="blue.500">
-                {shopStats.products}
-              </StatNumber>
+              <StatNumber color="blue.500">{shopStats.products}</StatNumber>
               <StatHelpText>Total en ligne</StatHelpText>
             </Stat>
           </CardBody>
@@ -300,9 +297,7 @@ export default function Settings() {
               <FormLabel>Devise</FormLabel>
               <Select
                 value={settings.currency}
-                onChange={(e) =>
-                  handleInputChange("currency", e.target.value)
-                }
+                onChange={(e) => handleInputChange("currency", e.target.value)}
               >
                 <option value="EUR">Euro (€)</option>
                 <option value="USD">Dollar US ($)</option>
@@ -315,9 +310,7 @@ export default function Settings() {
               <FormLabel>Fuseau horaire</FormLabel>
               <Select
                 value={settings.timezone}
-                onChange={(e) =>
-                  handleInputChange("timezone", e.target.value)
-                }
+                onChange={(e) => handleInputChange("timezone", e.target.value)}
               >
                 <option value="Europe/Paris">Europe/Paris (UTC+1)</option>
                 <option value="Europe/London">Europe/London (UTC+0)</option>

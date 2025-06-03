@@ -280,7 +280,7 @@ class AdminProductService {
     response.products.forEach((product) => {
       if (product.attributes) {
         try {
-          const attrs = JSON.parse(product.attributes);
+          const attrs = JSON.parse(product.attributes || "{}");
           if (attrs[attributeName]) {
             values.add(String(attrs[attributeName]));
           }

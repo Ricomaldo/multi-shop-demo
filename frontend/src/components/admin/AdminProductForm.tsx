@@ -52,7 +52,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
   useEffect(() => {
     if (product?.attributes) {
       try {
-        const parsed = JSON.parse(product.attributes);
+        const parsed = JSON.parse(product.attributes || "{}");
         // Conversion de toutes les valeurs en string pour uniformité
         const stringified = Object.entries(parsed).reduce(
           (acc, [key, value]) => {

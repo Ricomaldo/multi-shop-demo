@@ -2,7 +2,7 @@ import { Box, Heading, SimpleGrid, Text, VStack } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { storeAnimations } from "../../../theme/components/shared";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 export default function HerbSection() {
   const animation = storeAnimations.herb;

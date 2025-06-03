@@ -15,8 +15,10 @@ export interface SharedProductCardProps {
   shop: Shop;
   onAddToCart?: (product: Product) => void;
   onView?: (product: Product) => void;
+  onEdit?: (product: Product) => void;
   imageHeight?: string;
   isHighlighted?: boolean;
+  isAdminMode?: boolean;
 }
 
 export const SharedProductCard: React.FC<SharedProductCardProps> = ({
@@ -24,8 +26,12 @@ export const SharedProductCard: React.FC<SharedProductCardProps> = ({
   shop,
   onAddToCart,
   onView,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onEdit,
   imageHeight = "200px",
   isHighlighted = false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  isAdminMode = false,
 }) => {
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");

@@ -6,7 +6,7 @@ import {
   Flex,
   IconButton,
   useBreakpointValue,
-  VStack
+  VStack,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -16,7 +16,8 @@ import { SharedProductCard } from "../../components/shared/SharedProductCard";
 import StoreHeroHeader from "../../components/store/StoreHeroHeader";
 import { useShopData, useStoreHandlers } from "../../hooks";
 
-const MotionBox = motion(Box);
+// Animation variants
+const MotionBox = motion.create(Box);
 
 export default function StoreBrewery() {
   const { products, loading, getShopByType, shops } = useShopData();

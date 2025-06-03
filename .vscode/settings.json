@@ -1,17 +1,10 @@
 {
-  // Alfred - Assistant IA DemoForge
-  "cursor.ai.personality": "alfred_pennyworth",
-  "cursor.ai.responseLimit": "150_words_max",
-  "cursor.ai.codeFirst": true,
-  "cursor.ai.explanationStyle": "brief_tactical",
-
-  // TypeScript strict pour split view admin
+  // TypeScript strict
   "typescript.preferences.strictNullChecks": true,
   "typescript.preferences.noImplicitAny": true,
-  "typescript.preferences.includePackageJsonAutoImports": "on",
   "typescript.suggest.autoImports": true,
 
-  // Formatage et validation temps réel
+  // Formatage auto
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.codeActionsOnSave": {
@@ -19,32 +12,7 @@
     "source.organizeImports": "explicit"
   },
 
-  // Associations fichiers DemoForge
-  "files.associations": {
-    "*.tsx": "typescriptreact",
-    "*.ts": "typescript",
-    "*.cursorrules": "text",
-    "AI_RULES.md": "markdown"
-  },
-
-  // Emmet pour composants React
-  "emmet.includeLanguages": {
-    "typescriptreact": "html"
-  },
-
-  // Git commits structurés (français)
-  "git.enableSmartCommit": true,
-  "git.confirmSync": false,
-  "git.inputValidationLength": 72,
-  "git.inputValidationSubjectLength": 50,
-
-  // Interface Alfred - calme et efficace
-  "workbench.colorCustomizations": {
-    "statusBar.background": "#050d23",
-    "statusBar.foreground": "#ffffff"
-  },
-
-  // Performance et focus
+  // Performance
   "files.exclude": {
     "**/node_modules": true,
     "**/dist": true,
@@ -52,39 +20,22 @@
     "**/coverage": true,
     "backend/prisma/dev.db*": true
   },
-  "search.exclude": {
-    "**/node_modules": true,
-    "**/dist": true,
-    "**/coverage": true
+
+  // Emmet React
+  "emmet.includeLanguages": {
+    "typescriptreact": "html"
   },
 
-  // Micro-tâches et validation (5-15min)
-  "editor.rulers": [80, 300],
-  "workbench.editor.limit.enabled": true,
-  "workbench.editor.limit.value": 5,
-  "explorer.openEditors.visible": 3,
+  // Git
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
 
-  // Split view admin encouragé
-  "workbench.colorTheme": "Default Dark+",
-  "editor.minimap.enabled": false,
-  "breadcrumbs.enabled": true,
-  "editor.lineNumbers": "on",
-
-  // Celebration victoires (tests + commits)
-  "testing.automaticallyOpenPeekView": "failureInVisibleDocument",
-
-  // Terminal efficace
-  "terminal.integrated.defaultProfile.linux": "bash",
-  "terminal.integrated.defaultProfile.osx": "zsh",
-  "terminal.integrated.fontSize": 13,
-  "terminal.integrated.scrollback": 1000,
-
-  // Auto-complétion intelligente
-  "editor.quickSuggestions": {
-    "other": true,
-    "comments": false,
-    "strings": true
-  },
-  "editor.snippetSuggestions": "top",
-  "editor.tabCompletion": "on"
+  // Thème DemoForge - couleurs sophistiquées
+  "workbench.colorCustomizations": {
+    "statusBar.background": "#0f4c75",
+    "statusBar.foreground": "#ffffff",
+    "activityBar.background": "#f8f9fa",
+    "activityBar.foreground": "#212529",
+    "sideBar.background": "#f8f9fa"
+  }
 }

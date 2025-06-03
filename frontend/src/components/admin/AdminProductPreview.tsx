@@ -25,7 +25,7 @@ interface AdminProductPreviewProps {
   shopType?: string;
 }
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 /**
  * Aperçu temps réel d'un produit en cours d'édition
@@ -93,7 +93,8 @@ export default function AdminProductPreview({
   const mockShop: Shop = {
     id: "preview-shop",
     name: shopDisplayName,
-    shopType: shopType as "brewery" | "teaShop" | "beatyShop" | "herbShop",
+    shopType: shopType as "brewery" | "teaShop" | "beautyShop" | "herbShop",
+    themeColor: "orange",
     categories: [],
   };
 

@@ -70,15 +70,15 @@ const StoreBeautyShop = () => {
 
   return (
     <Box>
-<StoreHeroHeader
-  shop={currentShop}
-  title="L'Écrin de Jade"
-  subtitle="Institut de beauté bio..."
-  availableShops={availableShops}
-  onShopChange={handleShopChange}
-  variant="simple"
-  imagePath="/images/hero/beauty-hero.jpg"
-/>
+      <StoreHeroHeader
+        shop={shop}
+        title="L'Écrin de Jade"
+        subtitle="Institut de beauté bio..."
+        availableShops={[shop]}
+        onShopChange={() => {}}
+        variant="simple"
+        imagePath="/images/hero/beauty-hero.jpg"
+      />
 
       <VStack spacing={8} p={8}>
         <Box textAlign="center" maxW="2xl" mx="auto">

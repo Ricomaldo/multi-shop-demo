@@ -1,14 +1,14 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useState } from "react";
 
 export type UniverseType = "brewery" | "teaShop" | "beautyShop" | "herbShop";
 
-interface UniverseContextType {
+export interface UniverseContextType {
   universe: UniverseType;
   setUniverse: (universe: UniverseType) => void;
   getColorScheme: () => string;
 }
 
-const UniverseContext = createContext<UniverseContextType | undefined>(
+export const UniverseContext = createContext<UniverseContextType | undefined>(
   undefined
 );
 
@@ -43,12 +43,4 @@ export const UniverseProvider: React.FC<UniverseProviderProps> = ({
       {children}
     </UniverseContext.Provider>
   );
-};
-
-export const useUniverse = (): UniverseContextType => {
-  const context = useContext(UniverseContext);
-  if (!context) {
-    throw new Error("useUniverse must be used within UniverseProvider");
-  }
-  return context;
 };

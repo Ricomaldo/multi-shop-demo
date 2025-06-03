@@ -60,7 +60,7 @@ function getProductStock(product: Product): number {
   if (!product.attributes) return 0;
 
   try {
-    const attrs = JSON.parse(product.attributes);
+    const attrs = JSON.parse(product.attributes || "{}");
     return attrs.stock || 0;
   } catch {
     return 0;
@@ -115,7 +115,7 @@ export function filterByBusinessAttributes(
     if (!product.attributes) return false;
 
     try {
-      const attrs = JSON.parse(product.attributes);
+      const attrs = JSON.parse(product.attributes || "{}");
 
       // Filtres brewery
       if (filters.degre_alcool_min !== undefined) {
@@ -225,7 +225,7 @@ export function filterByBusinessAttributes(
           return false;
       }
 
-      // Filtres beatyShop
+      // Filtres beautyShop
       if (filters.type_peau) {
         if (!attrs.type_peau || attrs.type_peau !== filters.type_peau)
           return false;

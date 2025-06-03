@@ -1,10 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import type { Shop } from '../../../shared/types';
-import { useShopData } from '../hooks/useShopData';
-import { shopTypeToUniverse } from '../utils/universeMapping';
-import type { UniverseType } from './UniverseContext';
+import React, { createContext, useEffect, useState } from "react";
+import type { Shop } from "../../../shared/types";
+import { useShopData } from "../hooks/useShopData";
+import { shopTypeToUniverse } from "../utils/universeMapping";
+import type { UniverseType } from "./UniverseContext";
 
-interface AdminContextValue {
+export interface AdminContextValue {
   // État de l'univers
   selectedUniverse: UniverseType;
   setSelectedUniverse: (universe: UniverseType) => void;
@@ -18,7 +18,9 @@ interface AdminContextValue {
   error: string | null;
 }
 
-const AdminContext = createContext<AdminContextValue | undefined>(undefined);
+export const AdminContext = createContext<AdminContextValue | undefined>(
+  undefined
+);
 
 interface AdminProviderProps {
   children: React.ReactNode;
@@ -30,7 +32,8 @@ interface AdminProviderProps {
 
 export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   // État local
-  const [selectedUniverse, setSelectedUniverse] = useState<UniverseType>("brewery");
+  const [selectedUniverse, setSelectedUniverse] =
+    useState<UniverseType>("brewery");
   const [selectedShop, setSelectedShopState] = useState<Shop | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +42,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
   // Filtrer les boutiques selon l'univers sélectionné
   const availableShops = shops.filter(
-    shop => shopTypeToUniverse(shop.shopType) === selectedUniverse
+    (shop) => shopTypeToUniverse(shop.shopType) === selectedUniverse
   );
 
   // Gestion persistence localStorage
@@ -59,7 +62,9 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
   // Effet pour restaurer l'univers depuis localStorage
   useEffect(() => {
-    const storedUniverse = localStorage.getItem(UNIVERSE_STORAGE_KEY) as UniverseType;
+    const storedUniverse = localStorage.getItem(
+      UNIVERSE_STORAGE_KEY
+    ) as UniverseType;
     if (storedUniverse) {
       setSelectedUniverse(storedUniverse);
     }
@@ -76,7 +81,9 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
       const storedShopId = localStorage.getItem(SHOP_STORAGE_KEY);
 
       if (storedShopId) {
-        const storedShop = availableShops.find(shop => shop.id === storedShopId);
+        const storedShop = availableShops.find(
+          (shop) => shop.id === storedShopId
+        );
         if (storedShop) {
           setSelectedShopState(storedShop);
           return;
@@ -102,49 +109,10 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     setSelectedShop,
     availableShops,
     loading,
-    error
+    error,
   };
 
   return (
-    <AdminContext.Provider value={value}>
-      {children}
-    </AdminContext.Provider>
+    <AdminContext.Provider value={value}>{children}</AdminContext.Provider>
   );
-};
-
-// ============================================
-// HOOKS ADMIN
-// ============================================
-
-// Hook principal AdminContext
-export const useAdminContext = (): AdminContextValue => {
-  const context = useContext(AdminContext);
-  if (context === undefined) {
-    throw new Error('useAdminContext must be used within an AdminProvider');
-  }
-  return context;
-};
-
-// Hook spécialisé pour la gestion des boutiques
-export const useAdminShop = () => {
-  const {
-    selectedUniverse,
-    setSelectedUniverse,
-    selectedShop,
-    setSelectedShop,
-    availableShops,
-    loading,
-    error
-  } = useAdminContext();
-
-  return {
-    universe: selectedUniverse,
-    setUniverse: setSelectedUniverse,
-    shop: selectedShop,
-    setShop: setSelectedShop,
-    availableShops,
-    loading,
-    error,
-    hasShop: selectedShop !== null
-  };
 };

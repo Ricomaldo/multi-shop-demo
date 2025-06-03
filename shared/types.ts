@@ -18,6 +18,7 @@ export interface Shop {
     latitude: number;
     longitude: number;
   };
+  categories?: Category[];
 }
 
 export interface Category {
@@ -31,12 +32,13 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  imageUrl: string;
+  imageUrl?: string;
   shopId: string;
-  category?: string;
-  stockStatus: StockStatus;
+  categoryId: string;
+  category?: Category;
+  stockStatus?: StockStatus;
   featured?: boolean;
-  attributes?: Record<string, unknown>;
+  attributes?: string;
 }
 
 export interface BreweryAttributes {

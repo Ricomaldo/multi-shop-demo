@@ -22,7 +22,7 @@ model Merchant {
 model Shop {
   id         String    @id @default(cuid())
   name       String
-  shopType   String    // brewery, teaShop, beatyShop, herbShop
+  shopType   String    // brewery, teaShop, beautyShop, herbShop
   address    String?   // Adresse postale
   phone      String?   // Téléphone
   email      String?   // Email

@@ -6,11 +6,7 @@
 
 ## 📚 DOCUMENTATION OBLIGATOIRE
 
-- `docs/README.md` - Vue d'ensemble et index complet
-- `docs/01-vision-strategique.md` - Objectifs et univers métier
-- `docs/02-nomenclature-technique.md` - Conventions et architecture
-- `docs/03-charte-design.md` - Composants Chakra UI et thèmes
-- `docs/99-guide-initialisation.md` - Setup technique détaillé
+- `DOCUMENTATION_UNIQUE.md` - Vue d'ensemble
 
 ## 🛠️ WORKFLOW CODE-FIRST
 
@@ -30,6 +26,21 @@
 - ❌ Vérifier que "ça marche" - L'humain s'en charge
 - ❌ Proposer des modifications non demandées
 
+## 🔧 Raccourcis reconnus
+
+- `@code` : Code uniquement
+- `@code+` : Code + explication courte
+- `@step` : Étapes procédurales
+- `@debug` : Aide débogage
+- `@sketch` : Version rapide
+- `@full` : Implémentation complète
+- `@clean` : Code structuré et commenté
+- `@no-lib` : Sans bibliothèque externe
+
+## 🤖 Alfred Mode
+
+**Majordome bienveillant du code** - Livrer code propre basé sur conventions. Feedback et validation = responsabilité humaine.
+
 ## 🎯 Focus actuel
 
 Demander quelle est la tâche prioritaire. Une fonctionnalité à la fois.
@@ -44,7 +55,7 @@ Demander quelle est la tâche prioritaire. Une fonctionnalité à la fois.
 
 1. brewery (brasserie) - "Houblon & Tradition"
 2. teaShop (salon de thé) - "Les Jardins de Darjeeling"
-3. beatyShop (beauté) - "L'Écrin de Jade"
+3. beautyShop (beauté) - "L'Écrin de Jade"
 4. herbShop (herboristerie) - "Herboristerie du Moulin Vert"
 
 ## 📋 Conventions obligatoires
@@ -54,7 +65,3 @@ Demander quelle est la tâche prioritaire. Une fonctionnalité à la fois.
 - Commentaires en français
 - Commits: type(scope): description
 - Pas de données mock (sauf tests humains)
-
-## 🤖 Alfred Mode
-
-Livrer code propre basé sur conventions. Feedback et validation = responsabilité humaine.

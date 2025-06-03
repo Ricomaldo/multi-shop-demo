@@ -17,7 +17,7 @@ export function parseProductAttributes(
   if (!product.attributes) return null;
 
   try {
-    return JSON.parse(product.attributes) as ProductAttributes;
+    return JSON.parse(product.attributes || "{}") as ProductAttributes;
   } catch (error) {
     console.error("Erreur lors du parsing des attributs:", error);
     return null;
@@ -49,65 +49,6 @@ export function isHerbShopAttributes(
   attributes: ProductAttributes
 ): attributes is HerbShopAttributes {
   return "principes_actifs" in attributes && "usage_traditionnel" in attributes;
-}
-
-/**
- * Retourne les attributs clés à afficher sur les cartes produit selon l'univers
- */
-export function getKeyAttributesForCard(
-  product: Product,
-  shop: Shop
-): Array<{ label: string; value: string }> {
-  const attributes = parseProductAttributes(product);
-  if (!attributes) return [];
-
-  switch (shop.shopType) {
-    case "brewery":
-      if (isBreweryAttributes(attributes)) {
-        return [
-          { label: "Degré", value: `${attributes.degre_alcool}°` },
-          { label: "Amertume", value: `${attributes.amertume_ibu} IBU` },
-          { label: "Format", value: attributes.format_bouteille },
-          { label: "Stock", value: `${attributes.stock} unités` },
-        ];
-      }
-      break;
-
-    case "teaShop":
-      if (isTeaShopAttributes(attributes)) {
-        return [
-          { label: "Origine", value: attributes.origine_plantation },
-          { label: "Grade", value: attributes.grade_qualite },
-          { label: "Température", value: attributes.temperature_infusion },
-          { label: "Stock", value: `${attributes.stock} unités` },
-        ];
-      }
-      break;
-
-    case "beautyShop":
-      if (isBeautyShopAttributes(attributes)) {
-        return [
-          { label: "Type de peau", value: attributes.type_peau },
-          { label: "Volume", value: `${attributes.contenance_ml}ml` },
-          { label: "Bio", value: attributes.certification_bio ? "Oui" : "Non" },
-          { label: "Stock", value: `${attributes.stock} unités` },
-        ];
-      }
-      break;
-
-    case "herbShop":
-      if (isHerbShopAttributes(attributes)) {
-        return [
-          { label: "Usage", value: attributes.usage_traditionnel },
-          { label: "Forme", value: attributes.forme_galenique },
-          { label: "Durée cure", value: attributes.duree_cure },
-          { label: "Stock", value: `${attributes.stock} unités` },
-        ];
-      }
-      break;
-  }
-
-  return [];
 }
 
 /**

@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Product, Shop, ShopType } from "../../../shared/types";
-import { getUniverseColorScheme, shopTypeToUniverse } from "../utils/universeMapping";
+import {
+  getUniverseColorScheme,
+  shopTypeToUniverse,
+} from "../utils/universeMapping";
 
 interface UseShopDataReturn {
   shops: Shop[];
@@ -16,7 +19,8 @@ interface UseShopDataReturn {
   >;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
 export const useShopData = (): UseShopDataReturn => {
   const [shops, setShops] = useState<Shop[]>([]);
@@ -29,18 +33,18 @@ export const useShopData = (): UseShopDataReturn => {
       setLoading(true);
       setError(null);
 
-
       // 1. Charger toutes les boutiques
       const shopsResponse = await fetch(`${API_BASE_URL}/shops`);
       if (!shopsResponse.ok) {
         throw new Error(`Erreur shops: ${shopsResponse.status}`);
       }
-      const rawShopsData: Omit<Shop, 'themeColor'>[] = await shopsResponse.json();
+      const rawShopsData: Omit<Shop, "themeColor">[] =
+        await shopsResponse.json();
 
       // Enrichir avec themeColor
-      const shopsData: Shop[] = rawShopsData.map(shop => ({
+      const shopsData: Shop[] = rawShopsData.map((shop) => ({
         ...shop,
-        themeColor: getUniverseColorScheme(shopTypeToUniverse(shop.shopType))
+        themeColor: getUniverseColorScheme(shopTypeToUniverse(shop.shopType)),
       }));
 
       // 2. Charger tous les produits de toutes les boutiques
@@ -48,31 +52,46 @@ export const useShopData = (): UseShopDataReturn => {
 
       for (const shop of shopsData) {
         try {
-          const productsResponse = await fetch(`${API_BASE_URL}/shops/${shop.id}/products`);
+          const productsResponse = await fetch(
+            `${API_BASE_URL}/shops/${shop.id}/products`
+          );
 
           if (!productsResponse.ok) {
-            console.warn(`⚠️ Erreur produits boutique ${shop.name}:`, productsResponse.status);
+            console.warn(
+              `⚠️ Erreur produits boutique ${shop.name}:`,
+              productsResponse.status
+            );
             continue;
           }
 
           const shopProducts: Product[] = await productsResponse.json();
 
           // Enrichir les produits avec statut stock calculé
-          const enrichedProducts = shopProducts.map(product => ({
+          const enrichedProducts = shopProducts.map((product) => ({
             ...product,
             stockStatus: calculateStockStatus(product),
-            // La catégorie vient de l'API comme objet Category, on extrait le nom
-            category: typeof product.category === 'object' && product.category && 'name' in product.category
-              ? (product.category as { name: string }).name
-              : (product.category as string) || 'Non classé'
+            // S'assurer que categoryId est défini même si category est populé
+            categoryId:
+              product.categoryId ||
+              (typeof product.category === "object" && product.category?.id) ||
+              "",
+            // Garder category comme objet populé si disponible
+            category:
+              typeof product.category === "object" &&
+              product.category &&
+              "name" in product.category
+                ? product.category
+                : undefined,
           }));
 
           allProducts.push(...enrichedProducts);
         } catch (productError) {
-          console.warn(`❌ Erreur chargement produits ${shop.name}:`, productError);
+          console.warn(
+            `❌ Erreur chargement produits ${shop.name}:`,
+            productError
+          );
         }
       }
-
 
       setShops(shopsData);
       setProducts(allProducts);
@@ -108,8 +127,10 @@ export const useShopData = (): UseShopDataReturn => {
       const shopProducts = getProductsByShop(shop.id);
       data[shop.id] = {
         total: shopProducts.length,
-        lowStock: shopProducts.filter((p) => p.stockStatus === "low_stock").length,
-        outOfStock: shopProducts.filter((p) => p.stockStatus === "out_of_stock").length,
+        lowStock: shopProducts.filter((p) => p.stockStatus === "low_stock")
+          .length,
+        outOfStock: shopProducts.filter((p) => p.stockStatus === "out_of_stock")
+          .length,
       };
     });
 
@@ -133,20 +154,23 @@ export const useShopData = (): UseShopDataReturn => {
 };
 
 // Helper function pour calculer le statut de stock
-function calculateStockStatus(product: Product): 'in_stock' | 'low_stock' | 'out_of_stock' {
-  if (!product.attributes) return 'in_stock';
+function calculateStockStatus(
+  product: Product
+): "in_stock" | "low_stock" | "out_of_stock" {
+  if (!product.attributes) return "in_stock";
 
   try {
-    const attributes = typeof product.attributes === 'string'
-      ? JSON.parse(product.attributes)
-      : product.attributes;
+    const attributes =
+      typeof product.attributes === "string"
+        ? JSON.parse(product.attributes || "{}")
+        : product.attributes;
 
     const stock = Number(attributes.stock) || 0;
 
-    if (stock === 0) return 'out_of_stock';
-    if (stock <= 10) return 'low_stock';
-    return 'in_stock';
+    if (stock === 0) return "out_of_stock";
+    if (stock <= 10) return "low_stock";
+    return "in_stock";
   } catch {
-    return 'in_stock';
+    return "in_stock";
   }
 }

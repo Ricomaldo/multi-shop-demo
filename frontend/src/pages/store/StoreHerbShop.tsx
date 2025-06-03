@@ -9,7 +9,7 @@ import {
   TabPanels,
   Tabs,
   Text,
-  VStack
+  VStack,
 } from "@chakra-ui/react";
 import { useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -18,10 +18,32 @@ import StoreHeroHeader from "../../components/store/StoreHeroHeader";
 import { useShopByType, useShopData, useStoreHandlers } from "../../hooks";
 
 const HERB_CATEGORIES = [
-  { id: "digestion", name: "Digestion", icon: "🌱", description: "Plantes pour faciliter la digestion et soulager les troubles digestifs" },
-  { id: "sommeil", name: "Sommeil", icon: "🌙", description: "Plantes relaxantes pour retrouver un sommeil naturel et réparateur" },
-  { id: "immunite", name: "Immunité", icon: "💪", description: "Plantes fortifiantes pour renforcer les défenses naturelles" },
-  { id: "stress", name: "Stress", icon: "🍃", description: "Plantes adaptogènes pour gérer le stress et l'anxiété" },
+  {
+    id: "digestion",
+    name: "Digestion",
+    icon: "🌱",
+    description:
+      "Plantes pour faciliter la digestion et soulager les troubles digestifs",
+  },
+  {
+    id: "sommeil",
+    name: "Sommeil",
+    icon: "🌙",
+    description:
+      "Plantes relaxantes pour retrouver un sommeil naturel et réparateur",
+  },
+  {
+    id: "immunite",
+    name: "Immunité",
+    icon: "💪",
+    description: "Plantes fortifiantes pour renforcer les défenses naturelles",
+  },
+  {
+    id: "stress",
+    name: "Stress",
+    icon: "🍃",
+    description: "Plantes adaptogènes pour gérer le stress et l'anxiété",
+  },
 ];
 
 const StoreHerbShop = () => {
@@ -40,9 +62,15 @@ const StoreHerbShop = () => {
   const productsByUsage = useMemo(() => {
     const grouped: Record<string, typeof products> = {};
     HERB_CATEGORIES.forEach(({ id }) => {
-      grouped[id] = products.filter(
-        (p) => p.attributes?.usage_traditionnel === id
-      );
+      grouped[id] = products.filter((p) => {
+        if (!p.attributes) return false;
+        try {
+          const attrs = JSON.parse(p.attributes);
+          return attrs.usage_traditionnel === id;
+        } catch {
+          return false;
+        }
+      });
     });
     return grouped;
   }, [products]);

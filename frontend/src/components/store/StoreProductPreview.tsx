@@ -13,7 +13,7 @@ interface StoreProductPreviewProps {
   onViewDetails: (product: Product) => void;
 }
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 // Mapping des types de boutique vers les clés d'animation
 const shopTypeToAnimationKey = {

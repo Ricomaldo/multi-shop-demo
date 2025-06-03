@@ -16,6 +16,15 @@ interface StoreLayoutProps {
   variant?: "compact" | "zen" | "elegant" | "natural";
 }
 
+// Type pour la configuration du layout
+type LayoutConfig = {
+  padding: number;
+  columnGap: number;
+  rowGap: number;
+  gridColumns?: string;
+  contentWidth?: string;
+};
+
 /**
  * Layout parent pour toutes les pages vitrine
  * Gère automatiquement :
@@ -32,11 +41,11 @@ export default function StoreLayout({
   sectionSpacing = 12,
   variant,
 }: StoreLayoutProps) {
-  // Déterminer l'univers automatiquement
+  // Détermine l'univers depuis le type de boutique
   const universe = shopTypeToUniverse(shop.shopType);
 
-  // Déterminer la variante selon l'univers si non spécifiée
-  const effectiveVariant =
+  // Déterminer la variante selon l'univers ou utiliser celle fournie
+  const effectiveVariant: "compact" | "zen" | "elegant" | "natural" =
     variant ||
     (() => {
       switch (shop.shopType) {
@@ -54,7 +63,7 @@ export default function StoreLayout({
     })();
 
   // Configuration responsive du layout selon la variante
-  const layoutConfig = useBreakpointValue({
+  const layoutConfig: LayoutConfig | undefined = useBreakpointValue({
     base: {
       padding: 4,
       columnGap: 4,
@@ -144,8 +153,11 @@ export default function StoreLayout({
               // Styles de base pour tous les layouts
               "& > .product-grid": {
                 display: "grid",
-                gridTemplateColumns: layoutConfig?.gridColumns,
-                gap: `${layoutConfig?.rowGap}px ${layoutConfig?.columnGap}px`,
+                gridTemplateColumns:
+                  layoutConfig?.gridColumns || "repeat(3, 1fr)",
+                gap: `${layoutConfig?.rowGap || 6}px ${
+                  layoutConfig?.columnGap || 4
+                }px`,
               },
               "& > .category-section": {
                 marginTop: `${sectionSpacing * 1.5}px`,

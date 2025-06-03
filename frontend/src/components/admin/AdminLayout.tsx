@@ -14,7 +14,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     <Flex h="100vh" bg="gray.50">
       <AdminSidebar
         isOpen={true}
-        onToggle={() => {}}
         isCollapsed={isCollapsed}
         onToggleCollapse={onToggleCollapse}
       />

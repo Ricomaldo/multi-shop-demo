@@ -55,7 +55,7 @@ export const SharedAdvancedFilters: React.FC<SharedAdvancedFiltersProps> = ({
     products.forEach((product) => {
       if (product.attributes) {
         try {
-          const attrs = JSON.parse(product.attributes);
+          const attrs = JSON.parse(product.attributes || "{}");
           Object.entries(attrs).forEach(([key, value]) => {
             if (!options[key]) options[key] = new Set();
             options[key].add(value as string);
