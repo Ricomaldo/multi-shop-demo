@@ -1,5 +1,5 @@
 import { extendTheme } from "@chakra-ui/react";
-import { ProductGrid, SharedProductCard } from "./components/shared";
+import { ProductGrid, SharedProductPreviewCard } from "./components/shared";
 import { universeColors } from "./universeColors";
 
 const theme = extendTheme({
@@ -8,7 +8,7 @@ const theme = extendTheme({
     ...universeColors,
   },
   components: {
-    SharedProductCard,
+    SharedProductPreviewCard,
     ProductGrid,
   },
 });

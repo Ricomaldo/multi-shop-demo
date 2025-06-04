@@ -1,252 +1,213 @@
 import {
   Box,
   Button,
-  Container,
   Grid,
   GridItem,
   Heading,
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import type { Product } from "../../../../shared/types";
-import { SharedProductCard } from "../../components/shared/SharedProductCard";
-import BeautySection from "../../components/store/sections/BeautySection";
-import StoreHeroHeader from "../../components/store/StoreHeroHeader";
-import { useShopByType } from "../../hooks";
-
-// Configuration de la mosaïque par catégorie
-type BeautyCategory = "visage" | "corps" | "cheveux" | "maquillage";
-
-const BEAUTY_LAYOUT: Record<
-  BeautyCategory,
-  { rowSpan: number; colSpan: number; name: string }
-> = {
-  visage: { rowSpan: 2, colSpan: 2, name: "Soins Visage" },
-  corps: { rowSpan: 1, colSpan: 1, name: "Soins Corps" },
-  cheveux: { rowSpan: 1, colSpan: 1, name: "Soins Cheveux" },
-  maquillage: { rowSpan: 2, colSpan: 1, name: "Maquillage" },
-};
+import type { Product, Shop } from "../../../../shared/types";
+import { SharedProductPreviewCard } from "../../components/shared/SharedProductPreviewCard";
+import StoreHeader from "../../components/store/StoreHeader";
+import StoreLayout from "../../components/store/StoreLayout";
+import { useShopByType, useStoreHandlers } from "../../hooks";
+import { useShopData } from "../../hooks/useShopData";
 
 const StoreBeautyShop = () => {
   const navigate = useNavigate();
-  const { shop, products, loading } = useShopByType("beautyShop");
+  const { shop: initialShop, loading: shopLoading } =
+    useShopByType("beautyShop");
+  const { shops, products: allProducts, refreshData } = useShopData();
 
+  // État local pour la boutique courante (permet le changement)
+  const [currentShop, setCurrentShop] = useState<Shop | null>(null);
+  const { handleAddToCart, handleViewProduct } = useStoreHandlers(
+    currentShop || undefined
+  );
+
+  // Initialiser la boutique courante
   useEffect(() => {
-    if (!loading && !shop) {
+    if (!shopLoading && initialShop) {
+      setCurrentShop(initialShop);
+    } else if (!shopLoading && !initialShop) {
       navigate("/404");
     }
-  }, [loading, shop, navigate]);
+  }, [shopLoading, initialShop, navigate]);
 
-  // Répartir les produits en sections pour la mosaïque
-  const mosaicProducts = useMemo(() => {
+  // Filtrer les produits de la boutique courante
+  const products = currentShop
+    ? allProducts.filter((p) => p.shopId === currentShop.id)
+    : [];
+
+  // Répartir les produits : mis en avant + par catégorie
+  const organizedProducts = useMemo(() => {
     const featured = products.filter((p) => p.featured).slice(0, 2);
-    const regular = products.filter((p) => !p.featured);
-    return { featured, regular };
+    const byCategory: Record<string, Product[]> = {};
+
+    // Grouper tous les produits restants par catégorie
+    products.forEach((product) => {
+      if (!product.featured) {
+        // Éviter les doublons avec featured
+        const category = product.category?.name || "Autres";
+        if (!byCategory[category]) {
+          byCategory[category] = [];
+        }
+        byCategory[category].push(product);
+      }
+    });
+
+    return { featured, byCategory };
   }, [products]);
 
-  if (loading || !shop) {
+  // Si chargement ou pas de boutique, afficher un loader
+  if (shopLoading || !currentShop) {
     return <Box>Chargement...</Box>;
   }
 
-  const handleAddToCart = (product: Product) => {
-    console.log("Ajouter au panier:", product);
+  // Handler pour changement de boutique avec navigation
+  const handleShopChange = async (newShop: Shop) => {
+    setCurrentShop(newShop);
+    // Refresh des données pour la nouvelle boutique
+    await refreshData();
   };
-
-  const handleViewProduct = (product: Product) => {
-    console.log("Voir produit:", product);
-  };
-
-  // Grouper les produits par catégorie
-  const productsByCategory = products
-    .filter((p) => p.shopId === shop.id)
-    .reduce((acc, product) => {
-      const category = (product.category?.name as BeautyCategory) || "visage";
-      if (!acc[category]) acc[category] = [];
-      acc[category].push(product);
-      return acc;
-    }, {} as Record<BeautyCategory, Product[]>);
 
   return (
-    <Box>
-      <StoreHeroHeader
-        shop={shop}
-        title="L'Écrin de Jade"
-        subtitle="Institut de beauté bio..."
-        availableShops={[shop]}
-        onShopChange={() => {}}
-        variant="simple"
-        imagePath="/images/hero/beauty-hero.jpg"
+    <StoreLayout shop={currentShop} variant="elegant">
+      <StoreHeader
+        shop={currentShop}
+        title={currentShop.name}
+        subtitle="Institut de beauté naturelle - Soins bio et cosmétiques éthiques"
+        availableShops={shops}
+        onShopChange={handleShopChange}
+        variant="hero"
+        imagePath="/images/store/beauty-hero.jpg"
+        height="70vh"
       />
 
-      <VStack spacing={8} p={8}>
-        <Box textAlign="center" maxW="2xl" mx="auto">
-          <Heading size="lg" mb={4} color="pink.600">
-            Nos Soins & Produits
-          </Heading>
-          <Text fontSize="lg" color="gray.600">
-            Des produits naturels sélectionnés avec soin pour votre bien-être
-          </Text>
-        </Box>
+      <VStack spacing={12} py={8}>
+        {/* Section produits mis en avant */}
+        {organizedProducts.featured.length > 0 && (
+          <VStack spacing={8} w="full">
+            <Box textAlign="center" maxW="2xl" mx="auto">
+              <Heading size="lg" mb={4} color="pink.600">
+                Nos Coups de Cœur
+              </Heading>
+              <Text fontSize="lg" color="gray.600">
+                Une sélection de nos produits phares
+              </Text>
+            </Box>
 
-        <Grid
-          templateColumns="repeat(12, 1fr)"
-          gap={6}
-          w="full"
-          maxW="1400px"
-          mx="auto"
-        >
-          {/* Produits mis en avant - Grande taille */}
-          {mosaicProducts.featured.map((product) => (
-            <GridItem
-              key={product.id}
-              colSpan={{ base: 12, md: 6 }}
-              rowSpan={2}
+            <Grid
+              templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+              gap={8}
+              w="full"
+              maxW="1400px"
+              mx="auto"
             >
-              <SharedProductCard
-                product={product}
-                shop={shop}
-                imageHeight="400px"
-                isHighlighted
-              />
-            </GridItem>
-          ))}
+              {organizedProducts.featured.map((product) => (
+                <GridItem key={product.id}>
+                  <SharedProductPreviewCard
+                    product={product}
+                    shop={currentShop}
+                    imageHeight="350px"
+                    isHighlighted
+                    onAddToCart={handleAddToCart}
+                    onView={handleViewProduct}
+                  />
+                </GridItem>
+              ))}
+            </Grid>
+          </VStack>
+        )}
 
-          {/* Produits réguliers - Taille normale */}
-          {mosaicProducts.regular.map((product) => (
-            <GridItem
-              key={product.id}
-              colSpan={{ base: 12, sm: 6, md: 4, lg: 3 }}
-            >
-              <SharedProductCard
-                product={product}
-                shop={shop}
-                imageHeight="250px"
-              />
-            </GridItem>
-          ))}
-        </Grid>
-      </VStack>
-
-      <Container maxW="8xl" px={{ base: 4, md: 8 }}>
-        <VStack spacing={20} py={20}>
-          {/* Section Beauté */}
-          <BeautySection />
-
-          {/* Mosaïque de produits */}
-          <Box w="full">
-            <Text fontSize="3xl" fontWeight="bold" textAlign="center" mb={12}>
-              Notre Collection Beauté
-            </Text>
+        {/* Section produits par catégorie */}
+        {Object.keys(organizedProducts.byCategory).length > 0 && (
+          <VStack spacing={8} w="full">
+            <Box textAlign="center">
+              <Heading size="lg" mb={4} color="pink.600">
+                Notre Collection Beauté
+              </Heading>
+              <Text fontSize="lg" color="gray.600">
+                Découvrez nos gammes de soins naturels
+              </Text>
+            </Box>
 
             <Grid
               templateColumns={{
                 base: "1fr",
-                md: "repeat(3, 1fr)",
-                lg: "repeat(4, 1fr)",
+                md: "repeat(2, 1fr)",
+                lg: "repeat(3, 1fr)",
               }}
               gap={8}
               mx="auto"
               maxW="1400px"
             >
-              {Object.entries(BEAUTY_LAYOUT).map(([category, layout]) => {
-                const categoryProducts =
-                  productsByCategory[category as BeautyCategory] || [];
-                if (categoryProducts.length === 0) return null;
-
-                return (
+              {Object.entries(organizedProducts.byCategory).map(
+                ([category, categoryProducts]) => (
                   <GridItem
                     key={category}
-                    rowSpan={layout.rowSpan}
-                    colSpan={{ base: 1, md: layout.colSpan }}
                     bg="pink.50"
-                    p={4}
-                    borderRadius="lg"
-                    position="relative"
+                    p={6}
+                    borderRadius="xl"
+                    border="1px solid"
+                    borderColor="pink.100"
                   >
                     <Text
                       fontSize="xl"
-                      fontWeight="medium"
-                      color="pink.600"
-                      mb={4}
+                      fontWeight="semibold"
+                      color="pink.700"
+                      mb={6}
                       textAlign="center"
                     >
-                      {layout.name}
+                      {category}
                     </Text>
-                    <VStack spacing={6}>
-                      {categoryProducts.map((product) => (
+                    <VStack spacing={4}>
+                      {categoryProducts.slice(0, 3).map((product) => (
                         <Box
                           key={product.id}
                           w="full"
-                          transform={
-                            layout.rowSpan === 2 ? "scale(1.05)" : "none"
-                          }
                           transition="transform 0.2s"
                           _hover={{ transform: "scale(1.02)" }}
                         >
-                          <SharedProductCard
+                          <SharedProductPreviewCard
                             product={product}
-                            shop={shop}
+                            shop={currentShop}
+                            imageHeight="200px"
                             onAddToCart={handleAddToCart}
                             onView={handleViewProduct}
                           />
                         </Box>
                       ))}
+                      {categoryProducts.length > 3 && (
+                        <Text fontSize="sm" color="gray.500" textAlign="center">
+                          +{categoryProducts.length - 3} autres produits
+                        </Text>
+                      )}
                     </VStack>
                   </GridItem>
-                );
-              })}
+                )
+              )}
             </Grid>
-          </Box>
+          </VStack>
+        )}
 
-          {/* Footer élégant */}
-          <Box
-            as="footer"
-            w="full"
-            bg="pink.50"
-            p={16}
-            borderRadius="lg"
-            textAlign="center"
-          >
-            <VStack spacing={6}>
-              <Text
-                fontFamily="serif"
-                fontSize="2xl"
-                color="pink.700"
-                fontWeight="light"
-              >
-                L'Institut de Beauté
-              </Text>
-              <Text fontSize="lg">
-                <span role="img" aria-label="étincelles">
-                  ✨
-                </span>{" "}
-                Soins & Rituels
-              </Text>
-              <Text>
-                <span role="img" aria-label="localisation">
-                  📍
-                </span>{" "}
-                18 avenue Montaigne, 75008 Paris
-              </Text>
-              <Text fontStyle="italic">Sur rendez-vous uniquement</Text>
-              <Button
-                as={Link}
-                to="/store/contact"
-                colorScheme="pink"
-                size="lg"
-                variant="outline"
-                px={8}
-                _hover={{ bg: "pink.50" }}
-              >
-                Nous contacter
-              </Button>
-            </VStack>
-          </Box>
-        </VStack>
-      </Container>
-    </Box>
+        {/* Bouton catalogue complet */}
+        <Button
+          as={Link}
+          to={`/store/${currentShop.shopType}/products`}
+          colorScheme="pink"
+          size="lg"
+          variant="outline"
+          px={8}
+          py={6}
+        >
+          Découvrir tout le catalogue
+        </Button>
+      </VStack>
+    </StoreLayout>
   );
 };
 

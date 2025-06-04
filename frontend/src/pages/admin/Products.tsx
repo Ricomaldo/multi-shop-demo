@@ -1,5 +1,11 @@
 import { SearchIcon } from "@chakra-ui/icons";
 import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
   Box,
   Button,
   Card,
@@ -7,19 +13,24 @@ import {
   CardHeader,
   Divider,
   Flex,
+  Grid,
+  GridItem,
   Heading,
   Input,
   InputGroup,
   InputLeftElement,
   Select,
   Text,
+  useDisclosure,
   useToast,
   VStack,
 } from "@chakra-ui/react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { Product } from "../../../../shared/types";
 import { AdminProductForm } from "../../components/admin/AdminProductForm";
 import AdminProductList from "../../components/admin/AdminProductList";
+import LoadingState from "../../components/shared/LoadingState";
+import { SharedProductPreviewCard } from "../../components/shared/SharedProductPreviewCard";
 import {
   useAdminShop,
   useAdvancedProductFilters,
@@ -31,9 +42,17 @@ import { getUniverseColorScheme } from "../../utils/universeMapping";
 
 export default function Products() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState<ProductFilters>({});
   const [searchTerm, setSearchTerm] = useState("");
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const {
+    isOpen: isDeleteOpen,
+    onOpen: onDeleteOpen,
+    onClose: onDeleteClose,
+  } = useDisclosure();
+  const cancelRef = useRef<HTMLButtonElement>(null);
   const toast = useToast();
 
   const { universe } = useUniverse();
@@ -72,23 +91,43 @@ export default function Products() {
 
   const handleEdit = async (product: Product) => {
     setEditingProduct(product);
+    setSelectedProduct(product); // Mettre à jour le preview
   };
 
-  const handleDelete = async (product: Product) => {
+  // Nouvelle fonction pour mettre à jour le preview en temps réel
+  const handleFormChange = (formData: Partial<Product>) => {
+    if (selectedProduct) {
+      setSelectedProduct({
+        ...selectedProduct,
+        ...formData,
+      });
+    }
+  };
+
+  const handleDelete = (product: Product) => {
+    setProductToDelete(product);
+    onDeleteOpen();
+  };
+
+  const confirmDelete = async () => {
+    if (!productToDelete) return;
+
     setIsLoading(true);
     try {
       // Simulation API - Dans un vrai projet, appel backend
-      console.log("Suppression du produit:", product.id);
+      console.log("Suppression du produit:", productToDelete.id);
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       toast({
         title: "Produit supprimé",
-        description: `Le produit "${product.name}" a été supprimé avec succès`,
+        description: `Le produit "${productToDelete.name}" a été supprimé avec succès`,
         status: "success",
         duration: 3000,
       });
 
       refreshData();
+      onDeleteClose();
+      setProductToDelete(null);
     } catch {
       toast({
         title: "Erreur",
@@ -103,10 +142,50 @@ export default function Products() {
 
   const handleSave = async (productData: Partial<Product>) => {
     setIsLoading(true);
+
+    // Debug logging
+    console.log("🔧 [DEBUG] handleSave appelée avec:", productData);
+    console.log("🔧 [DEBUG] editingProduct:", editingProduct);
+    console.log("🔧 [DEBUG] activeShop:", activeShop);
+
     try {
-      // Simulation API - Dans un vrai projet, appel backend
-      console.log("Mise à jour du produit:", productData);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (!editingProduct?.id || !activeShop?.id) {
+        throw new Error("Produit ou boutique manquant");
+      }
+
+      // Log avant appel API
+      console.log("🔧 [DEBUG] Appel API updateProduct...");
+      console.log("🔧 [DEBUG] Endpoint:", `/api/products/${editingProduct.id}`);
+      console.log("🔧 [DEBUG] Payload:", JSON.stringify(productData, null, 2));
+
+      // Conversion des attributes string JSON vers objet pour l'API
+      const apiData = {
+        ...productData,
+        attributes: productData.attributes
+          ? JSON.parse(productData.attributes)
+          : undefined,
+      };
+
+      // Appel API avec route simple
+      const response = await fetch(
+        `http://localhost:3001/api/products/${editingProduct.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(apiData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const updatedProduct = await response.json();
+
+      // Log réponse serveur
+      console.log("✅ [DEBUG] Réponse serveur:", updatedProduct);
 
       toast({
         title: "Produit mis à jour",
@@ -116,13 +195,28 @@ export default function Products() {
       });
 
       setEditingProduct(null);
+      setSelectedProduct(null);
       refreshData();
-    } catch {
+    } catch (error) {
+      // Log erreur détaillée
+      console.error("❌ [DEBUG] Erreur lors de la sauvegarde:", error);
+      console.error(
+        "❌ [DEBUG] Stack trace:",
+        error instanceof Error ? error.stack : "Pas de stack"
+      );
+      console.error(
+        "❌ [DEBUG] Message:",
+        error instanceof Error ? error.message : "Erreur inconnue"
+      );
+
       toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le produit",
+        title: "Erreur de sauvegarde",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Impossible de mettre à jour le produit",
         status: "error",
-        duration: 3000,
+        duration: 5000,
       });
     } finally {
       setIsLoading(false);
@@ -131,18 +225,24 @@ export default function Products() {
 
   const handleCancel = () => {
     setEditingProduct(null);
+    setSelectedProduct(null); // Réinitialiser le preview
   };
 
   if (loading || !activeShop) {
     return (
-      <Box p={8}>
-        <Text>Chargement...</Text>
-      </Box>
+      <LoadingState
+        message={
+          !activeShop
+            ? "Initialisation de la boutique..."
+            : "Chargement des produits..."
+        }
+        height="60vh"
+      />
     );
   }
 
   return (
-    <Box p={8}>
+    <Box p={{ base: 4, md: 8 }}>
       <VStack spacing={8} align="stretch">
         {/* En-tête avec filtres */}
         <Card>
@@ -190,24 +290,106 @@ export default function Products() {
 
           <CardBody>
             {editingProduct ? (
-              <AdminProductForm
-                product={editingProduct}
-                shop={activeShop}
-                onSave={handleSave}
-                onCancel={handleCancel}
-                isLoading={isLoading}
-              />
+              <VStack spacing={6} align="stretch">
+                {/* Mobile: Preview en haut, Form en bas */}
+                {selectedProduct && (
+                  <Box display={{ base: "block", lg: "none" }}>
+                    <Heading size="sm" mb={4} color="gray.600">
+                      Aperçu vitrine
+                    </Heading>
+                    <Box maxW="300px" mx="auto">
+                      <SharedProductPreviewCard
+                        product={selectedProduct}
+                        shop={activeShop}
+                        isAdminMode={false}
+                        showActions={false}
+                        imageHeight="200px"
+                        priceOverride={selectedProduct.price}
+                      />
+                    </Box>
+                  </Box>
+                )}
+
+                {/* Desktop: Grid côte à côte */}
+                <Grid
+                  templateColumns={{ base: "1fr", lg: "1fr 350px" }}
+                  gap={6}
+                  display={{ base: "block", lg: "grid" }}
+                >
+                  <GridItem>
+                    <AdminProductForm
+                      product={editingProduct}
+                      shop={activeShop}
+                      onSave={handleSave}
+                      onCancel={handleCancel}
+                      onChange={handleFormChange}
+                      onDelete={handleDelete}
+                      isLoading={isLoading}
+                    />
+                  </GridItem>
+
+                  {/* Preview desktop uniquement */}
+                  <GridItem display={{ base: "none", lg: "block" }}>
+                    {selectedProduct && (
+                      <Box position="sticky" top={4}>
+                        <Heading size="sm" mb={4} color="gray.600">
+                          Aperçu vitrine
+                        </Heading>
+                        <SharedProductPreviewCard
+                          product={selectedProduct}
+                          shop={activeShop}
+                          isAdminMode={false}
+                          showActions={false}
+                          imageHeight="250px"
+                          priceOverride={selectedProduct.price}
+                        />
+                      </Box>
+                    )}
+                  </GridItem>
+                </Grid>
+              </VStack>
             ) : (
               <AdminProductList
                 products={filteredProducts}
                 shop={activeShop}
                 onEdit={handleEdit}
-                onDelete={handleDelete}
               />
             )}
           </CardBody>
         </Card>
       </VStack>
+
+      <AlertDialog
+        isOpen={isDeleteOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onDeleteClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader>Supprimer le produit</AlertDialogHeader>
+            <AlertDialogBody>
+              Êtes-vous sûr de vouloir supprimer{" "}
+              <Text as="span" fontWeight="bold">
+                "{productToDelete?.name}"
+              </Text>{" "}
+              ? Cette action est irréversible.
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} variant="ghost" onClick={onDeleteClose}>
+                Annuler
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={confirmDelete}
+                ml={3}
+                isLoading={isLoading}
+              >
+                Supprimer définitivement
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Box>
   );
 }

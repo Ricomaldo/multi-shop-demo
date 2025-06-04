@@ -9,6 +9,12 @@ interface ProductAttributesProps {
   shopType: UniverseType;
 }
 
+// Parser IBU pour enlever "IBU" si présent
+const parseIBU = (value: string) => {
+  if (!value) return value;
+  return value.replace(/ ?IBU/gi, "").trim();
+};
+
 /**
  * Affiche les attributs spécialisés selon l'univers
  */
@@ -25,13 +31,15 @@ export const ProductAttributes: React.FC<ProductAttributesProps> = ({
         <Text fontSize="sm" color="gray.600">
           Degré d'alcool
         </Text>
-        <Badge colorScheme={colorScheme}>{attributes.degre_alcool}°</Badge>
+        <Badge colorScheme={colorScheme}>{attributes.degre_alcool}%</Badge>
       </GridItem>
       <GridItem>
         <Text fontSize="sm" color="gray.600">
           Amertume (IBU)
         </Text>
-        <Badge colorScheme={colorScheme}>{attributes.amertume_ibu} IBU</Badge>
+        <Badge colorScheme={colorScheme}>
+          {parseIBU(attributes.amertume_ibu)} IBU
+        </Badge>
       </GridItem>
       <GridItem>
         <Text fontSize="sm" color="gray.600">

@@ -24,7 +24,7 @@ Projet multi-boutiques pour démonstrations commerciales. Interface admin priori
 ```
 Admin*     → Interface backoffice (AdminProductCard, AdminSidebar...)
 Store*     → Interface vitrine (StoreLayout, StoreHeroHeader...)
-Shared*    → Composants communs (SharedProductCard, SharedFilters...)
+Shared*    → Composants communs (SharedProductPreviewCard, SharedFilters...)
 ```
 
 ### Types centraux
@@ -112,4 +112,4 @@ frontend/src/
 
 ---
 
-_Documentation mise à jour après nettoyage code - Décembre 2024_
+_Documentation mise à jour après nettoyage code - Juin 2025_

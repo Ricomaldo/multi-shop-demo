@@ -23,7 +23,8 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { AdminStockTransferForm } from "../../components/admin/AdminStockTransferForm";
+import { AdminStockTransferForm } from "../../components/onwork/AdminStockTransferForm";
+import LoadingState from "../../components/shared/LoadingState";
 import { useShopData } from "../../hooks/useShopData";
 import {
   getUniverseIcon,
@@ -162,9 +163,10 @@ export default function StockTransfer() {
 
   if (loading) {
     return (
-      <Container maxW="6xl" py={8}>
-        <Text>Chargement...</Text>
-      </Container>
+      <LoadingState
+        message="Chargement des données de transfert..."
+        height="60vh"
+      />
     );
   }
 

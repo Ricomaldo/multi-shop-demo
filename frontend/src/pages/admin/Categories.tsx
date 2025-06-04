@@ -30,6 +30,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import LoadingState from "../../components/shared/LoadingState";
 import { useAdminShop, useShopData } from "../../hooks";
 import adminCategoriesService, {
   type CategoryWithStats,
@@ -211,25 +212,14 @@ export default function Categories() {
 
   if (loading || categoriesLoading || !activeShop) {
     return (
-      <Flex justify="center" align="center" h="400px">
-        <VStack spacing={4}>
-          <Text fontSize="lg">Chargement des catégories...</Text>
-          <Box
-            w="200px"
-            h="2px"
-            bg="gray.200"
-            borderRadius="full"
-            overflow="hidden"
-          >
-            <Box
-              w="100%"
-              h="100%"
-              bg={`${colorScheme}.500`}
-              className="animate-pulse"
-            />
-          </Box>
-        </VStack>
-      </Flex>
+      <LoadingState
+        message={
+          !activeShop
+            ? "Initialisation de la boutique..."
+            : "Chargement des catégories..."
+        }
+        height="60vh"
+      />
     );
   }
 

@@ -1,7 +1,7 @@
 import { Box, Text, VStack, useBreakpointValue } from "@chakra-ui/react";
 import React, { useMemo } from "react";
 import type { Product, Shop } from "../../../../shared/types";
-import { SharedProductCard } from "./SharedProductCard";
+import { SharedProductPreviewCard } from "./SharedProductPreviewCard";
 
 interface SharedProductGridProps {
   products: Product[];
@@ -179,7 +179,7 @@ export const SharedProductGrid: React.FC<SharedProductGridProps> = ({
         w="full"
       >
         {displayedProducts.map((product) => (
-          <SharedProductCard
+          <SharedProductPreviewCard
             key={product.id}
             product={product}
             shop={shop}

@@ -3,7 +3,7 @@ import {
   defineStyleConfig,
 } from "@chakra-ui/react";
 
-// Variantes pour SharedProductCard
+// Variantes pour SharedProductPreviewCard
 const productCardHelpers = createMultiStyleConfigHelpers([
   "card",
   "image",
@@ -12,109 +12,110 @@ const productCardHelpers = createMultiStyleConfigHelpers([
   "price",
 ]);
 
-export const SharedProductCard = productCardHelpers.defineMultiStyleConfig({
-  baseStyle: {
-    card: {
-      display: "flex",
-      flexDirection: "column",
-      background: "white",
-      transition: "all 0.3s ease-in-out",
-    },
-    image: {
-      objectFit: "cover",
-      transition: "transform 0.3s ease-in-out",
-    },
-    content: {
-      padding: 4,
-    },
-    title: {
-      fontSize: "lg",
-      fontWeight: "bold",
-    },
-    price: {
-      fontSize: "md",
-      fontWeight: "semibold",
-      color: "gray.600",
-    },
-  },
-  variants: {
-    brewery: {
+export const SharedProductPreviewCard =
+  productCardHelpers.defineMultiStyleConfig({
+    baseStyle: {
       card: {
-        borderRadius: "lg",
-        boxShadow: "md",
-        _hover: {
-          transform: "translateY(-4px)",
-          boxShadow: "lg",
-        },
+        display: "flex",
+        flexDirection: "column",
+        background: "white",
+        transition: "all 0.3s ease-in-out",
       },
       image: {
-        borderTopRadius: "lg",
-        _groupHover: { transform: "scale(1.05)" },
+        objectFit: "cover",
+        transition: "transform 0.3s ease-in-out",
+      },
+      content: {
+        padding: 4,
       },
       title: {
-        color: "orange.700",
+        fontSize: "lg",
+        fontWeight: "bold",
+      },
+      price: {
+        fontSize: "md",
+        fontWeight: "semibold",
+        color: "gray.600",
       },
     },
-    tea: {
-      card: {
-        borderRadius: "sm",
-        boxShadow: "sm",
-        _hover: {
+    variants: {
+      brewery: {
+        card: {
+          borderRadius: "lg",
           boxShadow: "md",
-          bg: "green.50",
+          _hover: {
+            transform: "translateY(-4px)",
+            boxShadow: "lg",
+          },
+        },
+        image: {
+          borderTopRadius: "lg",
+          _groupHover: { transform: "scale(1.05)" },
+        },
+        title: {
+          color: "orange.700",
         },
       },
-      image: {
-        borderRadius: "sm",
-        _groupHover: { opacity: 0.9 },
-      },
-      title: {
-        color: "green.700",
-        fontFamily: "serif",
-      },
-    },
-    beauty: {
-      card: {
-        borderRadius: "md",
-        boxShadow: "none",
-        border: "1px solid",
-        borderColor: "pink.100",
-        _hover: {
-          borderColor: "pink.300",
-          bg: "pink.50",
+      tea: {
+        card: {
+          borderRadius: "sm",
+          boxShadow: "sm",
+          _hover: {
+            boxShadow: "md",
+            bg: "green.50",
+          },
+        },
+        image: {
+          borderRadius: "sm",
+          _groupHover: { opacity: 0.9 },
+        },
+        title: {
+          color: "green.700",
+          fontFamily: "serif",
         },
       },
-      image: {
-        borderRadius: "full",
-        _groupHover: { transform: "rotate(5deg)" },
-      },
-      title: {
-        color: "pink.600",
-        fontSize: "xl",
-      },
-    },
-    herb: {
-      card: {
-        borderRadius: "none",
-        boxShadow: "sm",
-        _hover: {
-          bg: "green.50",
-          transform: "scale(1.02)",
+      beauty: {
+        card: {
+          borderRadius: "md",
+          boxShadow: "none",
+          border: "1px solid",
+          borderColor: "pink.100",
+          _hover: {
+            borderColor: "pink.300",
+            bg: "pink.50",
+          },
+        },
+        image: {
+          borderRadius: "full",
+          _groupHover: { transform: "rotate(5deg)" },
+        },
+        title: {
+          color: "pink.600",
+          fontSize: "xl",
         },
       },
-      image: {
-        _groupHover: { filter: "brightness(1.1)" },
-      },
-      title: {
-        color: "green.800",
-        fontFamily: "body",
+      herb: {
+        card: {
+          borderRadius: "none",
+          boxShadow: "sm",
+          _hover: {
+            bg: "green.50",
+            transform: "scale(1.02)",
+          },
+        },
+        image: {
+          _groupHover: { filter: "brightness(1.1)" },
+        },
+        title: {
+          color: "green.800",
+          fontFamily: "body",
+        },
       },
     },
-  },
-  defaultProps: {
-    variant: "brewery", // Variant par défaut
-  },
-});
+    defaultProps: {
+      variant: "brewery", // Variant par défaut
+    },
+  });
 
 // Configuration des grilles de produits
 export const ProductGrid = defineStyleConfig({

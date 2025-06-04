@@ -2,29 +2,35 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
-  Container,
   Flex,
   IconButton,
   useBreakpointValue,
   VStack,
 } from "@chakra-ui/react";
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { Shop } from "../../../../shared/types";
-import { SharedProductCard } from "../../components/shared/SharedProductCard";
-import StoreHeroHeader from "../../components/store/StoreHeroHeader";
+import { SharedProductPreviewCard } from "../../components/shared/SharedProductPreviewCard";
+import StoreHeader from "../../components/store/StoreHeader";
+import StoreLayout from "../../components/store/StoreLayout";
 import { useShopData, useStoreHandlers } from "../../hooks";
 
-// Animation variants
-const MotionBox = motion.create(Box);
-
 export default function StoreBrewery() {
-  const { products, loading, getShopByType, shops } = useShopData();
-  const { handleAddToCart, handleViewProduct } = useStoreHandlers();
-  const [currentShop, setCurrentShop] = useState<Shop | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const {
+    products: allProducts,
+    loading,
+    getShopByType,
+    shops,
+    refreshData,
+  } = useShopData();
   const navigate = useNavigate();
+
+  // État local pour la boutique courante (permet le changement)
+  const [currentShop, setCurrentShop] = useState<Shop | null>(null);
+  const { handleAddToCart, handleViewProduct } = useStoreHandlers(
+    currentShop || undefined
+  );
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // Nombre de produits à afficher selon la taille d'écran
   const itemsToShow = useBreakpointValue({ base: 1, md: 2, lg: 3 }) || 1;
@@ -47,7 +53,7 @@ export default function StoreBrewery() {
   }
 
   // Filtrer les produits de la boutique courante
-  const shopProducts = products.filter((p) => p.shopId === currentShop.id);
+  const shopProducts = allProducts.filter((p) => p.shopId === currentShop.id);
   const maxIndex = Math.max(0, shopProducts.length - itemsToShow);
 
   const handlePrevious = () => {
@@ -58,86 +64,82 @@ export default function StoreBrewery() {
     setCurrentIndex((prev) => Math.min(maxIndex, prev + 1));
   };
 
-  const handleShopChange = (newShop: Shop) => {
+  // Handler pour changement de boutique avec navigation
+  const handleShopChange = async (newShop: Shop) => {
     setCurrentShop(newShop);
     setCurrentIndex(0);
+    // Refresh des données pour la nouvelle boutique
+    await refreshData();
   };
 
   return (
-    <Box as="main">
-      <MotionBox
-        initial={{ opacity: 0, x: -60 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6, ease: "anticipate" }}
-      >
-        <StoreHeroHeader
-          shop={currentShop}
-          title="Houblon & Tradition"
-          subtitle="Brasserie artisanale depuis 2015"
-          availableShops={shops}
-          onShopChange={handleShopChange}
-        />
-      </MotionBox>
+    <StoreLayout shop={currentShop}>
+      {/* VARIANT SIMPLE - Hero + Navigation overlay */}
+      <StoreHeader
+        shop={currentShop}
+        title={currentShop.name}
+        subtitle="Brasserie artisanale - L'art du houblon et de la tradition depuis 1987"
+        availableShops={shops}
+        onShopChange={handleShopChange}
+        variant="simple"
+        imagePath="/images/store/brewery-hero.jpg"
+        height="80vh"
+      />
 
-      <Container maxW="8xl" px={{ base: 4, md: 8 }}>
-        <VStack spacing={12} py={12}>
-          {/* Grille de produits */}
-          <Box position="relative" w="full">
-            <Flex align="center" justify="space-between">
-              <IconButton
-                aria-label="Produit précédent"
-                icon={<ChevronLeftIcon />}
-                onClick={handlePrevious}
-                isDisabled={currentIndex === 0}
-                variant="ghost"
-                size="lg"
-              />
+      <VStack spacing={12} py={12}>
+        {/* Grille de produits avec carousel */}
+        <Box position="relative" w="full" maxW="1400px" mx="auto">
+          <Flex align="center" justify="space-between">
+            <IconButton
+              aria-label="Produit précédent"
+              icon={<ChevronLeftIcon />}
+              onClick={handlePrevious}
+              isDisabled={currentIndex === 0}
+              variant="ghost"
+              size="lg"
+              colorScheme="orange"
+            />
 
-              <Flex
-                flex={1}
-                gap={6}
-                px={4}
-                overflow="hidden"
-                position="relative"
-              >
-                {shopProducts
-                  .slice(currentIndex, currentIndex + itemsToShow)
-                  .map((product) => (
-                    <Box key={product.id} flex={1}>
-                      <SharedProductCard
-                        product={product}
-                        shop={currentShop}
-                        onAddToCart={handleAddToCart}
-                        onView={handleViewProduct}
-                      />
-                    </Box>
-                  ))}
-              </Flex>
-
-              <IconButton
-                aria-label="Produit suivant"
-                icon={<ChevronRightIcon />}
-                onClick={handleNext}
-                isDisabled={currentIndex >= maxIndex}
-                variant="ghost"
-                size="lg"
-              />
+            <Flex flex={1} gap={6} px={4} overflow="hidden" position="relative">
+              {shopProducts
+                .slice(currentIndex, currentIndex + itemsToShow)
+                .map((product) => (
+                  <Box key={product.id} flex={1}>
+                    <SharedProductPreviewCard
+                      product={product}
+                      shop={currentShop}
+                      onAddToCart={handleAddToCart}
+                      onView={handleViewProduct}
+                    />
+                  </Box>
+                ))}
             </Flex>
-          </Box>
 
-          {/* Bouton catalogue complet */}
-          <Button
-            as={Link}
-            to="/store/brewery/products"
-            colorScheme="orange"
-            size="lg"
-            variant="outline"
-            px={8}
-          >
-            Voir tout le catalogue
-          </Button>
-        </VStack>
-      </Container>
-    </Box>
+            <IconButton
+              aria-label="Produit suivant"
+              icon={<ChevronRightIcon />}
+              onClick={handleNext}
+              isDisabled={currentIndex >= maxIndex}
+              variant="ghost"
+              size="lg"
+              colorScheme="orange"
+            />
+          </Flex>
+        </Box>
+
+        {/* Bouton catalogue complet */}
+        <Button
+          as={Link}
+          to={`/store/${currentShop.shopType}/products`}
+          colorScheme="orange"
+          size="lg"
+          variant="solid"
+          px={8}
+          py={6}
+        >
+          Découvrir toute la gamme
+        </Button>
+      </VStack>
+    </StoreLayout>
   );
 }

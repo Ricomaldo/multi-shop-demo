@@ -38,7 +38,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
 
   // Hooks
-  const { shops, loading } = useShopData();
+  const { shops, loading, refreshData } = useShopData();
 
   // Filtrer les boutiques selon l'univers sélectionné
   const availableShops = shops.filter(
@@ -49,11 +49,13 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   const UNIVERSE_STORAGE_KEY = "demoforge_admin_universe";
   const SHOP_STORAGE_KEY = `demoforge_admin_shop_${selectedUniverse}`;
 
-  // Setter avec persistence pour la boutique
-  const setSelectedShop = (shop: Shop | null) => {
+  // Setter avec persistence pour la boutique + refresh des données
+  const setSelectedShop = async (shop: Shop | null) => {
     setSelectedShopState(shop);
     if (shop) {
       localStorage.setItem(SHOP_STORAGE_KEY, shop.id);
+      // Refresh des données pour la nouvelle boutique
+      await refreshData();
     } else {
       localStorage.removeItem(SHOP_STORAGE_KEY);
     }

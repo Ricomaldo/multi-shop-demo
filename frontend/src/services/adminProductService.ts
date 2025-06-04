@@ -36,6 +36,11 @@ export interface ProductFilters {
   usage_traditionnel?: string;
   forme_galenique?: string;
   origine_plante?: string;
+  // Propriétés spécialisées manquantes
+  type_the?: string;
+  origine_bio?: boolean;
+  propriete_therapeutique?: string;
+  culture_bio?: boolean;
 }
 
 export interface ProductsResponse {

@@ -2,6 +2,7 @@ import { Box, Container, VStack, useBreakpointValue } from "@chakra-ui/react";
 import type { Shop } from "../../../../shared/types";
 import { UniverseProvider } from "../../contexts/UniverseContext";
 import { shopTypeToUniverse } from "../../utils/universeMapping";
+import StoreFooter from "./StoreFooter";
 
 interface StoreLayoutProps {
   /** La boutique courante */
@@ -255,6 +256,7 @@ export default function StoreLayout({
             }}
           >
             {children}
+            <StoreFooter shop={shop} />
           </VStack>
         </Container>
       </Box>

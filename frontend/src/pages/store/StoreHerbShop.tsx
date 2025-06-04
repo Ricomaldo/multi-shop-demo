@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Container,
   SimpleGrid,
   Tab,
   TabList,
@@ -11,211 +10,237 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { SharedProductCard } from "../../components/shared/SharedProductCard";
-import StoreHeroHeader from "../../components/store/StoreHeroHeader";
+import type { Product, Shop } from "../../../../shared/types";
+import { SharedProductPreviewCard } from "../../components/shared/SharedProductPreviewCard";
+import StoreHeader from "../../components/store/StoreHeader";
+import StoreLayout from "../../components/store/StoreLayout";
 import { useShopByType, useShopData, useStoreHandlers } from "../../hooks";
-
-const HERB_CATEGORIES = [
-  {
-    id: "digestion",
-    name: "Digestion",
-    icon: "🌱",
-    description:
-      "Plantes pour faciliter la digestion et soulager les troubles digestifs",
-  },
-  {
-    id: "sommeil",
-    name: "Sommeil",
-    icon: "🌙",
-    description:
-      "Plantes relaxantes pour retrouver un sommeil naturel et réparateur",
-  },
-  {
-    id: "immunite",
-    name: "Immunité",
-    icon: "💪",
-    description: "Plantes fortifiantes pour renforcer les défenses naturelles",
-  },
-  {
-    id: "stress",
-    name: "Stress",
-    icon: "🍃",
-    description: "Plantes adaptogènes pour gérer le stress et l'anxiété",
-  },
-];
 
 const StoreHerbShop = () => {
   const navigate = useNavigate();
-  const { shop, products, loading } = useShopByType("herbShop");
-  const { handleAddToCart, handleViewProduct } = useStoreHandlers();
-  const { shops } = useShopData();
+  const { shop: initialShop, loading: shopLoading } = useShopByType("herbShop");
+  const { shops, products: allProducts, refreshData } = useShopData();
 
+  // État local pour la boutique courante (permet le changement)
+  const [currentShop, setCurrentShop] = useState<Shop | null>(null);
+  const { handleAddToCart, handleViewProduct } = useStoreHandlers(
+    currentShop || undefined
+  );
+
+  // Initialiser la boutique courante
   useEffect(() => {
-    if (!loading && !shop) {
+    if (!shopLoading && initialShop) {
+      setCurrentShop(initialShop);
+    } else if (!shopLoading && !initialShop) {
       navigate("/404");
     }
-  }, [loading, shop, navigate]);
+  }, [shopLoading, initialShop, navigate]);
 
-  // Grouper les produits par usage
-  const productsByUsage = useMemo(() => {
-    const grouped: Record<string, typeof products> = {};
-    HERB_CATEGORIES.forEach(({ id }) => {
-      grouped[id] = products.filter((p) => {
-        if (!p.attributes) return false;
-        try {
-          const attrs = JSON.parse(p.attributes);
-          return attrs.usage_traditionnel === id;
-        } catch {
-          return false;
-        }
-      });
+  // Filtrer les produits de la boutique courante
+  const products = currentShop
+    ? allProducts.filter((p) => p.shopId === currentShop.id)
+    : [];
+
+  // Grouper les produits par catégorie (simple et fiable)
+  const productsByCategory = useMemo(() => {
+    console.log(`[HerbShop] Produits total: ${products.length}`);
+
+    const grouped: Record<
+      string,
+      { products: Product[]; icon: string; description: string }
+    > = {};
+
+    products.forEach((product) => {
+      // Utiliser la catégorie du produit, plus fiable que les attributs
+      const categoryName = product.category?.name || "Plantes Médicinales";
+
+      // Mapping des icônes par catégorie
+      const categoryMapping: Record<
+        string,
+        { icon: string; description: string }
+      > = {
+        "Plantes Digestives": {
+          icon: "🌿",
+          description: "Plantes pour le bien-être digestif",
+        },
+        "Plantes Relaxantes": {
+          icon: "🕯️",
+          description: "Herbes apaisantes et relaxantes",
+        },
+        "Plantes Immunité": {
+          icon: "🛡️",
+          description: "Renforcement des défenses naturelles",
+        },
+        "Plantes Détox": {
+          icon: "🌱",
+          description: "Purification et drainage",
+        },
+        "Plantes Sommeil": {
+          icon: "🌙",
+          description: "Favorise un sommeil réparateur",
+        },
+        "Plantes Énergisantes": {
+          icon: "⚡",
+          description: "Vitalité et tonus naturel",
+        },
+        "Plantes Médicinales": {
+          icon: "🌺",
+          description: "Plantes aux vertus thérapeutiques",
+        },
+      };
+
+      const { icon, description } = categoryMapping[categoryName] || {
+        icon: "🌿",
+        description: "Plantes aux vertus naturelles",
+      };
+
+      if (!grouped[categoryName]) {
+        grouped[categoryName] = { products: [], icon, description };
+      }
+      grouped[categoryName].products.push(product);
     });
+
+    console.log(`[HerbShop] Catégories trouvées:`, Object.keys(grouped));
     return grouped;
   }, [products]);
 
-  if (loading || !shop) {
+  // Si chargement ou pas de boutique, afficher un loader
+  if (shopLoading || !currentShop) {
     return <Box>Chargement...</Box>;
   }
 
+  // Handler pour changement de boutique avec navigation
+  const handleShopChange = async (newShop: Shop) => {
+    setCurrentShop(newShop);
+    // Refresh des données pour la nouvelle boutique
+    await refreshData();
+  };
+
   return (
-    <Box as="main">
-      <StoreHeroHeader
-        shop={shop}
-        title="L'Herbier Traditionnel"
-        subtitle="Plantes médicinales et préparations naturelles"
+    <StoreLayout shop={currentShop}>
+      {/* CORRECTION: VARIANT HERO avec image herb-hero.jpg */}
+      <StoreHeader
+        shop={currentShop}
+        title={currentShop.name}
+        subtitle="Herboristerie traditionnelle - Plantes médicinales et préparations naturelles depuis 1952"
         availableShops={shops}
+        onShopChange={handleShopChange}
+        variant="hero"
+        imagePath="/images/store/herb-hero.jpg"
+        height="75vh"
       />
 
-      <Container maxW="7xl" px={{ base: 4, md: 8 }}>
-        <VStack spacing={12} py={12}>
-          {/* Système d'onglets */}
-          <VStack spacing={8} w="full">
-            <VStack spacing={2} textAlign="center">
-              <Text fontSize="3xl" fontWeight="bold">
-                Nos Plantes Médicinales
-              </Text>
-              <Text color="gray.600">
-                Une sélection de plantes aux vertus millénaires
-              </Text>
-            </VStack>
+      <VStack spacing={8} py={8}>
+        <Text
+          fontSize="lg"
+          color="teal.700"
+          textAlign="center"
+          fontStyle="italic"
+          maxW="3xl"
+          mx="auto"
+        >
+          Découvrez notre pharmacopée naturelle organisée par familles de
+          plantes
+        </Text>
 
-            <Tabs
-              variant="soft-rounded"
-              colorScheme="teal"
-              align="center"
-              w="full"
-              isLazy
-            >
-              <TabList
-                overflowX="auto"
-                overflowY="hidden"
-                whiteSpace="nowrap"
-                css={{
-                  scrollbarWidth: "none",
-                  "&::-webkit-scrollbar": { display: "none" },
-                }}
-                p={2}
-              >
-                {HERB_CATEGORIES.map((category) => (
-                  <Tab
-                    key={category.id}
-                    px={6}
-                    py={3}
-                    fontWeight="medium"
-                    _selected={{
-                      color: "teal.800",
-                      bg: "teal.100",
-                    }}
-                  >
-                    <Text mr={2} display="inline">
-                      {category.icon}
-                    </Text>
-                    {category.name}
-                  </Tab>
-                ))}
-              </TabList>
-
-              <TabPanels mt={8}>
-                {HERB_CATEGORIES.map((category) => (
-                  <TabPanel key={category.id}>
-                    <VStack spacing={6} align="stretch">
-                      <Text
-                        fontSize="lg"
-                        color="teal.700"
-                        textAlign="center"
-                        fontStyle="italic"
-                      >
-                        {category.description}
-                      </Text>
-
-                      <SimpleGrid
-                        columns={{ base: 1, md: 2, lg: 3 }}
-                        spacing={8}
-                        py={4}
-                      >
-                        {productsByUsage[category.id].map((product) => (
-                          <SharedProductCard
-                            key={product.id}
-                            product={product}
-                            shop={shop}
-                            onAddToCart={handleAddToCart}
-                            onView={handleViewProduct}
-                          />
-                        ))}
-                      </SimpleGrid>
-                    </VStack>
-                  </TabPanel>
-                ))}
-              </TabPanels>
-            </Tabs>
-          </VStack>
-
-          {/* Footer naturel */}
-          <Box
-            as="footer"
+        {Object.keys(productsByCategory).length > 0 ? (
+          <Tabs
+            variant="soft-rounded"
+            colorScheme="teal"
             w="full"
-            bg="green.50"
-            p={12}
-            borderRadius="none"
-            textAlign="center"
-            borderTop="1px solid"
-            borderColor="green.100"
+            maxW="1400px"
+            mx="auto"
           >
-            <VStack spacing={4}>
-              <Text fontSize="2xl" color="green.800" fontFamily="body">
-                L'Herbier Traditionnel
-              </Text>
-              <Text>
-                <span role="img" aria-label="plante">
-                  🌿
-                </span>{" "}
-                Herboristerie & Conseils
-              </Text>
-              <Text>
-                <span role="img" aria-label="localisation">
-                  📍
-                </span>{" "}
-                23 rue des Plantes, 75014 Paris
-              </Text>
-              <Text>Cueillette et préparations artisanales</Text>
-              <Button
-                as={Link}
-                to="/store/contact"
-                colorScheme="teal"
-                size="lg"
-                variant="outline"
-                px={8}
-                _hover={{ bg: "green.50" }}
-              >
-                Nous contacter
-              </Button>
-            </VStack>
-          </Box>
-        </VStack>
-      </Container>
-    </Box>
+            <TabList flexWrap="wrap" justifyContent="center" gap={2}>
+              {Object.entries(productsByCategory).map(([category, data]) => (
+                <Tab key={category} fontSize="sm">
+                  {data.icon} {category}
+                </Tab>
+              ))}
+            </TabList>
+
+            <TabPanels>
+              {Object.entries(productsByCategory).map(([category, data]) => (
+                <TabPanel key={category} px={0}>
+                  <VStack spacing={6}>
+                    <Text
+                      fontSize="md"
+                      color="teal.600"
+                      textAlign="center"
+                      fontStyle="italic"
+                    >
+                      {data.description}
+                    </Text>
+
+                    <SimpleGrid
+                      columns={{ base: 1, sm: 2, md: 3, lg: 4 }}
+                      spacing={6}
+                      w="full"
+                    >
+                      {data.products.map((product) => (
+                        <SharedProductPreviewCard
+                          key={product.id}
+                          product={product}
+                          shop={currentShop}
+                          onAddToCart={handleAddToCart}
+                          onView={handleViewProduct}
+                        />
+                      ))}
+                    </SimpleGrid>
+                  </VStack>
+                </TabPanel>
+              ))}
+            </TabPanels>
+          </Tabs>
+        ) : (
+          <VStack spacing={6} py={12}>
+            <Text textAlign="center" color="gray.500" fontSize="lg">
+              Aucun produit disponible pour le moment
+            </Text>
+
+            {/* FALLBACK: Afficher TOUS les produits de la boutique sans filtrage */}
+            {products.length > 0 && (
+              <VStack spacing={6} w="full" maxW="1400px" mx="auto">
+                <Text color="teal.600" textAlign="center">
+                  Voici tous nos produits disponibles ({products.length}{" "}
+                  articles)
+                </Text>
+                <SimpleGrid
+                  columns={{ base: 1, sm: 2, md: 3, lg: 4 }}
+                  spacing={6}
+                  w="full"
+                >
+                  {products.map((product) => (
+                    <SharedProductPreviewCard
+                      key={product.id}
+                      product={product}
+                      shop={currentShop}
+                      onAddToCart={handleAddToCart}
+                      onView={handleViewProduct}
+                    />
+                  ))}
+                </SimpleGrid>
+              </VStack>
+            )}
+          </VStack>
+        )}
+
+        {/* Bouton catalogue complet */}
+        <Button
+          as={Link}
+          to={`/store/${currentShop.shopType}/products`}
+          colorScheme="teal"
+          size="lg"
+          variant="outline"
+          px={8}
+          py={6}
+        >
+          Explorer toute l'herboristerie
+        </Button>
+      </VStack>
+    </StoreLayout>
   );
 };
 

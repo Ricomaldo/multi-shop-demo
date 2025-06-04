@@ -11,13 +11,12 @@ import {
   getUniverseColorScheme,
   getUniverseIcon,
 } from "../../utils/universeMapping";
-import SharedShopInfoBadge from "./SharedShopInfoBadge";
 
-interface SharedFooterProps {
+interface StoreFooterProps {
   shop: Shop;
 }
 
-export default function SharedFooter({ shop }: SharedFooterProps) {
+export default function StoreFooter({ shop }: StoreFooterProps) {
   const colorScheme = getUniverseColorScheme(shop.shopType);
   const icon = getUniverseIcon(shop.shopType);
 
@@ -74,18 +73,6 @@ export default function SharedFooter({ shop }: SharedFooterProps) {
                 >
                   {shop.website}
                 </ChakraLink>
-              </HStack>
-            )}
-            {shop.openingHours && (
-              <HStack>
-                <Text>🕒</Text>
-                <SharedShopInfoBadge
-                  shops={[shop]}
-                  currentShop={shop}
-                  onShopChange={() => {}}
-                  showOpeningStatus={true}
-                  variant="compact"
-                />
               </HStack>
             )}
           </HStack>

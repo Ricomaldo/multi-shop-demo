@@ -7,16 +7,18 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  Spinner,
   Text,
   VStack,
-  useColorModeValue
+  useColorModeValue,
 } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 import type { Shop } from "../../../../shared/types";
 import type { UniverseType } from "../../contexts/UniverseContext";
 import {
   getUniverseIcon,
   getUniverseName,
-  shopTypeToUniverse
+  shopTypeToUniverse,
 } from "../../utils/universeMapping";
 
 interface AdminShopSelectorProps {
@@ -58,6 +60,11 @@ export default function AdminShopSelector({
   size = "md",
   isCollapsed = false,
 }: AdminShopSelectorProps) {
+  const [isChanging, setIsChanging] = useState(false);
+  const [lastSelectedShopId, setLastSelectedShopId] = useState<string | null>(
+    null
+  );
+
   // Styles conditionnels
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -66,10 +73,30 @@ export default function AdminShopSelector({
   const textColor = useColorModeValue("gray.800", "gray.100");
   const mutedColor = useColorModeValue("gray.600", "gray.400");
 
+  // Détecter quand le changement de boutique est terminé
+  useEffect(() => {
+    if (isChanging && selectedShop && selectedShop.id !== lastSelectedShopId) {
+      // Le changement est terminé
+      setIsChanging(false);
+      setLastSelectedShopId(selectedShop.id);
+    }
+  }, [selectedShop, isChanging, lastSelectedShopId]);
+
   // Filtrer les boutiques de l'univers sélectionné
   const availableShops = shops.filter(
     (shop) => shopTypeToUniverse(shop.shopType) === selectedUniverse
   );
+
+  const handleShopChange = async (shop: Shop) => {
+    setIsChanging(true);
+    setLastSelectedShopId(selectedShop?.id || null);
+    try {
+      await onShopChange(shop);
+    } catch (error) {
+      console.error("Erreur changement boutique:", error);
+      setIsChanging(false);
+    }
+  };
 
   return (
     <VStack spacing={2} align="stretch">
@@ -94,7 +121,9 @@ export default function AdminShopSelector({
               </Text>
             )}
             <Text fontSize="sm" fontWeight="medium" color={textColor}>
-              {isCollapsed ? getUniverseIcon(selectedUniverse) : getUniverseName(selectedUniverse)}
+              {isCollapsed
+                ? getUniverseIcon(selectedUniverse)
+                : getUniverseName(selectedUniverse)}
             </Text>
           </Box>
         </MenuButton>
@@ -135,16 +164,23 @@ export default function AdminShopSelector({
                 Boutique
               </Text>
             )}
-            <Text fontSize="sm" fontWeight="medium" color={textColor}>
-              {selectedShop ? (isCollapsed ? extractCity(selectedShop.name) : extractCity(selectedShop.name)) : "Sélectionner"}
-            </Text>
+            <HStack spacing={2} justify="flex-start">
+              <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                {selectedShop
+                  ? isCollapsed
+                    ? extractCity(selectedShop.name)
+                    : extractCity(selectedShop.name)
+                  : "Sélectionner"}
+              </Text>
+              {isChanging && <Spinner size="sm" color={textColor} />}
+            </HStack>
           </Box>
         </MenuButton>
         <MenuList>
           {availableShops.map((shop) => (
             <MenuItem
               key={shop.id}
-              onClick={() => onShopChange(shop)}
+              onClick={() => handleShopChange(shop)}
               bg={shop.id === selectedShop?.id ? hoverBg : "transparent"}
               _hover={{ bg: hoverBg }}
             >

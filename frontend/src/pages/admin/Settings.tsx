@@ -24,6 +24,7 @@ import {
 } from "@chakra-ui/react";
 import { useMemo, useState } from "react";
 import AdminShopForm from "../../components/admin/AdminShopForm";
+import LoadingState from "../../components/shared/LoadingState";
 import { useAdminShop, useShopData } from "../../hooks";
 
 interface ShopSettings {
@@ -130,9 +131,7 @@ export default function Settings() {
 
   if (!activeShop) {
     return (
-      <VStack spacing={4} align="center" justify="center" h="400px">
-        <Text fontSize="lg">Chargement des paramètres...</Text>
-      </VStack>
+      <LoadingState message="Initialisation des paramètres..." height="60vh" />
     );
   }
 

@@ -7,6 +7,13 @@ import {
   HStack,
   Heading,
   Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -15,8 +22,10 @@ import {
   Select,
   SimpleGrid,
   Switch,
+  Text,
   Textarea,
   VStack,
+  useDisclosure,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import type { Product, Shop } from "../../../../shared/types";
@@ -26,6 +35,8 @@ interface AdminProductFormProps {
   shop: Shop;
   onSave: (productData: Partial<Product>) => void;
   onCancel: () => void;
+  onChange?: (productData: Partial<Product>) => void;
+  onDelete?: (product: Product) => void;
   isLoading?: boolean;
 }
 
@@ -38,6 +49,8 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
   shop,
   onSave,
   onCancel,
+  onChange,
+  onDelete,
   isLoading = false,
 }) => {
   // États pour les champs de base
@@ -47,6 +60,17 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
 
   // État pour les attributs spécialisés avec typage simple
   const [attributes, setAttributes] = useState<Record<string, string>>({});
+
+  // Modal de confirmation pour suppression
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  // Fonction de suppression avec confirmation
+  const handleDelete = () => {
+    if (product && onDelete) {
+      onDelete(product);
+      onClose();
+    }
+  };
 
   // Initialisation des attributs selon le type de boutique
   useEffect(() => {
@@ -125,17 +149,83 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
 
   // Pour les champs numériques
   const handleNumberChange = (key: string, value: number | string) => {
-    setAttributes((prev) => ({ ...prev, [key]: String(value) }));
+    const newAttributes = { ...attributes, [key]: String(value) };
+    setAttributes(newAttributes);
+    if (onChange) {
+      onChange({
+        name,
+        description,
+        price,
+        attributes: JSON.stringify(newAttributes),
+      });
+    }
   };
 
   // Pour les champs booléens
   const handleBooleanChange = (key: string, value: boolean) => {
-    setAttributes((prev) => ({ ...prev, [key]: String(value) }));
+    const newAttributes = { ...attributes, [key]: String(value) };
+    setAttributes(newAttributes);
+    if (onChange) {
+      onChange({
+        name,
+        description,
+        price,
+        attributes: JSON.stringify(newAttributes),
+      });
+    }
   };
 
   // Pour les champs texte
   const handleTextChange = (key: string, value: string) => {
-    setAttributes((prev) => ({ ...prev, [key]: value }));
+    const newAttributes = { ...attributes, [key]: value };
+    setAttributes(newAttributes);
+    if (onChange) {
+      onChange({
+        name,
+        description,
+        price,
+        attributes: JSON.stringify(newAttributes),
+      });
+    }
+  };
+
+  // Mettre à jour name avec trigger
+  const setNameWithChange = (newName: string) => {
+    setName(newName);
+    if (onChange) {
+      onChange({
+        name: newName,
+        description,
+        price,
+        attributes: JSON.stringify(attributes),
+      });
+    }
+  };
+
+  // Mettre à jour description avec trigger
+  const setDescriptionWithChange = (newDescription: string) => {
+    setDescription(newDescription);
+    if (onChange) {
+      onChange({
+        name,
+        description: newDescription,
+        price,
+        attributes: JSON.stringify(attributes),
+      });
+    }
+  };
+
+  // Mettre à jour price avec trigger
+  const setPriceWithChange = (newPrice: number) => {
+    setPrice(newPrice);
+    if (onChange) {
+      onChange({
+        name,
+        description,
+        price: newPrice,
+        attributes: JSON.stringify(attributes),
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -559,7 +649,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
             <FormLabel>Nom du produit</FormLabel>
             <Input
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setNameWithChange(e.target.value)}
               placeholder="Nom du produit"
             />
           </FormControl>
@@ -568,7 +658,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
             <FormLabel>Description</FormLabel>
             <Textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => setDescriptionWithChange(e.target.value)}
               placeholder="Description du produit"
               rows={3}
             />
@@ -578,7 +668,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
             <FormLabel>Prix (€)</FormLabel>
             <NumberInput
               value={price}
-              onChange={(_, value) => setPrice(value || 0)}
+              onChange={(_, value) => setPriceWithChange(value || 0)}
               min={0}
               step={0.01}
             >
@@ -614,20 +704,61 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
         <Divider />
 
         {/* Actions */}
-        <HStack justify="flex-end" spacing={4}>
-          <Button variant="ghost" onClick={onCancel}>
-            Annuler
-          </Button>
-          <Button
-            type="submit"
-            colorScheme="blue"
-            isLoading={isLoading}
-            loadingText="Enregistrement..."
-          >
-            {product ? "Modifier" : "Créer"} le produit
-          </Button>
+        <HStack justify="space-between" spacing={4}>
+          <HStack spacing={4}>
+            {product && onDelete && (
+              <Button
+                variant="outline"
+                colorScheme="red"
+                onClick={onOpen}
+                size="sm"
+              >
+                Supprimer produit
+              </Button>
+            )}
+          </HStack>
+
+          <HStack spacing={4}>
+            <Button variant="ghost" onClick={onCancel}>
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              colorScheme="blue"
+              isLoading={isLoading}
+              loadingText="Enregistrement..."
+            >
+              {product ? "Modifier" : "Créer"} le produit
+            </Button>
+          </HStack>
         </HStack>
       </VStack>
+
+      {/* Modal de confirmation suppression */}
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Supprimer le produit</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text>
+              Êtes-vous sûr de vouloir supprimer le produit{" "}
+              <Text as="span" fontWeight="bold">
+                "{product?.name}"
+              </Text>{" "}
+              ? Cette action est irréversible.
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onClose}>
+              Annuler
+            </Button>
+            <Button colorScheme="red" onClick={handleDelete}>
+              Supprimer définitivement
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 };

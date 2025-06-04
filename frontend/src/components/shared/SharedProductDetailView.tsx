@@ -1,4 +1,4 @@
-import { ArrowBackIcon, ChevronRightIcon } from "@chakra-ui/icons";
+import { ChevronRightIcon } from "@chakra-ui/icons";
 import {
   Alert,
   AlertIcon,
@@ -34,29 +34,27 @@ import {
   shopTypeToUniverse,
 } from "../../utils/universeMapping";
 
-interface ProductDetailViewProps {
+interface SharedProductDetailViewProps {
   product: Product;
   shop: Shop;
   onAddToCart?: (product: Product) => void;
-  onGoBack?: () => void;
+  /** Mode responsive adaptatif - par défaut true */
+  responsive?: boolean;
 }
 
 /**
- * Vue détaillée d'un produit pour la vitrine
- * Affiche toutes les informations et attributs métier du produit
+ * Vue détaillée d'un produit pour page dédiée
+ * Composant page complète sans wrapper Modal
  * Utilise la thématisation automatique selon l'univers de la boutique
  *
  * @param product - Produit à afficher
  * @param shop - Boutique pour la thématisation
  * @param onAddToCart - Callback pour ajouter au panier
- * @param onGoBack - Callback pour retour à la liste
+ * @param responsive - Mode responsive adaptatif (défaut: true)
  */
-export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
-  product,
-  shop,
-  onAddToCart,
-  onGoBack,
-}) => {
+export const SharedProductDetailView: React.FC<
+  SharedProductDetailViewProps
+> = ({ product, shop, onAddToCart, responsive = true }) => {
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const textColor = useColorModeValue("gray.600", "gray.300");
 
@@ -72,44 +70,42 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   const shopIcon = getUniverseIcon(universe);
   const shopTypeName = getUniverseName(universe);
 
+  // Configuration du grid selon responsive
+  const gridTemplateColumns = responsive
+    ? { base: "1fr", lg: "1fr 1fr" } // Mode responsive équilibré
+    : "1fr 1fr"; // Mode non-responsive : toujours 2 colonnes
+
+  // Configuration pour page complète
+  const gridGap = 8;
+  const vStackSpacing = 6;
+  const imageHeight = "400px";
+
   return (
     <Container maxW="6xl" py={8}>
-      <VStack spacing={6} align="stretch">
-        {/* Navigation */}
-        <HStack justify="space-between" align="center">
-          <Breadcrumb
-            spacing="8px"
-            separator={<ChevronRightIcon color="gray.500" />}
-          >
-            <BreadcrumbItem>
-              <BreadcrumbLink onClick={onGoBack} cursor="pointer">
-                {shopTypeName} {shop.name}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbItem isCurrentPage>
-              <BreadcrumbLink>{product.name}</BreadcrumbLink>
-            </BreadcrumbItem>
-          </Breadcrumb>
-
-          {onGoBack && (
-            <Button
-              leftIcon={<ArrowBackIcon />}
-              variant="ghost"
-              onClick={onGoBack}
-            >
-              Retour
-            </Button>
-          )}
-        </HStack>
+      <VStack spacing={vStackSpacing} align="stretch">
+        {/* Navigation breadcrumb */}
+        <Breadcrumb
+          spacing="8px"
+          separator={<ChevronRightIcon color="gray.500" />}
+        >
+          <BreadcrumbItem>
+            <BreadcrumbLink href={`/store/${shop.shopType}`}>
+              {shopTypeName} {shop.name}
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbItem isCurrentPage>
+            <BreadcrumbLink>{product.name}</BreadcrumbLink>
+          </BreadcrumbItem>
+        </Breadcrumb>
 
         {/* Contenu principal */}
-        <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={8}>
+        <Grid templateColumns={gridTemplateColumns} gap={gridGap}>
           {/* Colonne gauche - Image et infos principales */}
           <GridItem>
-            <VStack spacing={6} align="stretch">
+            <VStack spacing={vStackSpacing} align="stretch">
               {/* Image produit */}
               <Box
-                height="400px"
+                height={imageHeight}
                 bg={`${themeColor}.50`}
                 borderRadius="lg"
                 display="flex"
@@ -157,11 +153,13 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
               {/* Alertes stock */}
               {(outOfStock || lowStock) && (
-                <Alert status={outOfStock ? "error" : "warning"}>
+                <Alert status={outOfStock ? "error" : "warning"} size="md">
                   <AlertIcon />
-                  {outOfStock
-                    ? "Ce produit est actuellement en rupture de stock."
-                    : "Attention : stock faible pour ce produit."}
+                  <Text fontSize="md">
+                    {outOfStock
+                      ? "Ce produit est actuellement en rupture de stock."
+                      : "Attention : stock faible pour ce produit."}
+                  </Text>
                 </Alert>
               )}
 
@@ -184,7 +182,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
           {/* Colonne droite - Détails produit */}
           <GridItem>
-            <VStack spacing={6} align="stretch">
+            <VStack spacing={vStackSpacing} align="stretch">
               {/* En-tête produit */}
               <Box>
                 <HStack mb={2}>
@@ -203,9 +201,16 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                   fontWeight="bold"
                   color={`${themeColor}.500`}
                 >
-                  {product.name}
+                  {product.price}€
                 </Text>
               </Box>
+
+              {/* Description complète */}
+              {product.description && (
+                <Text fontSize="md" color={textColor} lineHeight="tall">
+                  {product.description}
+                </Text>
+              )}
 
               {/* Détails produit */}
               <SimpleGrid columns={2} spacing={4}>

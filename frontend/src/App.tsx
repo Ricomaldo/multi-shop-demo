@@ -9,9 +9,10 @@ import Settings from "./pages/admin/Settings";
 import Home from "./pages/Home";
 import StoreBeautyShop from "./pages/store/StoreBeautyShop";
 import StoreBrewery from "./pages/store/StoreBrewery";
+import StoreCatalogueView from "./pages/store/StoreCatalogueView";
 import StoreContact from "./pages/store/StoreContact";
 import StoreHerbShop from "./pages/store/StoreHerbShop";
-import StoreProductsDisplay from "./pages/store/StoreProductsDisplay";
+import StoreProductDetail from "./pages/store/StoreProductDetail";
 import StoreTeaShop from "./pages/store/StoreTeaShop";
 import theme from "./theme";
 
@@ -40,7 +41,11 @@ export default function App() {
         <Route path="/store/contact" element={<StoreContact />} />
         <Route
           path="/store/:shopType/products"
-          element={<StoreProductsDisplay />}
+          element={<StoreCatalogueView />}
+        />
+        <Route
+          path="/store/:shopType/product/:productId"
+          element={<StoreProductDetail />}
         />
       </Routes>
     </ChakraProvider>

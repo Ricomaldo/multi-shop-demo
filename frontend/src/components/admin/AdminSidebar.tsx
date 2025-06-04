@@ -15,6 +15,7 @@ import {
   FiPackage,
   FiSettings,
   FiTag,
+  FiX,
 } from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
 import { useAdminShop, useShopData } from "../../hooks";
@@ -36,6 +37,7 @@ interface AdminSidebarProps {
 /**
  * Sidebar admin avec thématisation dynamique par univers
  * Intègre le sélecteur d'univers et adapte les couleurs
+ * Responsive: overlay sur mobile, sidebar fixe sur desktop
  */
 export default function AdminSidebar({
   isOpen,
@@ -47,11 +49,12 @@ export default function AdminSidebar({
   const { universe, setUniverse, shop, setShop } = useAdminShop();
 
   // Responsive
+  const isMobile = useBreakpointValue({ base: true, md: false });
   const sidebarWidth = useBreakpointValue({
-    base: "full",
+    base: "280px", // Fixed width on mobile
     md: isCollapsed ? "80px" : "280px",
   });
-  const showLabels = !isCollapsed;
+  const showLabels = isMobile || !isCollapsed;
 
   return (
     <Box
@@ -64,12 +67,13 @@ export default function AdminSidebar({
       bg="white"
       borderRight="1px"
       borderColor="gray.200"
-      transition="all 0.3s"
+      transition="all 0.3s ease"
       zIndex={20}
       _dark={{
         bg: "gray.800",
         borderColor: "gray.700",
       }}
+      boxShadow={isMobile ? "xl" : "none"}
     >
       <VStack h="full" spacing={0}>
         {/* Header avec bouton toggle */}
@@ -77,7 +81,7 @@ export default function AdminSidebar({
           w="full"
           h="16"
           align="center"
-          justify={isCollapsed ? "center" : "space-between"}
+          justify={isCollapsed && !isMobile ? "center" : "space-between"}
           px={4}
           borderBottom="1px"
           borderColor="gray.200"
@@ -94,8 +98,22 @@ export default function AdminSidebar({
             </Text>
           )}
           <IconButton
-            aria-label={isCollapsed ? "Étendre le menu" : "Réduire le menu"}
-            icon={isCollapsed ? <FiChevronRight /> : <FiChevronLeft />}
+            aria-label={
+              isMobile
+                ? "Fermer le menu"
+                : isCollapsed
+                ? "Étendre le menu"
+                : "Réduire le menu"
+            }
+            icon={
+              isMobile ? (
+                <FiX />
+              ) : isCollapsed ? (
+                <FiChevronRight />
+              ) : (
+                <FiChevronLeft />
+              )
+            }
             onClick={onToggleCollapse}
             variant="ghost"
             size="sm"
@@ -103,7 +121,7 @@ export default function AdminSidebar({
         </Flex>
 
         {/* Sélecteur de boutique */}
-        {!isCollapsed && (
+        {showLabels && (
           <Box w="full" p={4} borderBottom="1px" borderColor="gray.200">
             <AdminShopSelector
               selectedUniverse={universe}
@@ -112,7 +130,7 @@ export default function AdminSidebar({
               onUniverseChange={setUniverse}
               onShopChange={setShop}
               size="sm"
-              isCollapsed={isCollapsed}
+              isCollapsed={isCollapsed && !isMobile}
             />
           </Box>
         )}
@@ -121,6 +139,8 @@ export default function AdminSidebar({
         <VStack spacing={1} align="stretch" flex={1} w="full" py={4}>
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
+            const shouldCenter = isCollapsed && !isMobile;
+
             return (
               <Tooltip
                 key={item.path}
@@ -131,11 +151,13 @@ export default function AdminSidebar({
                 <Box
                   as={Link}
                   to={item.path}
-                  px={isCollapsed ? 2 : 4}
+                  px={shouldCenter ? 2 : 4}
                   py={3}
+                  mx={2}
+                  borderRadius="md"
                   display="flex"
                   alignItems="center"
-                  justifyContent={isCollapsed ? "center" : "flex-start"}
+                  justifyContent={shouldCenter ? "center" : "flex-start"}
                   color={isActive ? "blue.500" : "gray.600"}
                   bg={isActive ? "blue.50" : "transparent"}
                   _hover={{
@@ -150,10 +172,11 @@ export default function AdminSidebar({
                       color: "blue.200",
                     },
                   }}
+                  transition="all 0.2s"
                 >
                   <Icon as={item.icon} boxSize={5} />
                   {showLabels && (
-                    <Text ml={4} fontSize="sm">
+                    <Text ml={4} fontSize="sm" fontWeight="medium">
                       {item.label}
                     </Text>
                   )}

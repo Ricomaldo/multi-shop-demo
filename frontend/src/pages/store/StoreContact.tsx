@@ -1,237 +1,242 @@
-import { ArrowBackIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
+  Container,
+  Flex,
   FormControl,
   FormLabel,
+  Grid,
+  GridItem,
+  Heading,
   HStack,
-  IconButton,
+  Icon,
   Input,
   Text,
+  Textarea,
   VStack,
 } from "@chakra-ui/react";
-import { useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import SharedShopInfoBadge from "../../components/shared/SharedShopInfoBadge";
-import StoreHeroHeader from "../../components/store/StoreHeroHeader";
+import { useEffect, useState } from "react";
+import { FaClock, FaEnvelope, FaMapMarkerAlt, FaPhone } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import type { Shop } from "../../../../shared/types";
+import StoreHeader from "../../components/store/StoreHeader";
 import StoreLayout from "../../components/store/StoreLayout";
-import { useShopData } from "../../hooks";
-import { getUniverseColorScheme } from "../../utils/universeMapping";
-
-interface ContactFormData {
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-}
+import { useShopByType, useShopData } from "../../hooks";
 
 export default function StoreContact() {
-  const { shops, loading, error } = useShopData();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [formData, setFormData] = useState<ContactFormData>({
+  const { shop: initialShop, loading: shopLoading } =
+    useShopByType("beautyShop");
+  const { shops, refreshData } = useShopData();
+
+  // État local pour la boutique courante
+  const [currentShop, setCurrentShop] = useState<Shop | null>(null);
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     subject: "",
     message: "",
   });
 
-  // Déterminer l'univers d'origine à partir de l'URL
-  const originUniverse = useMemo(() => {
-    const path = location.pathname.split("/");
-    return path[path.length - 2] || "brewery";
-  }, [location]);
+  // Initialiser la boutique courante
+  useEffect(() => {
+    if (!shopLoading && initialShop) {
+      setCurrentShop(initialShop);
+    } else if (!shopLoading && !initialShop) {
+      navigate("/404");
+    }
+  }, [shopLoading, initialShop, navigate]);
 
-  // Trouver la boutique correspondante
-  const currentShop = useMemo(() => {
-    return shops.find((shop) => shop.shopType === originUniverse) || shops[0];
-  }, [shops, originUniverse]);
+  // Si chargement ou pas de boutique
+  if (shopLoading || !currentShop) {
+    return <Box>Chargement...</Box>;
+  }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Envoi du formulaire:", formData);
-    // TODO: Implémenter l'envoi du formulaire
+  // Handler pour changement de boutique
+  const handleShopChange = async (newShop: Shop) => {
+    setCurrentShop(newShop);
+    await refreshData();
   };
 
-  const handleChange = (
+  const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Retour à la boutique d'origine
-  const handleBack = () => {
-    navigate(`/store/${originUniverse}`);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Logique d'envoi du formulaire
+    console.log("Message envoyé:", formData);
+    // Réinitialiser le formulaire
+    setFormData({ name: "", email: "", subject: "", message: "" });
   };
-
-  if (loading)
-    return (
-      <Box p={8}>
-        <Text>Chargement...</Text>
-      </Box>
-    );
-  if (error)
-    return (
-      <Box p={8}>
-        <Text color="red.500">Erreur: {error.message}</Text>
-      </Box>
-    );
-  if (!currentShop)
-    return (
-      <Box p={8}>
-        <Text>Aucune boutique disponible</Text>
-      </Box>
-    );
 
   return (
     <StoreLayout shop={currentShop}>
-      {/* Bouton retour */}
-      <Box position="absolute" top={4} left={4} zIndex={10}>
-        <IconButton
-          aria-label="Retour à la boutique"
-          icon={<ArrowBackIcon />}
-          onClick={handleBack}
-          colorScheme={getUniverseColorScheme(currentShop.shopType)}
-          variant="ghost"
-          size="lg"
-        />
-      </Box>
-
-      {/* Hero Header */}
-      <StoreHeroHeader
+      {/* VARIANT FULL - Navigation + section gradient */}
+      <StoreHeader
         shop={currentShop}
-        title="Contactez-nous"
-        subtitle="Une question ? Un conseil ? Nous sommes là pour vous répondre"
+        title="Nous Contacter"
+        subtitle="Une question ? Un conseil personnalisé ? Notre équipe est à votre écoute"
         availableShops={shops}
+        onShopChange={handleShopChange}
+        variant="full"
       />
 
-      {/* Formulaire de contact */}
-      <Box
-        as="form"
-        onSubmit={handleSubmit}
-        bg="white"
-        p={8}
-        borderRadius="xl"
-        shadow="md"
-        maxW="800px"
-        mx="auto"
-        w="full"
-      >
-        <VStack spacing={6}>
-          {/* Nom */}
-          <FormControl isRequired>
-            <FormLabel>Nom</FormLabel>
-            <Input
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Votre nom"
-            />
-          </FormControl>
+      <Container maxW="1400px" py={12}>
+        <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={12}>
+          {/* Informations de contact */}
+          <GridItem>
+            <VStack spacing={8} align="stretch">
+              <Box>
+                <Heading size="lg" mb={6} color="pink.600">
+                  Informations Pratiques
+                </Heading>
 
-          {/* Email */}
-          <FormControl isRequired>
-            <FormLabel>Email</FormLabel>
-            <Input
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="votre@email.com"
-            />
-          </FormControl>
+                <VStack spacing={6} align="stretch">
+                  <HStack spacing={4}>
+                    <Icon as={FaMapMarkerAlt} boxSize={5} color="pink.500" />
+                    <Box>
+                      <Text fontWeight="medium">Adresse</Text>
+                      <Text color="gray.600">{currentShop.address}</Text>
+                    </Box>
+                  </HStack>
 
-          {/* Sujet */}
-          <FormControl isRequired>
-            <FormLabel>Sujet</FormLabel>
-            <Input
-              name="subject"
-              value={formData.subject}
-              onChange={handleChange}
-              placeholder="Sujet de votre message"
-            />
-          </FormControl>
+                  <HStack spacing={4}>
+                    <Icon as={FaPhone} boxSize={5} color="pink.500" />
+                    <Box>
+                      <Text fontWeight="medium">Téléphone</Text>
+                      <Text color="gray.600">
+                        {currentShop.phone || "01 23 45 67 89"}
+                      </Text>
+                    </Box>
+                  </HStack>
 
-          {/* Message */}
-          <FormControl isRequired>
-            <FormLabel>Message</FormLabel>
-            <Input
-              as="textarea"
-              name="message"
-              value={formData.message}
-              onChange={handleChange}
-              placeholder="Votre message..."
-              minH="200px"
-            />
-          </FormControl>
+                  <HStack spacing={4}>
+                    <Icon as={FaEnvelope} boxSize={5} color="pink.500" />
+                    <Box>
+                      <Text fontWeight="medium">Email</Text>
+                      <Text color="gray.600">
+                        {currentShop.email || "contact@beautyshop.fr"}
+                      </Text>
+                    </Box>
+                  </HStack>
 
-          {/* Bouton d'envoi */}
-          <Button
-            type="submit"
-            colorScheme={getUniverseColorScheme(currentShop.shopType)}
-            size="lg"
-            w="full"
-          >
-            Envoyer le message
-          </Button>
-        </VStack>
-      </Box>
+                  <HStack spacing={4} align="flex-start">
+                    <Icon as={FaClock} boxSize={5} color="pink.500" mt={1} />
+                    <Box>
+                      <Text fontWeight="medium">Horaires d'ouverture</Text>
+                      <VStack spacing={1} align="flex-start" mt={2}>
+                        <Text fontSize="sm" color="gray.600">
+                          Lundi - Vendredi : 9h00 - 19h00
+                        </Text>
+                        <Text fontSize="sm" color="gray.600">
+                          Samedi : 9h00 - 18h00
+                        </Text>
+                        <Text fontSize="sm" color="gray.600">
+                          Dimanche : Fermé
+                        </Text>
+                      </VStack>
+                    </Box>
+                  </HStack>
+                </VStack>
+              </Box>
 
-      {/* Informations de contact */}
-      <VStack
-        spacing={4}
-        bg="gray.50"
-        p={8}
-        borderRadius="xl"
-        maxW="800px"
-        mx="auto"
-        w="full"
-        mt={8}
-      >
-        <Text fontSize="lg" fontWeight="medium">
-          Nos coordonnées
-        </Text>
+              {/* Carte ou image de la boutique */}
+              <Box>
+                <Heading size="md" mb={4} color="pink.600">
+                  Nous Trouver
+                </Heading>
+                <Box
+                  h="300px"
+                  bg="gray.100"
+                  borderRadius="lg"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  border="1px solid"
+                  borderColor="gray.200"
+                >
+                  <Text color="gray.500">Carte de la boutique</Text>
+                </Box>
+              </Box>
+            </VStack>
+          </GridItem>
 
-        <VStack spacing={2} align="start" w="full">
-          <Text>
-            <HStack>
-              <Text>📍</Text>
-              <Text>{currentShop.address}</Text>
-            </HStack>
-          </Text>
-          <Text>
-            <HStack>
-              <Text>📞</Text>
-              <Text>{currentShop.phone}</Text>
-            </HStack>
-          </Text>
-          <Text>
-            <HStack>
-              <Text>✉️</Text>
-              <Text>{currentShop.email}</Text>
-            </HStack>
-          </Text>
-          <Text>
-            <HStack>
-              <Text>🌐</Text>
-              <Text>{currentShop.website}</Text>
-            </HStack>
-          </Text>
-          <Text>
-            <HStack>
-              <Text>🕒</Text>
-              <SharedShopInfoBadge
-                shops={[currentShop]}
-                currentShop={currentShop}
-                onShopChange={() => {}}
-                showOpeningStatus={true}
-                variant="compact"
-              />
-            </HStack>
-          </Text>
-        </VStack>
-      </VStack>
+          {/* Formulaire de contact */}
+          <GridItem>
+            <Box>
+              <Heading size="lg" mb={6} color="pink.600">
+                Envoyez-nous un Message
+              </Heading>
+
+              <form onSubmit={handleSubmit}>
+                <VStack spacing={6}>
+                  <Flex gap={4} w="full">
+                    <FormControl>
+                      <FormLabel>Nom</FormLabel>
+                      <Input
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="Votre nom"
+                        required
+                      />
+                    </FormControl>
+
+                    <FormControl>
+                      <FormLabel>Email</FormLabel>
+                      <Input
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="votre@email.com"
+                        required
+                      />
+                    </FormControl>
+                  </Flex>
+
+                  <FormControl>
+                    <FormLabel>Sujet</FormLabel>
+                    <Input
+                      name="subject"
+                      value={formData.subject}
+                      onChange={handleInputChange}
+                      placeholder="Objet de votre message"
+                      required
+                    />
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Message</FormLabel>
+                    <Textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      placeholder="Votre message..."
+                      rows={6}
+                      required
+                    />
+                  </FormControl>
+
+                  <Button
+                    type="submit"
+                    colorScheme="pink"
+                    size="lg"
+                    w="full"
+                    py={6}
+                  >
+                    Envoyer le Message
+                  </Button>
+                </VStack>
+              </form>
+            </Box>
+          </GridItem>
+        </Grid>
+      </Container>
     </StoreLayout>
   );
 }
