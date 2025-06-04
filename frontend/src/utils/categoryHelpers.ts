@@ -1,4 +1,4 @@
-import type { Category, Product } from "../../../shared/types";
+import type { Category, Product } from "@/types";
 
 /**
  * Extrait les catégories uniques d'une liste de produits

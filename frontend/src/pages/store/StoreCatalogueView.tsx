@@ -1,3 +1,6 @@
+import StoreShopInfoBadge from "@/components/business/shop/StoreShopInfoBadge";
+import { StorePageWrapper } from "@/components/features/store/content/StorePageWrapper";
+import type { Category, Product } from "@/types";
 import {
   Box,
   Button,
@@ -9,81 +12,49 @@ import {
   SimpleGrid,
   Text,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import type {
-  Category,
-  Product,
-  Shop,
-  ShopType,
-} from "../../../../shared/types";
-import { SharedProductPreviewCard } from "../../components/shared/SharedProductPreviewCard";
-import {
-  StoreHeader,
-  StoreLayout,
-  StorePageContent,
-  StoreShopInfoBadge,
-} from "../../components/store";
-import { useShopData, useStoreHandlers } from "../../hooks";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { SharedProductPreviewCard } from "../../components/business/product/SharedProductPreviewCard";
+import { useStoreHandlers, useStorePage } from "../../hooks";
 import type { ProductFilters } from "../../services/adminProductService";
+import { getUniverseTokens } from "../../theme/universeTokens";
 
 export default function StoreCatalogueView() {
-  const { shopType } = useParams<{ shopType: string }>();
-  const {
-    shops,
-    products: allProducts,
-    loading,
-    getShopByType,
-    refreshData,
-  } = useShopData();
   const navigate = useNavigate();
-
-  // État local pour la boutique courante
-  const [currentShop, setCurrentShop] = useState<Shop | null>(null);
+  const { currentShop, shopProducts } = useStorePage({
+    redirectOnShopChange: true,
+  });
   const { handleAddToCart } = useStoreHandlers(currentShop || undefined);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
     null
   );
   const [filters, setFilters] = useState<ProductFilters>({});
 
-  // Initialiser la boutique courante
-  useEffect(() => {
-    if (!loading && shopType) {
-      const shop = getShopByType(shopType as ShopType);
-      if (!shop) {
-        navigate("/404");
-      } else {
-        setCurrentShop(shop);
-      }
-    }
-  }, [loading, shopType, getShopByType, navigate]);
-
-  // Si chargement ou pas de boutique, afficher un loader
-  if (loading || !currentShop) {
-    return <div>Chargement...</div>;
-  }
-
-  // Obtenir les produits de la boutique
-  const shopProducts = allProducts.filter((p) => p.shopId === currentShop.id);
+  // Tokens pour la thématisation automatique
+  const tokens = getUniverseTokens(currentShop?.shopType || "brewery");
 
   // Obtenir les catégories uniques
   const categories: Category[] = Array.from(
     new Set(
-      shopProducts.filter((p) => p.category?.name).map((p) => p.category!.name)
+      shopProducts
+        .filter((p: Product) => p.category?.name)
+        .map((p: Product) => p.category!.name)
     )
-  ).map((name) => {
-    // Trouver le premier produit avec cette catégorie pour obtenir l'ID
-    const product = shopProducts.find((p) => p.category?.name === name);
+  ).map((name: string) => {
+    const product = shopProducts.find(
+      (p: Product) => p.category?.name === name
+    );
     return {
       id: product?.categoryId || name,
       name,
-      shopId: currentShop.id,
+      shopId: currentShop?.id || "",
     };
   });
 
   // Filtrer les produits selon les critères
-  const filteredProducts = shopProducts.filter((product) => {
+  const filteredProducts = shopProducts.filter((product: Product) => {
     // Filtre par recherche
     if (
       searchTerm &&
@@ -110,20 +81,6 @@ export default function StoreCatalogueView() {
     return true;
   });
 
-  // Handler pour changement de boutique avec navigation
-  const handleShopChange = async (newShop: Shop) => {
-    // Réinitialiser les filtres
-    setSearchTerm("");
-    setSelectedCategoryId(null);
-    setFilters({});
-
-    // Mettre à jour la boutique
-    setCurrentShop(newShop);
-
-    // Refresh des données pour la nouvelle boutique
-    await refreshData();
-  };
-
   const handleResetFilters = () => {
     setSearchTerm("");
     setSelectedCategoryId(null);
@@ -136,111 +93,137 @@ export default function StoreCatalogueView() {
 
   // Navigation vers page produit dédiée
   const handleProductView = (product: Product) => {
-    navigate(`/store/${currentShop.shopType}/product/${product.id}`);
+    navigate(`/store/${currentShop?.shopType}/product/${product.id}`);
   };
 
   return (
-    <StoreLayout shop={currentShop}>
-      {/* VARIANT NAV-ONLY - Navigation boutique seule avec sélecteur intégré */}
-      <StoreHeader
-        shop={currentShop}
-        availableShops={shops}
-        onShopChange={handleShopChange}
-        variant="nav-only"
-      />
+    <StorePageWrapper headerVariant="nav-only" redirectOnShopChange={true}>
+      {/* Badge d'informations boutique - En haut du contenu */}
+      <Flex justify={{ base: "center", md: "flex-end" }} w="full">
+        <Box maxW={{ base: "full", md: "400px" }}>
+          <StoreShopInfoBadge shop={currentShop!} variant="compact" />
+        </Box>
+      </Flex>
 
-      <StorePageContent spacing={8}>
-        {/* Badge d'informations boutique - En haut du contenu */}
-        <Flex justify={{ base: "center", md: "flex-end" }} w="full">
-          <Box maxW={{ base: "full", md: "400px" }}>
-            <StoreShopInfoBadge shop={currentShop} variant="compact" />
-          </Box>
-        </Flex>
+      {/* En-tête catalogue avec tokens */}
+      <Box textAlign="center" py={8}>
+        <Heading
+          size="xl"
+          mb={4}
+          color={tokens.colors[800]}
+          fontFamily={tokens.typography.fontFamily.heading}
+        >
+          {tokens.meta.icon} Catalogue {currentShop?.name}
+        </Heading>
+        <Text
+          fontSize="lg"
+          color={tokens.colors[600]}
+          fontFamily={tokens.typography.fontFamily.body}
+        >
+          Découvrez tous nos produits ({shopProducts.length} articles)
+        </Text>
+      </Box>
 
-        {/* En-tête catalogue */}
-        <Box textAlign="center" py={8}>
-          <Heading size="xl" mb={4}>
-            Catalogue {currentShop.name}
-          </Heading>
-          <Text fontSize="lg" color="gray.600">
-            Découvrez tous nos produits ({shopProducts.length} articles)
+      {/* Barre de recherche et filtres avec styling universel */}
+      <Box w="full">
+        <HStack spacing={4} w="full" flexWrap="wrap" justify="center">
+          <Input
+            placeholder="Rechercher un produit..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            maxW="400px"
+            size="lg"
+            borderColor={tokens.colors[200]}
+            focusBorderColor={tokens.colors[400]}
+            borderRadius={tokens.borderRadius.base}
+          />
+
+          <Select
+            placeholder="Toutes les catégories"
+            value={selectedCategoryId || ""}
+            onChange={(e) => handleCategoryChange(e.target.value || null)}
+            maxW="250px"
+            size="lg"
+            borderColor={tokens.colors[200]}
+            focusBorderColor={tokens.colors[400]}
+            borderRadius={tokens.borderRadius.base}
+          >
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </Select>
+
+          <Button
+            onClick={handleResetFilters}
+            variant="outline"
+            size="lg"
+            colorScheme={tokens.meta.colorScheme}
+            borderRadius={tokens.borderRadius.base}
+            fontFamily={tokens.typography.fontFamily.body}
+          >
+            Réinitialiser
+          </Button>
+        </HStack>
+
+        {/* Résultats avec styling universel */}
+        <Flex justify="center" align="center" w="full" mt={6}>
+          <Text
+            color={tokens.colors[600]}
+            fontFamily={tokens.typography.fontFamily.body}
+          >
+            {filteredProducts.length} produit
+            {filteredProducts.length > 1 ? "s" : ""} trouvé
+            {filteredProducts.length > 1 ? "s" : ""}
           </Text>
-        </Box>
+        </Flex>
+      </Box>
 
-        {/* Barre de recherche et filtres */}
-        <Box w="full">
-          <HStack spacing={4} w="full" flexWrap="wrap" justify="center">
-            <Input
-              placeholder="Rechercher un produit..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              maxW="400px"
-              size="lg"
-            />
-
-            <Select
-              placeholder="Toutes les catégories"
-              value={selectedCategoryId || ""}
-              onChange={(e) => handleCategoryChange(e.target.value || null)}
-              maxW="250px"
-              size="lg"
+      {/* Grille des produits */}
+      <Box w="full">
+        {filteredProducts.length > 0 ? (
+          <SimpleGrid
+            columns={{
+              base: 1,
+              sm: 2,
+              md: 3,
+              lg: 4,
+            }}
+            spacing={6}
+          >
+            {filteredProducts.map((product: Product) => (
+              <SharedProductPreviewCard
+                key={product.id}
+                product={product}
+                shop={currentShop!}
+                onAddToCart={handleAddToCart}
+                onView={handleProductView}
+              />
+            ))}
+          </SimpleGrid>
+        ) : (
+          <Box textAlign="center" py={12}>
+            <Text
+              fontSize="lg"
+              color={tokens.colors[500]}
+              fontFamily={tokens.typography.fontFamily.body}
+              mb={4}
             >
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </Select>
-
-            <Button onClick={handleResetFilters} variant="outline" size="lg">
-              Réinitialiser
-            </Button>
-          </HStack>
-
-          {/* Résultats */}
-          <Flex justify="center" align="center" w="full" mt={6}>
-            <Text color="gray.600">
-              {filteredProducts.length} produit
-              {filteredProducts.length > 1 ? "s" : ""} trouvé
-              {filteredProducts.length > 1 ? "s" : ""}
+              Aucun produit ne correspond à vos critères
             </Text>
-          </Flex>
-        </Box>
-
-        {/* Grille des produits */}
-        <Box w="full">
-          {filteredProducts.length > 0 ? (
-            <SimpleGrid
-              columns={{
-                base: 1,
-                sm: 2,
-                md: 3,
-                lg: 4,
-              }}
-              spacing={6}
+            <Button
+              onClick={handleResetFilters}
+              colorScheme={tokens.meta.colorScheme}
+              borderRadius={tokens.borderRadius.base}
+              fontFamily={tokens.typography.fontFamily.body}
+              fontWeight={tokens.typography.fontWeight.bold}
             >
-              {filteredProducts.map((product) => (
-                <SharedProductPreviewCard
-                  key={product.id}
-                  product={product}
-                  shop={currentShop}
-                  onAddToCart={handleAddToCart}
-                  onView={handleProductView}
-                />
-              ))}
-            </SimpleGrid>
-          ) : (
-            <Box textAlign="center" py={12}>
-              <Text fontSize="lg" color="gray.500">
-                Aucun produit ne correspond à vos critères
-              </Text>
-              <Button mt={4} onClick={handleResetFilters} colorScheme="blue">
-                Voir tous les produits
-              </Button>
-            </Box>
-          )}
-        </Box>
-      </StorePageContent>
-    </StoreLayout>
+              Voir tous les produits
+            </Button>
+          </Box>
+        )}
+      </Box>
+    </StorePageWrapper>
   );
 }

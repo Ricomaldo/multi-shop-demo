@@ -1,7 +1,7 @@
 import { useToast } from "@chakra-ui/react";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Product, Shop } from "../../../shared/types";
+import type { Product, Shop } from "@/types";
 
 /**
  * Hook standardisé pour les interactions produits dans les vitrines

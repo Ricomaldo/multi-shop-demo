@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Product, Shop } from "../../../shared/types";
+import type { Product, Shop } from "@/types";
 
 const API_BASE_URL = "http://localhost:3001/api";
 

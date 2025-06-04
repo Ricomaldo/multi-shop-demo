@@ -1,4 +1,4 @@
-import type { Product } from "../../../shared/types";
+import type { Product } from "@/types";
 import type { ProductFilters } from "../services/adminProductService";
 
 /**

@@ -23,8 +23,8 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useMemo, useState } from "react";
-import AdminShopForm from "../../components/admin/AdminShopForm";
-import LoadingState from "../../components/shared/LoadingState";
+import AdminShopForm from "../../components/features/admin/shop/AdminShopForm";
+import LoadingState from "../../components/ui/LoadingState";
 import { useAdminShop, useShopData } from "../../hooks";
 
 interface ShopSettings {

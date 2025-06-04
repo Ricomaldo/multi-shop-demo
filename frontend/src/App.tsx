@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import AdminLayout from "./components/admin/AdminLayout";
+import AdminLayout from "./components/layout/admin/AdminLayout";
 import { AdminProvider } from "./contexts/AdminContext";
 import Categories from "./pages/admin/Categories";
 import Dashboard from "./pages/admin/Dashboard";
@@ -13,20 +13,13 @@ import StoreLandingGeneric from "./pages/store/StoreLandingGeneric";
 import StoreProductDetail from "./pages/store/StoreProductDetail";
 
 /**
- * App principal avec routes optimisées pour la nouvelle structure
- *
- * Hiérarchie des contextes (définie dans main.tsx) :
- * ChakraProvider (thème universel)
- * └── UniverseProvider (contexte univers global)
- *     └── BrowserRouter (routing)
- *         └── App (routes)
- *             └── AdminProvider (contexte admin - hérite d'UniverseProvider)
+ * App principal avec page vitrine générique 4-in-1
  *
  * Structure optimisée :
  * - Routes publiques (/)
  * - Routes admin (/admin/*) avec AdminProvider
- * - Routes vitrine (/store/*) avec logique par univers
- * - Redirections et fallbacks
+ * - Page vitrine générique pour tous les univers (/store/:shopType)
+ * - Routes spécialisées (/store/:shopType/contact, /products, etc.)
  */
 export default function App() {
   return (
@@ -34,7 +27,7 @@ export default function App() {
       {/* ==== ROUTES PUBLIQUES ==== */}
       <Route path="/" element={<Home />} />
 
-      {/* ==== ROUTES ADMIN avec AdminProvider intégré ==== */}
+      {/* ==== ROUTES ADMIN ==== */}
       <Route
         path="/admin"
         element={
@@ -43,18 +36,16 @@ export default function App() {
           </AdminProvider>
         }
       >
-        {/* Pages admin - héritent d'AdminProvider + UniverseProvider */}
         <Route index element={<Dashboard />} />
         <Route path="products" element={<Products />} />
         <Route path="categories" element={<Categories />} />
         <Route path="settings" element={<Settings />} />
       </Route>
 
-      {/* ==== ROUTES VITRINE avec logique par univers ==== */}
-      {/* Landing générique pilotée par UniverseContext */}
-      <Route path="/store/:universe" element={<StoreLandingGeneric />} />
+      {/* ==== ROUTES VITRINE - Page générique 4-in-1 ==== */}
+      <Route path="/store/:shopType" element={<StoreLandingGeneric />} />
 
-      {/* Pages spécifiques par type de boutique */}
+      {/* ==== ROUTES SPÉCIALISÉES ==== */}
       <Route path="/store/:shopType/contact" element={<StoreContact />} />
       <Route
         path="/store/:shopType/products"
@@ -65,12 +56,10 @@ export default function App() {
         element={<StoreProductDetail />}
       />
 
-      {/* ==== REDIRECTIONS UTILES ==== */}
-      {/* Redirection /store vers brewery par défaut */}
+      {/* ==== REDIRECTIONS ==== */}
       <Route path="/store" element={<Navigate to="/store/brewery" replace />} />
 
-      {/* ==== ROUTES FALLBACK ==== */}
-      {/* Page 404 pour toutes les routes inexistantes */}
+      {/* ==== FALLBACK ==== */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

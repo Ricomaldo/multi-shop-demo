@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { Product, Shop, ShopType } from "../../../shared/types";
+import type { Product, Shop, ShopType } from "@/types";
 import { useShopData } from "./useShopData";
 
 interface UseShopByTypeReturn {

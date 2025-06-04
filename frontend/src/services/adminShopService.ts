@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Shop } from "../../../shared/types";
+import type { Shop } from "@/types";
 
 const API_BASE = "/api/admin/shops";
 

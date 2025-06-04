@@ -6,7 +6,7 @@ import type {
   ProductAttributes,
   Shop,
   TeaShopAttributes,
-} from "../../../shared/types";
+} from "@/types";
 
 /**
  * Parse les attributs JSON d'un produit en objet typé

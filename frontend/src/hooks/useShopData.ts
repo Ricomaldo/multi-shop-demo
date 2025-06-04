@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { Product, Shop, ShopType } from "../../../shared/types";
+import type { Product, Shop, ShopType } from "@/types";
 import { getUniverseTokens } from "../theme/universeTokens";
 
 interface UseShopDataReturn {

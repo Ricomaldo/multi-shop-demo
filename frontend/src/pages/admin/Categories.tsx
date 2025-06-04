@@ -30,7 +30,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import LoadingState from "../../components/shared/LoadingState";
+import LoadingState from "../../components/ui/LoadingState";
 import { useAdminShop, useShopData } from "../../hooks";
 import adminCategoriesService, {
   type CategoryWithStats,

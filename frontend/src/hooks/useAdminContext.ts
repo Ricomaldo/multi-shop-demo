@@ -14,8 +14,8 @@ export const useAdminContext = (): AdminContextValue => {
 // Hook spécialisé pour la gestion des boutiques
 export const useAdminShop = () => {
   const {
-    selectedUniverse,
-    setSelectedUniverse,
+    selectedShopType,
+    setSelectedShopType,
     selectedShop,
     setSelectedShop,
     availableShops,
@@ -24,8 +24,8 @@ export const useAdminShop = () => {
   } = useAdminContext();
 
   return {
-    universe: selectedUniverse,
-    setUniverse: setSelectedUniverse,
+    universe: selectedShopType,
+    setUniverse: setSelectedShopType,
     shop: selectedShop,
     setShop: setSelectedShop,
     availableShops,

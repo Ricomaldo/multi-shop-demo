@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Category, Product } from "../../../shared/types";
+import type { Category, Product } from "@/types";
 import adminProductService, {
   type ProductFilters,
 } from "../services/adminProductService";

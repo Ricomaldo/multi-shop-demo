@@ -1,0 +1,84 @@
+{
+  "universeContent": {
+    "brewery": {
+      "heroSubtitle": "Brasserie artisanale - L'art du houblon et de la tradition depuis 1987",
+      "heroImage": "/images/store/brewery-hero.jpg",
+      "sections": {
+        "main": {
+          "title": "Nos brassages du moment",
+          "description": "Découvrez notre sélection de bières artisanales, brassées avec passion dans le respect des traditions.",
+          "cards": [
+            {
+              "title": "Processus de brassage",
+              "content": "Suivez en direct l'évolution de nos brassins et découvrez les secrets de fabrication de nos bières artisanales."
+            },
+            {
+              "title": "Notes de dégustation",
+              "content": "Apprenez à reconnaître les arômes et saveurs qui font la signature de nos bières."
+            }
+          ]
+        }
+      }
+    },
+    "teaShop": {
+      "heroSubtitle": "Salon de thé raffiné - L'art de l'infusion et de la détente",
+      "heroImage": "/images/store/teashop-hero.jpg",
+      "sections": {
+        "main": {
+          "title": "L'art du thé",
+          "description": "Plongez dans l'univers fascinant du thé, entre tradition et modernité.",
+          "cards": [
+            {
+              "title": "Sélection premium",
+              "content": "Nos thés sont soigneusement sélectionnés auprès des meilleurs jardins du monde."
+            },
+            {
+              "title": "Ritual du thé",
+              "content": "Découvrez les techniques ancestrales de préparation pour révéler tous les arômes."
+            }
+          ]
+        }
+      }
+    },
+    "beautyShop": {
+      "heroSubtitle": "Institut de beauté - Sublimez votre éclat naturel",
+      "heroImage": "/images/store/beauty-hero.jpg",
+      "sections": {
+        "main": {
+          "title": "Votre beauté naturelle",
+          "description": "Révélez votre éclat avec nos soins personnalisés et nos produits d'exception.",
+          "cards": [
+            {
+              "title": "Soins sur mesure",
+              "content": "Chaque soin est adapté à votre type de peau pour des résultats optimaux."
+            },
+            {
+              "title": "Produits naturels",
+              "content": "Découvrez notre gamme de cosmétiques bio et respectueux de l'environnement."
+            }
+          ]
+        }
+      }
+    },
+    "herbShop": {
+      "heroSubtitle": "Herboristerie traditionnelle - La nature au service de votre bien-être",
+      "heroImage": "/images/store/herbs-hero.jpg",
+      "sections": {
+        "main": {
+          "title": "Sagesse des plantes",
+          "description": "Redécouvrez les bienfaits des plantes médicinales dans notre herboristerie traditionnelle.",
+          "cards": [
+            {
+              "title": "Remèdes naturels",
+              "content": "Nos préparations à base de plantes vous accompagnent vers un mieux-être naturel."
+            },
+            {
+              "title": "Conseils d'expert",
+              "content": "Bénéficiez de l'expertise de nos herboristes pour des conseils personnalisés."
+            }
+          ]
+        }
+      }
+    }
+  }
+}

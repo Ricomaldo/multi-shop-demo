@@ -1,4 +1,4 @@
-import type { Product, Shop } from "../../../shared/types";
+import type { Product, Shop } from "@/types";
 import type { ProductFilters } from "./adminProductService";
 
 const API_BASE_URL =

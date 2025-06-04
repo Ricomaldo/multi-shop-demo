@@ -1,3 +1,5 @@
+import { AdminDashboard } from "@/components/features/admin/dashboard/AdminDashboard";
+import type { Product } from "@/types";
 import {
   Alert,
   AlertIcon,
@@ -12,8 +14,6 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useEffect, useMemo, useState } from "react";
-import type { Product } from "../../../../shared/types";
-import { AdminDashboard } from "../../components/admin";
 import { useAdminContext, useShopData } from "../../hooks";
 import { getUniverseTokens } from "../../theme/universeTokens";
 

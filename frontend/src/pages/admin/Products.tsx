@@ -26,16 +26,15 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useMemo, useRef, useState } from "react";
-import type { Product } from "../../../../shared/types";
-import { AdminProductForm } from "../../components/admin/AdminProductForm";
-import AdminProductList from "../../components/admin/AdminProductList";
-import LoadingState from "../../components/shared/LoadingState";
-import { SharedProductPreviewCard } from "../../components/shared/SharedProductPreviewCard";
+import type { Product } from "@/types";
+import { AdminProductForm } from "../../components/features/admin/product/AdminProductForm";
+import AdminProductList from "../../components/features/admin/product/AdminProductList";
+import LoadingState from "../../components/ui/LoadingState";
+import { SharedProductPreviewCard } from "../../components/business/product/SharedProductPreviewCard";
 import {
   useAdminShop,
   useAdvancedProductFilters,
   useShopData,
-  useUniverse,
 } from "../../hooks";
 import type { ProductFilters } from "../../services/adminProductService";
 import { getUniverseTokens } from "../../theme/universeTokens";
@@ -75,7 +74,9 @@ export default function Products() {
   } = useAdvancedProductFilters(shopProducts, activeShop?.id);
 
   // Thème couleur selon l'univers
-  const tokens = getUniverseTokens(activeShop?.type);
+  const tokens = activeShop
+    ? getUniverseTokens(activeShop.shopType)
+    : getUniverseTokens("brewery");
   const colorScheme = tokens.meta.colorScheme;
 
   const handleSearchChange = (search: string) => {
@@ -233,10 +234,9 @@ export default function Products() {
       <LoadingState
         message={
           !activeShop
-            ? "Initialisation de la boutique..."
+            ? "Aucune boutique sélectionnée"
             : "Chargement des produits..."
         }
-        height="60vh"
       />
     );
   }

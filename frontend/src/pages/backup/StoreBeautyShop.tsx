@@ -9,10 +9,10 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import type { Product, Shop } from "../../../../shared/types";
-import { SharedProductPreviewCard } from "../../components/shared/SharedProductPreviewCard";
-import StoreHeader from "../../components/store/StoreHeader";
-import StoreLayout from "../../components/store/StoreLayout";
+import type { Product, Shop } from "@/types";
+import { SharedProductPreviewCard } from "../../components/business/product/SharedProductPreviewCard";
+import StoreHeader from "../../components/layout/store/StoreHeader";
+import StoreLayout from "../../components/layout/store/StoreLayout";
 import { useShopByType, useStoreHandlers } from "../../hooks";
 import { useShopData } from "../../hooks/useShopData";
 

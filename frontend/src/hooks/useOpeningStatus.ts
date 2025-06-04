@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { OpeningHours } from "../../../shared/types";
+import type { OpeningHours } from "@/types";
 
 interface OpeningStatus {
   isOpen: boolean;

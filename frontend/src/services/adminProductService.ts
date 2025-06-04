@@ -1,4 +1,4 @@
-import type { Product, Shop } from "../../../shared/types";
+import type { Product, Shop } from "@/types";
 
 interface WindowWithEnv extends Window {
   VITE_API_URL?: string;
