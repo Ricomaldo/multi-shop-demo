@@ -13,23 +13,18 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import type { Shop } from "../../../../shared/types";
-import type { UniverseType } from "../../contexts/UniverseContext";
-import {
-  getUniverseIcon,
-  getUniverseName,
-  shopTypeToUniverse,
-} from "../../utils/universeMapping";
+import type { Shop, ShopType } from "../../../../shared/types";
+import { getUniverseTokens } from "../../theme/universeTokens";
 
 interface AdminShopSelectorProps {
-  /** Univers sélectionné */
-  selectedUniverse: UniverseType;
+  /** shopType sélectionné */
+  selectedShopType: ShopType;
   /** Boutique sélectionnée */
   selectedShop: Shop | null;
   /** Liste complète des boutiques */
   shops: Shop[];
-  /** Callback changement d'univers */
-  onUniverseChange: (universe: UniverseType) => void;
+  /** Callback changement de shopType */
+  onShopTypeChange: (shopType: ShopType) => void;
   /** Callback changement de boutique */
   onShopChange: (shop: Shop) => void;
   /** Taille du sélecteur */
@@ -38,7 +33,7 @@ interface AdminShopSelectorProps {
   isCollapsed?: boolean;
 }
 
-const universeOptions: UniverseType[] = [
+const shopTypeOptions: ShopType[] = [
   "brewery",
   "teaShop",
   "beautyShop",
@@ -52,10 +47,10 @@ const extractCity = (shopName: string) => {
 };
 
 export default function AdminShopSelector({
-  selectedUniverse,
+  selectedShopType,
   selectedShop,
   shops,
-  onUniverseChange,
+  onShopTypeChange,
   onShopChange,
   size = "md",
   isCollapsed = false,
@@ -82,9 +77,9 @@ export default function AdminShopSelector({
     }
   }, [selectedShop, isChanging, lastSelectedShopId]);
 
-  // Filtrer les boutiques de l'univers sélectionné
+  // Filtrer les boutiques du shopType sélectionné
   const availableShops = shops.filter(
-    (shop) => shopTypeToUniverse(shop.shopType) === selectedUniverse
+    (shop) => shop.shopType === selectedShopType
   );
 
   const handleShopChange = async (shop: Shop) => {
@@ -98,14 +93,17 @@ export default function AdminShopSelector({
     }
   };
 
+  // Tokens pour le shopType sélectionné
+  const tokens = getUniverseTokens(selectedShopType);
+
   return (
     <VStack spacing={2} align="stretch">
-      {/* Sélecteur d'univers */}
+      {/* Sélecteur de shopType */}
       <Menu>
         <MenuButton
           as={Button}
           rightIcon={<ChevronDownIcon />}
-          leftIcon={<Text>{getUniverseIcon(selectedUniverse)}</Text>}
+          leftIcon={<Text>{tokens.meta.icon}</Text>}
           w="full"
           size={size}
           variant="outline"
@@ -117,30 +115,31 @@ export default function AdminShopSelector({
           <Box textAlign="left">
             {!isCollapsed && (
               <Text fontSize="xs" color={mutedColor}>
-                Univers
+                Type de boutique
               </Text>
             )}
             <Text fontSize="sm" fontWeight="medium" color={textColor}>
-              {isCollapsed
-                ? getUniverseIcon(selectedUniverse)
-                : getUniverseName(selectedUniverse)}
+              {isCollapsed ? tokens.meta.icon : tokens.meta.displayName}
             </Text>
           </Box>
         </MenuButton>
         <MenuList>
-          {universeOptions.map((universe) => (
-            <MenuItem
-              key={universe}
-              onClick={() => onUniverseChange(universe)}
-              bg={universe === selectedUniverse ? hoverBg : "transparent"}
-              _hover={{ bg: hoverBg }}
-            >
-              <HStack>
-                <Text>{getUniverseIcon(universe)}</Text>
-                <Text>{getUniverseName(universe)}</Text>
-              </HStack>
-            </MenuItem>
-          ))}
+          {shopTypeOptions.map((shopType) => {
+            const shopTokens = getUniverseTokens(shopType);
+            return (
+              <MenuItem
+                key={shopType}
+                onClick={() => onShopTypeChange(shopType)}
+                bg={shopType === selectedShopType ? hoverBg : "transparent"}
+                _hover={{ bg: hoverBg }}
+              >
+                <HStack>
+                  <Text>{shopTokens.meta.icon}</Text>
+                  <Text>{shopTokens.meta.displayName}</Text>
+                </HStack>
+              </MenuItem>
+            );
+          })}
         </MenuList>
       </Menu>
 

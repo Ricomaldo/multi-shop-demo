@@ -2,14 +2,12 @@ import {
   Box,
   Button,
   Flex,
-  Grid,
-  GridItem,
   Heading,
   HStack,
   Input,
   Select,
+  SimpleGrid,
   Text,
-  VStack,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -20,8 +18,12 @@ import type {
   ShopType,
 } from "../../../../shared/types";
 import { SharedProductPreviewCard } from "../../components/shared/SharedProductPreviewCard";
-import StoreHeader from "../../components/store/StoreHeader";
-import StoreLayout from "../../components/store/StoreLayout";
+import {
+  StoreHeader,
+  StoreLayout,
+  StorePageContent,
+  StoreShopInfoBadge,
+} from "../../components/store";
 import { useShopData, useStoreHandlers } from "../../hooks";
 import type { ProductFilters } from "../../services/adminProductService";
 
@@ -59,7 +61,7 @@ export default function StoreCatalogueView() {
 
   // Si chargement ou pas de boutique, afficher un loader
   if (loading || !currentShop) {
-    return <Box>Chargement...</Box>;
+    return <div>Chargement...</div>;
   }
 
   // Obtenir les produits de la boutique
@@ -139,7 +141,7 @@ export default function StoreCatalogueView() {
 
   return (
     <StoreLayout shop={currentShop}>
-      {/* VARIANT NAV-ONLY - Navigation boutique seule */}
+      {/* VARIANT NAV-ONLY - Navigation boutique seule avec sélecteur intégré */}
       <StoreHeader
         shop={currentShop}
         availableShops={shops}
@@ -147,7 +149,14 @@ export default function StoreCatalogueView() {
         variant="nav-only"
       />
 
-      <VStack spacing={8} py={8} align="stretch">
+      <StorePageContent spacing={8}>
+        {/* Badge d'informations boutique - En haut du contenu */}
+        <Flex justify={{ base: "center", md: "flex-end" }} w="full">
+          <Box maxW={{ base: "full", md: "400px" }}>
+            <StoreShopInfoBadge shop={currentShop} variant="compact" />
+          </Box>
+        </Flex>
+
         {/* En-tête catalogue */}
         <Box textAlign="center" py={8}>
           <Heading size="xl" mb={4}>
@@ -159,70 +168,67 @@ export default function StoreCatalogueView() {
         </Box>
 
         {/* Barre de recherche et filtres */}
-        <Box maxW="1400px" mx="auto" w="full">
-          <VStack spacing={6}>
-            <HStack spacing={4} w="full" flexWrap="wrap">
-              <Input
-                placeholder="Rechercher un produit..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                maxW="400px"
-                size="lg"
-              />
+        <Box w="full">
+          <HStack spacing={4} w="full" flexWrap="wrap" justify="center">
+            <Input
+              placeholder="Rechercher un produit..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              maxW="400px"
+              size="lg"
+            />
 
-              <Select
-                placeholder="Toutes les catégories"
-                value={selectedCategoryId || ""}
-                onChange={(e) => handleCategoryChange(e.target.value || null)}
-                maxW="250px"
-                size="lg"
-              >
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </Select>
+            <Select
+              placeholder="Toutes les catégories"
+              value={selectedCategoryId || ""}
+              onChange={(e) => handleCategoryChange(e.target.value || null)}
+              maxW="250px"
+              size="lg"
+            >
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </Select>
 
-              <Button onClick={handleResetFilters} variant="outline" size="lg">
-                Réinitialiser
-              </Button>
-            </HStack>
+            <Button onClick={handleResetFilters} variant="outline" size="lg">
+              Réinitialiser
+            </Button>
+          </HStack>
 
-            {/* Résultats */}
-            <Flex justify="space-between" align="center" w="full">
-              <Text color="gray.600">
-                {filteredProducts.length} produit
-                {filteredProducts.length > 1 ? "s" : ""} trouvé
-                {filteredProducts.length > 1 ? "s" : ""}
-              </Text>
-            </Flex>
-          </VStack>
+          {/* Résultats */}
+          <Flex justify="center" align="center" w="full" mt={6}>
+            <Text color="gray.600">
+              {filteredProducts.length} produit
+              {filteredProducts.length > 1 ? "s" : ""} trouvé
+              {filteredProducts.length > 1 ? "s" : ""}
+            </Text>
+          </Flex>
         </Box>
 
         {/* Grille des produits */}
-        <Box maxW="1400px" mx="auto" w="full">
+        <Box w="full">
           {filteredProducts.length > 0 ? (
-            <Grid
-              templateColumns={{
-                base: "1fr",
-                sm: "repeat(2, 1fr)",
-                md: "repeat(3, 1fr)",
-                lg: "repeat(4, 1fr)",
+            <SimpleGrid
+              columns={{
+                base: 1,
+                sm: 2,
+                md: 3,
+                lg: 4,
               }}
-              gap={6}
+              spacing={6}
             >
               {filteredProducts.map((product) => (
-                <GridItem key={product.id}>
-                  <SharedProductPreviewCard
-                    product={product}
-                    shop={currentShop}
-                    onAddToCart={handleAddToCart}
-                    onView={handleProductView}
-                  />
-                </GridItem>
+                <SharedProductPreviewCard
+                  key={product.id}
+                  product={product}
+                  shop={currentShop}
+                  onAddToCart={handleAddToCart}
+                  onView={handleProductView}
+                />
               ))}
-            </Grid>
+            </SimpleGrid>
           ) : (
             <Box textAlign="center" py={12}>
               <Text fontSize="lg" color="gray.500">
@@ -234,7 +240,7 @@ export default function StoreCatalogueView() {
             </Box>
           )}
         </Box>
-      </VStack>
+      </StorePageContent>
     </StoreLayout>
   );
 }

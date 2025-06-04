@@ -1,10 +1,14 @@
-import { Box, Button, HStack, Text, VStack } from "@chakra-ui/react";
+import { Box, Button, Flex, HStack, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Product, Shop, ShopType } from "../../../../shared/types";
 import { SharedProductDetailView } from "../../components/shared/SharedProductDetailView";
-import StoreHeader from "../../components/store/StoreHeader";
-import StoreLayout from "../../components/store/StoreLayout";
+import {
+  StoreHeader,
+  StoreLayout,
+  StorePageContent,
+  StoreShopInfoBadge,
+} from "../../components/store";
 import { useShopData, useStoreHandlers } from "../../hooks";
 
 export default function StoreProductDetail() {
@@ -57,12 +61,12 @@ export default function StoreProductDetail() {
   };
 
   if (loading || !currentShop || !product) {
-    return <Box>Chargement...</Box>;
+    return <div>Chargement...</div>;
   }
 
   return (
     <StoreLayout shop={currentShop}>
-      {/* VARIANT NAV-ONLY - Navigation boutique seule */}
+      {/* VARIANT NAV-ONLY - Navigation boutique seule avec sélecteur intégré */}
       <StoreHeader
         shop={currentShop}
         availableShops={shops}
@@ -70,9 +74,9 @@ export default function StoreProductDetail() {
         variant="nav-only"
       />
 
-      <VStack spacing={8} py={8} align="stretch">
+      <StorePageContent spacing={8}>
         {/* Breadcrumb et retour */}
-        <Box maxW="1400px" mx="auto" w="full">
+        <Box w="full">
           <HStack spacing={4} mb={6}>
             <Button onClick={handleGoBack} variant="ghost" size="sm">
               ← Retour
@@ -84,16 +88,32 @@ export default function StoreProductDetail() {
           </HStack>
         </Box>
 
-        {/* Vue détaillée du produit */}
-        <Box maxW="1400px" mx="auto" w="full">
-          <SharedProductDetailView
-            product={product}
-            shop={currentShop}
-            onAddToCart={handleAddToCart}
-            onGoBack={handleGoBack}
-          />
-        </Box>
-      </VStack>
+        {/* Layout principal : contenu + sidebar */}
+        <Flex
+          gap={8}
+          direction={{ base: "column", lg: "row" }}
+          align="flex-start"
+          w="full"
+        >
+          {/* Contenu principal */}
+          <Box flex="1" minW="0">
+            <SharedProductDetailView
+              product={product}
+              shop={currentShop}
+              onAddToCart={handleAddToCart}
+            />
+          </Box>
+
+          {/* Sidebar avec informations boutique */}
+          <Box
+            w={{ base: "full", lg: "350px" }}
+            flexShrink={0}
+            order={{ base: -1, lg: 1 }}
+          >
+            <StoreShopInfoBadge shop={currentShop} variant="full" />
+          </Box>
+        </Flex>
+      </StorePageContent>
     </StoreLayout>
   );
 }

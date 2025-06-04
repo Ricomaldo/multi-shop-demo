@@ -5,7 +5,7 @@ import { storeAnimations } from "../../../theme/components/shared";
 const MotionBox = motion.create(Box);
 
 export default function TeaSection() {
-  const animation = storeAnimations.tea;
+  const animation = storeAnimations.teaShop;
 
   return (
     <MotionBox as="section" py={16} {...animation}>

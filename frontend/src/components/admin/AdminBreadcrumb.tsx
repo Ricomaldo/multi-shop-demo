@@ -9,7 +9,7 @@ import {
 } from "@chakra-ui/react";
 import { Link, useLocation } from "react-router-dom";
 import { useAdminShop } from "../../hooks";
-import { getUniverseColorScheme } from "../../utils/universeMapping";
+import { getUniverseTokens } from "../../theme/universeTokens";
 
 interface BreadcrumbConfig {
   label: string;
@@ -42,10 +42,9 @@ const breadcrumbItems: Record<string, BreadcrumbConfig> = {
 
 export default function AdminBreadcrumb() {
   const location = useLocation();
-  const { universe, shop } = useAdminShop();
 
-  // Thème couleur selon l'univers de la boutique sélectionnée
-  const colorScheme = shop ? getUniverseColorScheme(universe) : "gray";
+  const tokens = getUniverseTokens(shop?.shopType || "brewery");
+  const colorScheme = tokens.meta.colorScheme;
 
   // Styles conditionnels
   const bgColor = useColorModeValue("white", "gray.800");

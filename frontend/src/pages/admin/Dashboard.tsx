@@ -14,30 +14,26 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import type { Product } from "../../../../shared/types";
 import { AdminDashboard } from "../../components/admin";
-import { useAdminShop, useShopData } from "../../hooks";
-import {
-  getShopDisplayName,
-  getUniverseIcon,
-  shopTypeToUniverse,
-} from "../../utils/universeMapping";
+import { useAdminContext, useShopData } from "../../hooks";
+import { getUniverseTokens } from "../../theme/universeTokens";
 
 export default function Dashboard() {
-  const [shopProducts, setShopProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { selectedShopType, selectedShop, loading, error } = useAdminContext();
 
-  const { shop: activeShop } = useAdminShop();
   const { products } = useShopData();
+  const tokens = getUniverseTokens(selectedShopType);
+
+  const [shopProducts, setShopProducts] = useState<Product[]>([]);
 
   // Filtrer les produits de la boutique active
   const activeShopProducts = useMemo(() => {
-    if (!activeShop) return [];
-    return products.filter((p) => p.shopId === activeShop.id);
-  }, [activeShop, products]);
+    if (!selectedShop) return [];
+    return products.filter((p) => p.shopId === selectedShop.id);
+  }, [selectedShop, products]);
 
   // Stats de la boutique active
   const shopStats = useMemo(() => {
-    if (!activeShop) return null;
+    if (!selectedShop) return null;
 
     const totalProducts = activeShopProducts.length;
     const averagePrice =
@@ -49,22 +45,16 @@ export default function Dashboard() {
     return {
       totalProducts,
       averagePrice,
-      shopName: activeShop.name,
-      shopType: activeShop.shopType,
-      universe: shopTypeToUniverse(activeShop.shopType),
+      shopName: selectedShop.name,
+      shopType: selectedShop.shopType,
     };
-  }, [activeShop, activeShopProducts]);
+  }, [selectedShop, activeShopProducts]);
 
   useEffect(() => {
-    if (activeShop && products.length > 0) {
+    if (selectedShop && products.length > 0) {
       setShopProducts(activeShopProducts);
-      setLoading(false);
-      setError(null);
-    } else if (!activeShop) {
-      setError("Aucune boutique sélectionnée");
-      setLoading(false);
     }
-  }, [activeShop, activeShopProducts, products]);
+  }, [selectedShop, activeShopProducts, products]);
 
   if (loading) {
     return (
@@ -74,7 +64,7 @@ export default function Dashboard() {
     );
   }
 
-  if (error || !activeShop || !shopStats) {
+  if (error || !selectedShop || !shopStats) {
     return (
       <VStack spacing={4} align="stretch">
         <Alert status="warning">
@@ -90,13 +80,12 @@ export default function Dashboard() {
     <VStack spacing={6} align="stretch">
       <Box>
         <Heading size="lg" mb={2}>
-          {getUniverseIcon(shopStats.universe)} Tableau de Bord
+          {tokens.meta.icon} Tableau de Bord
         </Heading>
         <Text color="gray.600" fontSize="md" mb={6}>
-          {getShopDisplayName(shopStats.universe)} • Boutique active
+          {selectedShop.name} • Boutique active
         </Text>
 
-        {/* Statistiques de la boutique active */}
         <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} mb={6}>
           <Stat p={6} bg="white" borderRadius="md" shadow="sm">
             <StatLabel>Produits en ligne</StatLabel>
@@ -114,14 +103,13 @@ export default function Dashboard() {
 
           <Stat p={6} bg="white" borderRadius="md" shadow="sm">
             <StatLabel>Univers</StatLabel>
-            <StatNumber color="purple.500">{shopStats.universe}</StatNumber>
+            <StatNumber color="purple.500">{selectedShop.shopType}</StatNumber>
             <StatHelpText>Type de boutique</StatHelpText>
           </Stat>
         </SimpleGrid>
 
-        {/* Dashboard détaillé pour la boutique active */}
         <AdminDashboard
-          shops={activeShop ? [activeShop] : []}
+          shops={selectedShop ? [selectedShop] : []}
           products={shopProducts}
         />
       </Box>

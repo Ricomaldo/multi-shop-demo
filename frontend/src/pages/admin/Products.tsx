@@ -38,7 +38,7 @@ import {
   useUniverse,
 } from "../../hooks";
 import type { ProductFilters } from "../../services/adminProductService";
-import { getUniverseColorScheme } from "../../utils/universeMapping";
+import { getUniverseTokens } from "../../theme/universeTokens";
 
 export default function Products() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -55,7 +55,6 @@ export default function Products() {
   const cancelRef = useRef<HTMLButtonElement>(null);
   const toast = useToast();
 
-  const { universe } = useUniverse();
   const { shop: activeShop } = useAdminShop();
   const { products, loading, refreshData } = useShopData();
 
@@ -76,7 +75,8 @@ export default function Products() {
   } = useAdvancedProductFilters(shopProducts, activeShop?.id);
 
   // Thème couleur selon l'univers
-  const colorScheme = getUniverseColorScheme(universe);
+  const tokens = getUniverseTokens(activeShop?.type);
+  const colorScheme = tokens.meta.colorScheme;
 
   const handleSearchChange = (search: string) => {
     setSearchTerm(search);

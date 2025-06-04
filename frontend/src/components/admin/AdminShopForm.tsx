@@ -19,12 +19,7 @@ import {
 import { useState } from "react";
 import type { OpeningHours, Shop } from "../../../../shared/types";
 import { updateShop } from "../../services/adminShopService";
-import {
-  getShopDisplayName,
-  getUniverseColorScheme,
-  getUniverseIcon,
-  shopTypeToUniverse,
-} from "../../utils/universeMapping";
+import { getUniverseTokens } from "../../theme/universeTokens";
 
 interface AdminShopFormProps {
   shop: Shop;
@@ -68,8 +63,8 @@ export default function AdminShopForm({
   });
 
   const toast = useToast();
-  const universe = shopTypeToUniverse(shop.shopType);
-  const colorScheme = getUniverseColorScheme(universe);
+  const tokens = getUniverseTokens(shop.shopType);
+  const colorScheme = tokens.meta.colorScheme;
 
   const handleInputChange = (field: keyof Shop, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -145,11 +140,9 @@ export default function AdminShopForm({
   return (
     <Card>
       <CardHeader>
-        <Heading size="md">
-          {getUniverseIcon(universe)} Informations boutique
-        </Heading>
+        <Heading size="md">{tokens.meta.icon} Informations boutique</Heading>
         <Text color="gray.600" fontSize="sm">
-          {getShopDisplayName(universe)} • Gestion des informations business
+          {tokens.meta.displayName} • Gestion des informations business
         </Text>
       </CardHeader>
 

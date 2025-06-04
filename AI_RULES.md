@@ -23,7 +23,7 @@
 - ❌ Valider builds non demandés
 - ❌ Proposer modifications non demandées
 - ❌ Déborder de la mission Alfred
-- ❌ Faire du zèle (Batman n'aime pas)
+- ❌ Faire du zèle (Eric n'aime pas)
 
 ## 🎯 Règle d'Or Robin
 

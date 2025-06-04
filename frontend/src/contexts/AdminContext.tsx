@@ -1,17 +1,15 @@
 import React, { createContext, useEffect, useState } from "react";
-import type { Shop } from "../../../shared/types";
+import type { Shop, ShopType } from "../../../shared/types";
 import { useShopData } from "../hooks/useShopData";
-import { shopTypeToUniverse } from "../utils/universeMapping";
-import type { UniverseType } from "./UniverseContext";
 
 export interface AdminContextValue {
-  // État de l'univers
-  selectedUniverse: UniverseType;
-  setSelectedUniverse: (universe: UniverseType) => void;
-  // État de la boutique
+  // État de l'univers/shopType DIRECT (plus besoin UniverseContext)
+  selectedShopType: ShopType;
+  setSelectedShopType: (shopType: ShopType) => void;
+  // État de la boutique (logique métier préservée)
   selectedShop: Shop | null;
   setSelectedShop: (shop: Shop | null) => void;
-  // Boutiques disponibles pour l'univers sélectionné
+  // Boutiques disponibles pour le shopType sélectionné
   availableShops: Shop[];
   // État global
   loading: boolean;
@@ -24,30 +22,40 @@ export const AdminContext = createContext<AdminContextValue | undefined>(
 
 interface AdminProviderProps {
   children: React.ReactNode;
+  defaultShopType?: ShopType;
 }
 
 // ============================================
-// COMPOSANT PROVIDER
+// COMPOSANT PROVIDER SIMPLIFIÉ
 // ============================================
 
-export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
-  // État local
-  const [selectedUniverse, setSelectedUniverse] =
-    useState<UniverseType>("brewery");
+export const AdminProvider: React.FC<AdminProviderProps> = ({
+  children,
+  defaultShopType = "brewery",
+}) => {
+  // État local DIRECT - plus de délégation complexe
+  const [selectedShopType, setSelectedShopTypeState] =
+    useState<ShopType>(defaultShopType);
   const [selectedShop, setSelectedShopState] = useState<Shop | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Hooks
   const { shops, loading, refreshData } = useShopData();
 
-  // Filtrer les boutiques selon l'univers sélectionné
+  // Filtrer les boutiques selon le shopType DIRECT
   const availableShops = shops.filter(
-    (shop) => shopTypeToUniverse(shop.shopType) === selectedUniverse
+    (shop) => shop.shopType === selectedShopType
   );
 
-  // Gestion persistence localStorage
-  const UNIVERSE_STORAGE_KEY = "demoforge_admin_universe";
-  const SHOP_STORAGE_KEY = `demoforge_admin_shop_${selectedUniverse}`;
+  // Persistence admin avec clés spécifiques (logique préservée)
+  const SHOPTYPE_STORAGE_KEY = "demoforge_admin_shoptype";
+  const SHOP_STORAGE_KEY = `demoforge_admin_shop_${selectedShopType}`;
+
+  // Wrapper setShopType avec persistence
+  const setSelectedShopType = (newShopType: ShopType) => {
+    setSelectedShopTypeState(newShopType);
+    localStorage.setItem(SHOPTYPE_STORAGE_KEY, newShopType);
+  };
 
   // Setter avec persistence pour la boutique + refresh des données
   const setSelectedShop = async (shop: Shop | null) => {
@@ -62,20 +70,16 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     setError(null);
   };
 
-  // Effet pour restaurer l'univers depuis localStorage
+  // Restauration persistence admin au démarrage
   useEffect(() => {
-    const storedUniverse = localStorage.getItem(
-      UNIVERSE_STORAGE_KEY
-    ) as UniverseType;
-    if (storedUniverse) {
-      setSelectedUniverse(storedUniverse);
-    }
-  }, []);
+    const storedShopType = localStorage.getItem(
+      SHOPTYPE_STORAGE_KEY
+    ) as ShopType;
 
-  // Effet pour sauvegarder l'univers dans localStorage
-  useEffect(() => {
-    localStorage.setItem(UNIVERSE_STORAGE_KEY, selectedUniverse);
-  }, [selectedUniverse]);
+    if (storedShopType && storedShopType !== selectedShopType) {
+      setSelectedShopTypeState(storedShopType);
+    }
+  }, [selectedShopType]);
 
   // Effet pour restaurer la boutique depuis localStorage
   useEffect(() => {
@@ -98,18 +102,21 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     }
   }, [availableShops, loading, SHOP_STORAGE_KEY]);
 
-  // Réinitialiser la boutique quand l'univers change
+  // Réinitialiser la boutique quand le shopType change
   useEffect(() => {
     setSelectedShopState(null);
     setError(null);
-  }, [selectedUniverse]);
+  }, [selectedShopType]);
 
   const value: AdminContextValue = {
-    selectedUniverse,
-    setSelectedUniverse,
+    // shopType DIRECT (plus simple)
+    selectedShopType,
+    setSelectedShopType,
+    // Gestion boutiques (logique préservée)
     selectedShop,
     setSelectedShop,
     availableShops,
+    // État global
     loading,
     error,
   };

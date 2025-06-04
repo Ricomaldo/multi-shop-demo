@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Product, Shop, ShopType } from "../../../shared/types";
-import {
-  getUniverseColorScheme,
-  shopTypeToUniverse,
-} from "../utils/universeMapping";
+import { getUniverseTokens } from "../theme/universeTokens";
 
 interface UseShopDataReturn {
   shops: Shop[];
@@ -41,11 +38,14 @@ export const useShopData = (): UseShopDataReturn => {
       const rawShopsData: Omit<Shop, "themeColor">[] =
         await shopsResponse.json();
 
-      // Enrichir avec themeColor
-      const shopsData: Shop[] = rawShopsData.map((shop) => ({
-        ...shop,
-        themeColor: getUniverseColorScheme(shopTypeToUniverse(shop.shopType)),
-      }));
+      // Enrichir avec themeColor depuis tokens DIRECT
+      const shopsData: Shop[] = rawShopsData.map((shop) => {
+        const tokens = getUniverseTokens(shop.shopType);
+        return {
+          ...shop,
+          themeColor: tokens.meta.colorScheme,
+        };
+      });
 
       // 2. Charger tous les produits de toutes les boutiques
       const allProducts: Product[] = [];

@@ -20,6 +20,7 @@ import {
 } from "@chakra-ui/react";
 import React from "react";
 import type { Product, Shop } from "../../../../shared/types";
+import { getUniverseTokens } from "../../theme/universeTokens";
 import {
   getAllFormattedAttributes,
   getStockBadgeColor,
@@ -27,18 +28,11 @@ import {
   hasLowStock,
   isOutOfStock,
 } from "../../utils/productAttributes";
-import {
-  getUniverseColorScheme,
-  getUniverseIcon,
-  getUniverseName,
-  shopTypeToUniverse,
-} from "../../utils/universeMapping";
 
 interface SharedProductDetailViewProps {
   product: Product;
   shop: Shop;
   onAddToCart?: (product: Product) => void;
-  /** Mode responsive adaptatif - par défaut true */
   responsive?: boolean;
 }
 
@@ -46,11 +40,6 @@ interface SharedProductDetailViewProps {
  * Vue détaillée d'un produit pour page dédiée
  * Composant page complète sans wrapper Modal
  * Utilise la thématisation automatique selon l'univers de la boutique
- *
- * @param product - Produit à afficher
- * @param shop - Boutique pour la thématisation
- * @param onAddToCart - Callback pour ajouter au panier
- * @param responsive - Mode responsive adaptatif (défaut: true)
  */
 export const SharedProductDetailView: React.FC<
   SharedProductDetailViewProps
@@ -58,24 +47,20 @@ export const SharedProductDetailView: React.FC<
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const textColor = useColorModeValue("gray.600", "gray.300");
 
+  // 🎯 TOKENS DIRECTS - Plus de mapping !
+  const tokens = getUniverseTokens(shop.shopType);
+
   const allAttributes = getAllFormattedAttributes(product, shop);
   const stockBadgeColor = getStockBadgeColor(product);
   const stockBadgeText = getStockBadgeText(product);
   const outOfStock = isOutOfStock(product);
   const lowStock = hasLowStock(product);
 
-  // Utilisation du helper centralisé pour l'univers
-  const universe = shopTypeToUniverse(shop.shopType);
-  const themeColor = getUniverseColorScheme(universe);
-  const shopIcon = getUniverseIcon(universe);
-  const shopTypeName = getUniverseName(universe);
-
   // Configuration du grid selon responsive
   const gridTemplateColumns = responsive
-    ? { base: "1fr", lg: "1fr 1fr" } // Mode responsive équilibré
-    : "1fr 1fr"; // Mode non-responsive : toujours 2 colonnes
+    ? { base: "1fr", lg: "1fr 1fr" }
+    : "1fr 1fr";
 
-  // Configuration pour page complète
   const gridGap = 8;
   const vStackSpacing = 6;
   const imageHeight = "400px";
@@ -90,7 +75,7 @@ export const SharedProductDetailView: React.FC<
         >
           <BreadcrumbItem>
             <BreadcrumbLink href={`/store/${shop.shopType}`}>
-              {shopTypeName} {shop.name}
+              {tokens.meta.displayName} {shop.name}
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbItem isCurrentPage>
@@ -106,8 +91,8 @@ export const SharedProductDetailView: React.FC<
               {/* Image produit */}
               <Box
                 height={imageHeight}
-                bg={`${themeColor}.50`}
-                borderRadius="lg"
+                bg={tokens.colors[50]}
+                borderRadius={tokens.borderRadius.lg}
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
@@ -116,7 +101,6 @@ export const SharedProductDetailView: React.FC<
                 borderColor={borderColor}
                 overflow="hidden"
               >
-                {/* Si image, on l'affiche, sinon emoji univers */}
                 {product.imageUrl ? (
                   <Box
                     as="img"
@@ -126,13 +110,13 @@ export const SharedProductDetailView: React.FC<
                     maxW="100%"
                     objectFit="contain"
                     m="auto"
-                    borderRadius="md"
+                    borderRadius={tokens.borderRadius.md}
                     boxShadow="md"
                     bg="white"
                   />
                 ) : (
                   <Text fontSize="8xl" opacity={0.3}>
-                    {shopIcon}
+                    {tokens.meta.icon}
                   </Text>
                 )}
 
@@ -146,6 +130,7 @@ export const SharedProductDetailView: React.FC<
                   fontSize="md"
                   px={3}
                   py={1}
+                  borderRadius={tokens.borderRadius.base}
                 >
                   {stockBadgeText}
                 </Badge>
@@ -153,7 +138,11 @@ export const SharedProductDetailView: React.FC<
 
               {/* Alertes stock */}
               {(outOfStock || lowStock) && (
-                <Alert status={outOfStock ? "error" : "warning"} size="md">
+                <Alert
+                  status={outOfStock ? "error" : "warning"}
+                  size="md"
+                  borderRadius={tokens.borderRadius.base}
+                >
                   <AlertIcon />
                   <Text fontSize="md">
                     {outOfStock
@@ -167,11 +156,14 @@ export const SharedProductDetailView: React.FC<
               <VStack spacing={3}>
                 {onAddToCart && (
                   <Button
-                    colorScheme={themeColor}
+                    colorScheme={tokens.meta.colorScheme}
                     size="lg"
                     width="full"
                     isDisabled={outOfStock}
                     onClick={() => onAddToCart(product)}
+                    borderRadius={tokens.borderRadius.base}
+                    fontFamily={tokens.typography.fontFamily.body}
+                    fontWeight={tokens.typography.fontWeight.bold}
                   >
                     {outOfStock ? "Rupture de stock" : "Ajouter au panier"}
                   </Button>
@@ -186,20 +178,32 @@ export const SharedProductDetailView: React.FC<
               {/* En-tête produit */}
               <Box>
                 <HStack mb={2}>
-                  <Text fontSize="lg">{shopIcon}</Text>
-                  <Text fontSize="sm" color={textColor} fontWeight="medium">
-                    {shopTypeName} • {shop.name}
+                  <Text fontSize="lg">{tokens.meta.icon}</Text>
+                  <Text
+                    fontSize="sm"
+                    color={textColor}
+                    fontWeight="medium"
+                    fontFamily={tokens.typography.fontFamily.body}
+                  >
+                    {tokens.meta.displayName} • {shop.name}
                   </Text>
                 </HStack>
 
-                <Heading size="xl" color={`${themeColor}.600`} mb={3}>
+                <Heading
+                  size="xl"
+                  color={tokens.colors[600]}
+                  mb={3}
+                  fontFamily={tokens.typography.fontFamily.heading}
+                  fontWeight={tokens.typography.fontWeight.bold}
+                >
                   {product.name}
                 </Heading>
 
                 <Text
                   fontSize="3xl"
-                  fontWeight="bold"
-                  color={`${themeColor}.500`}
+                  fontWeight={tokens.typography.fontWeight.heavy}
+                  color={tokens.colors[500]}
+                  fontFamily={tokens.typography.fontFamily.heading}
                 >
                   {product.price}€
                 </Text>
@@ -207,7 +211,12 @@ export const SharedProductDetailView: React.FC<
 
               {/* Description complète */}
               {product.description && (
-                <Text fontSize="md" color={textColor} lineHeight="tall">
+                <Text
+                  fontSize="md"
+                  color={textColor}
+                  lineHeight="tall"
+                  fontFamily={tokens.typography.fontFamily.body}
+                >
                   {product.description}
                 </Text>
               )}
@@ -216,10 +225,20 @@ export const SharedProductDetailView: React.FC<
               <SimpleGrid columns={2} spacing={4}>
                 {allAttributes.map((attr, idx) => (
                   <Box key={attr.label + String(attr.value) + idx}>
-                    <Text fontSize="sm" color={textColor} fontWeight="medium">
+                    <Text
+                      fontSize="sm"
+                      color={textColor}
+                      fontWeight="medium"
+                      fontFamily={tokens.typography.fontFamily.body}
+                    >
                       {attr.label}
                     </Text>
-                    <Text fontSize="md" fontWeight="bold">
+                    <Text
+                      fontSize="md"
+                      fontWeight={tokens.typography.fontWeight.bold}
+                      color={tokens.colors[700]}
+                      fontFamily={tokens.typography.fontFamily.body}
+                    >
                       {attr.value}
                     </Text>
                   </Box>

@@ -1,16 +1,9 @@
-import {
-  Box,
-  Container,
-  Flex,
-  Heading,
-  Text,
-  useColorModeValue,
-  VStack,
-} from "@chakra-ui/react";
+import { Box, Container, Flex, Heading, Text, VStack } from "@chakra-ui/react";
 import type { Shop } from "../../../../shared/types";
-import { shopTypeToUniverse } from "../../utils/universeMapping";
+import { getUniverseTokens } from "../../theme/universeTokens";
 import StoreHeroSection from "./StoreHeroSection";
-import StoreShopInfoBadge from "./StoreShopInfoBadge";
+import StoreNavigation from "./StoreNavigation";
+import StoreShopSelector from "./StoreShopSelector";
 
 interface StoreHeaderProps {
   shop: Shop;
@@ -21,17 +14,15 @@ interface StoreHeaderProps {
   variant?: "nav-only" | "hero" | "full" | "simple";
   imagePath?: string;
   height?: string;
-  showNavigation?: boolean;
+  showShopSelector?: boolean;
 }
 
 /**
- * Header modulaire pour les pages vitrine - Architecture v2
- *
- * Variants disponibles :
- * - "nav-only": Navigation seule (badge boutique)
- * - "hero": Hero section avec image background
- * - "full": Navigation + section gradient (mode existant)
- * - "simple": Backward compatibility (hero + navigation overlay)
+ * Header modulaire pour les pages vitrine - Architecture v3
+ * 🎯 Intégration élégante du StoreShopSelector dans une zone dédiée
+ * ✅ Aucune superposition avec la navigation
+ * ✅ UX/UI de qualité supérieure avec transitions fluides
+ * ✅ Usage direct shopType sans mapping
  */
 export default function StoreHeader({
   shop,
@@ -42,106 +33,94 @@ export default function StoreHeader({
   variant = "full",
   imagePath,
   height = "60vh",
-  showNavigation = true,
+  showShopSelector = true,
 }: StoreHeaderProps) {
-  const universe = shopTypeToUniverse(shop.shopType);
+  // 🎯 APPLICATION DIRECTE shopType → tokens (plus de mapping !)
+  const tokens = getUniverseTokens(shop.shopType);
 
-  // Définir le colorScheme en fonction de l'univers
-  const colorScheme = (() => {
-    switch (universe) {
-      case "brewery":
-        return "orange";
-      case "teaShop":
-        return "green";
-      case "beautyShop":
-        return "pink";
-      case "herbShop":
-        return "teal";
-      default:
-        return "gray";
-    }
-  })();
+  // Styles de l'univers appliqués directement
+  const headerStyles = {
+    bgGradient: `linear(to-b, ${tokens.colors[50]}, white)`,
+    titleColor: tokens.colors[800],
+    subtitleColor: tokens.colors[700],
+    borderColor: tokens.colors[200],
+    navBg: tokens.colors[50],
+  };
 
-  // Hooks en premier - avant tous les returns conditionnels
-  const bgGradient = useColorModeValue(
-    `linear(to-b, ${colorScheme}.50, white)`,
-    `linear(to-b, ${colorScheme}.900, gray.900)`
-  );
-  const titleColor = useColorModeValue(
-    `${colorScheme}.700`,
-    `${colorScheme}.200`
-  );
-  const subtitleColor = useColorModeValue(
-    `${colorScheme}.600`,
-    `${colorScheme}.300`
-  );
-
-  // Composant Navigation Header (réutilisable)
-  const NavigationHeader = ({ isOverlay = false }: { isOverlay?: boolean }) => (
+  // Barre supérieure avec sélecteur de boutique - Design premium
+  const TopBar = () => (
     <Box
-      position={isOverlay ? "absolute" : "sticky"}
-      top={0}
-      right={isOverlay ? 4 : "auto"}
-      left={isOverlay ? "auto" : 0}
-      zIndex={1000}
-      bg={isOverlay ? "transparent" : "white"}
-      borderBottomWidth={isOverlay ? 0 : 1}
-      borderColor="gray.100"
-      shadow={isOverlay ? "none" : "sm"}
-      backdropFilter={isOverlay ? "blur(15px) saturate(150%)" : "none"}
-      w={isOverlay ? "auto" : "full"}
-      borderRadius={isOverlay ? "xl" : 0}
-      mt={isOverlay ? 4 : 0}
-      _before={
-        isOverlay
-          ? {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              bg: "rgba(255, 255, 255, 0.1)",
-              borderRadius: "xl",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-              backdropFilter: "blur(20px)",
-              zIndex: -1,
-            }
-          : {}
-      }
+      bg={`linear-gradient(135deg, ${tokens.colors[50]} 0%, ${tokens.colors[100]} 50%, ${tokens.colors[50]} 100%)`}
+      borderBottomWidth="1px"
+      borderBottomColor={tokens.colors[100]}
+      py={2}
+      position="relative"
+      _before={{
+        content: '""',
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: "1px",
+        bg: `linear-gradient(90deg, transparent, ${tokens.colors[200]}, transparent)`,
+      }}
     >
       <Container maxW="7xl">
-        <Flex
-          justify={isOverlay ? "flex-end" : "flex-end"}
-          align="center"
-          py={4}
-          minH="64px"
-          px={isOverlay ? 4 : 0}
-        >
-          {showNavigation && (
-            <StoreShopInfoBadge
-              shops={availableShops}
-              currentShop={shop}
-              onShopChange={onShopChange}
-              showOpeningStatus={true}
-              size="sm"
-            />
+        <Flex justify="flex-end" align="center" minH="52px">
+          {showShopSelector && (
+            <Box
+              position="relative"
+              _before={{
+                content: '""',
+                position: "absolute",
+                top: "-8px",
+                left: "-12px",
+                right: "-12px",
+                bottom: "-8px",
+                bg: `${tokens.colors[100]}20`,
+                borderRadius: tokens.borderRadius.xl,
+                border: `1px solid ${tokens.colors[200]}30`,
+                backdropFilter: "blur(10px)",
+                zIndex: -1,
+                opacity: 0,
+                transition: "all 0.3s ease",
+              }}
+              _hover={{
+                _before: {
+                  opacity: 1,
+                },
+              }}
+            >
+              <StoreShopSelector
+                shops={availableShops}
+                currentShop={shop}
+                onShopChange={onShopChange}
+                showOpeningStatus={true}
+                variant={tokens.variants.selector}
+              />
+            </Box>
           )}
         </Flex>
       </Container>
     </Box>
   );
 
-  // Variant: Navigation seule
+  // Variant: Navigation seule avec navbar différenciée + TopBar
   if (variant === "nav-only") {
-    return <NavigationHeader />;
+    return (
+      <>
+        <TopBar />
+        <StoreNavigation shop={shop} />
+      </>
+    );
   }
 
-  // Variant: Hero section avec image
+  // Variant: Hero section avec navbar différenciée + TopBar
   if (variant === "hero") {
     return (
       <>
-        <NavigationHeader isOverlay={true} />
+        <TopBar />
+        <StoreNavigation shop={shop} />
         <StoreHeroSection
           shop={shop}
           title={title}
@@ -153,11 +132,12 @@ export default function StoreHeader({
     );
   }
 
-  // Variant: Simple (backward compatibility) - Hero + Navigation overlay
+  // Variant: Simple (backward compatibility) - Hero + Navigation + TopBar
   if (variant === "simple") {
     return (
       <>
-        <NavigationHeader isOverlay={true} />
+        <TopBar />
+        <StoreNavigation shop={shop} />
         <StoreHeroSection
           shop={shop}
           title={title || shop.name}
@@ -169,19 +149,49 @@ export default function StoreHeader({
     );
   }
 
-  // Variant: Full (gradient) - Mode existant amélioré
+  // Variant: Full (gradient) - Mode existant avec navbar différenciée + TopBar
   return (
     <>
-      <NavigationHeader />
-      <Box as="header" bgGradient={bgGradient} py={16}>
+      <TopBar />
+      <StoreNavigation shop={shop} />
+      <Box
+        as="header"
+        bgGradient={headerStyles.bgGradient}
+        py={tokens.spacing.section}
+        borderBottomWidth="2px"
+        borderColor={headerStyles.borderColor}
+        position="relative"
+        _before={{
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: "20%",
+          right: "20%",
+          height: "2px",
+          bg: `linear-gradient(90deg, transparent, ${tokens.colors[300]}, transparent)`,
+        }}
+      >
         <Container maxW="7xl">
-          <VStack spacing={6} textAlign="center">
+          <VStack spacing={tokens.spacing.component} textAlign="center">
             <Heading
               as="h1"
               size="2xl"
-              color={titleColor}
-              fontWeight="bold"
+              color={headerStyles.titleColor}
+              fontWeight={tokens.typography.fontWeight.heavy}
+              fontFamily={tokens.typography.fontFamily.heading}
               letterSpacing="tight"
+              position="relative"
+              _after={{
+                content: '""',
+                position: "absolute",
+                bottom: "-8px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "60px",
+                height: "3px",
+                bg: tokens.colors[400],
+                borderRadius: "full",
+              }}
             >
               {title || shop.name}
             </Heading>
@@ -189,9 +199,10 @@ export default function StoreHeader({
             {subtitle && (
               <Text
                 fontSize="lg"
-                color={subtitleColor}
-                maxW="3xl"
-                lineHeight="tall"
+                color={headerStyles.subtitleColor}
+                fontFamily={tokens.typography.fontFamily.body}
+                maxW="2xl"
+                lineHeight={tokens.typography.lineHeight.relaxed}
               >
                 {subtitle}
               </Text>

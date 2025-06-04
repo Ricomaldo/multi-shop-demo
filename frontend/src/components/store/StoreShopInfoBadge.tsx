@@ -1,213 +1,434 @@
-import { ChevronDownIcon } from "@chakra-ui/icons";
 import {
   Badge,
   Box,
   Button,
   HStack,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
+  Icon,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
   Text,
-  Tooltip,
-  useColorModeValue,
+  VStack,
+  useDisclosure,
 } from "@chakra-ui/react";
-import type { Shop } from "../../../../shared/types";
+import { FiClock, FiGlobe, FiMail, FiMapPin, FiPhone } from "react-icons/fi";
 import { useOpeningStatus } from "../../hooks/useOpeningStatus";
-import {
-  getUniverseColorScheme,
-  shopTypeToUniverse,
-} from "../../utils/universeMapping";
+import { getUniverseTokens, type ShopType } from "../../theme/universeTokens";
+import type { Shop } from "../../types/index";
 
 interface StoreShopInfoBadgeProps {
-  shops: Shop[];
-  currentShop: Shop;
-  onShopChange?: (shop: Shop) => void;
-  colorScheme?: string;
-  size?: "sm" | "md" | "lg";
+  shop: Shop;
+  variant?: "compact" | "full" | "minimal";
+  showDetailsButton?: boolean;
   showOpeningStatus?: boolean;
 }
 
 /**
- * Badge boutique élégant et professionnel pour les pages vitrine
- * Design épuré sans emoji, focus sur l'essentiel : nom boutique + status ouverture
- * Navigation entre boutiques du même type via menu dropdown élégant
+ * 🎯 StoreShopInfoBadge - Badge d'informations boutique simplifié et élégant
+ * ✅ Focus sur le statut ouvert/fermé dynamique
+ * ✅ Design premium avec différenciation par shopType DIRECT
+ * ✅ UX/UI de qualité supérieure
  */
+
 export default function StoreShopInfoBadge({
-  shops,
-  currentShop,
-  onShopChange,
-  colorScheme: customColorScheme,
-  size = "md",
+  shop,
+  variant = "compact",
+  showDetailsButton = true,
   showOpeningStatus = true,
 }: StoreShopInfoBadgeProps) {
-  // Hooks en premier - avant tout return conditionnel
-  const { isOpen, nextOpeningTime } = useOpeningStatus(
-    currentShop?.openingHours
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  // 🎯 APPLICATION DIRECTE shopType → tokens (plus de mapping !)
+  const tokens = getUniverseTokens(shop.shopType);
+  const { isOpen: shopIsOpen, nextOpeningTime } = useOpeningStatus(
+    shop.openingHours
   );
 
-  // Calculer les valeurs de thème
-  const universe = shopTypeToUniverse(currentShop?.shopType || "brewery");
-  const themeColor = customColorScheme || getUniverseColorScheme(universe);
-
-  // Styles adaptatifs selon le thème - hooks avant return
-  const bg = useColorModeValue(
-    "rgba(255, 255, 255, 0.85)",
-    "rgba(26, 32, 44, 0.85)"
-  );
-  const borderColor = useColorModeValue(
-    "rgba(255, 255, 255, 0.3)",
-    "rgba(255, 255, 255, 0.1)"
-  );
-  const textColor = useColorModeValue(`${themeColor}.700`, `${themeColor}.200`);
-  const hoverBg = useColorModeValue(
-    "rgba(255, 255, 255, 0.95)",
-    "rgba(26, 32, 44, 0.95)"
-  );
-
-  // Return conditionnel après les hooks
-  if (!currentShop?.shopType) return null;
-
-  const compatibleShops = shops.filter(
-    (shop) => shop.shopType === currentShop.shopType
-  );
-  const showNavigation = compatibleShops.length > 1;
-
-  const sizeStyles = {
-    sm: { px: 3, py: 2, fontSize: "sm" },
-    md: { px: 4, py: 2, fontSize: "md" },
-    lg: { px: 5, py: 3, fontSize: "lg" },
+  const getUniverseLabel = (shopType: string) => {
+    const tokens = getUniverseTokens(shopType as ShopType);
+    return `${tokens.meta.icon} ${tokens.meta.displayName}`;
   };
 
-  if (!showNavigation) {
-    // Version simple sans navigation - design glassmorphism
+  // Version minimaliste - juste le statut
+  if (variant === "minimal") {
+    return (
+      <HStack spacing={3}>
+        <Badge
+          colorScheme={shopIsOpen ? "green" : "red"}
+          borderRadius="full"
+          fontSize="sm"
+          px={4}
+          py={2}
+          fontWeight="bold"
+          display="flex"
+          alignItems="center"
+          gap={2}
+          transition="all 0.3s ease"
+          _hover={{
+            transform: tokens.animations.enableOnMobile
+              ? "none"
+              : "scale(1.05)",
+          }}
+        >
+          <Box
+            w="8px"
+            h="8px"
+            borderRadius="full"
+            bg={shopIsOpen ? "green.400" : "red.400"}
+            animation={shopIsOpen ? "pulse 2s infinite" : "none"}
+          />
+          {shopIsOpen ? "Ouvert" : "Fermé"}
+        </Badge>
+      </HStack>
+    );
+  }
+
+  // Version compacte - statut + prochaine ouverture
+  if (variant === "compact") {
     return (
       <Box
-        bg={bg}
-        borderWidth={1}
-        borderColor={borderColor}
-        borderRadius="xl"
-        shadow="lg"
-        backdropFilter="blur(20px) saturate(150%)"
-        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-        _hover={{
-          shadow: "xl",
-          borderColor: `${themeColor}.300`,
-          transform: "translateY(-2px)",
+        bg={`linear-gradient(135deg, ${tokens.colors[50]} 0%, white 100%)`}
+        borderWidth="1px"
+        borderColor={tokens.colors[200]}
+        borderRadius={tokens.borderRadius.lg}
+        p={4}
+        shadow="sm"
+        transition="all 0.3s ease"
+        position="relative"
+        overflow="hidden"
+        _before={{
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "4px",
+          height: "100%",
+          bg: shopIsOpen ? "green.400" : "red.400",
+          transition: "all 0.3s ease",
         }}
-        {...sizeStyles[size]}
+        _hover={{
+          shadow: "md",
+          transform: tokens.animations.enableOnMobile
+            ? "none"
+            : "translateY(-2px)",
+          borderColor: tokens.colors[300],
+        }}
       >
-        <HStack spacing={3}>
-          <Text color={textColor} fontWeight="medium">
-            {currentShop.name}
+        <VStack spacing={3} align="stretch">
+          {/* Statut principal */}
+          <HStack justify="space-between" align="center">
+            <Badge
+              colorScheme={tokens.meta.colorScheme}
+              borderRadius={tokens.borderRadius.base}
+              px={3}
+              py={1}
+              fontSize="sm"
+              fontFamily={tokens.typography.fontFamily.body}
+              fontWeight={tokens.typography.fontWeight.bold}
+            >
+              {getUniverseLabel(shop.shopType)}
+            </Badge>
+
+            <Badge
+              colorScheme={shopIsOpen ? "green" : "red"}
+              borderRadius="full"
+              fontSize="sm"
+              px={4}
+              py={2}
+              fontWeight="bold"
+              display="flex"
+              alignItems="center"
+              gap={2}
+              boxShadow="sm"
+            >
+              <Box
+                w="8px"
+                h="8px"
+                borderRadius="full"
+                bg={shopIsOpen ? "green.400" : "red.400"}
+                animation={shopIsOpen ? "pulse 2s infinite" : "none"}
+              />
+              {shopIsOpen ? "Ouvert" : "Fermé"}
+            </Badge>
+          </HStack>
+
+          {/* Nom de la boutique */}
+          <Text
+            fontSize={tokens.typography.fontSize.navigation}
+            fontWeight={tokens.typography.fontWeight.bold}
+            fontFamily={tokens.typography.fontFamily.heading}
+            color={tokens.colors[800]}
+            lineHeight="1.2"
+          >
+            {shop.name}
           </Text>
 
-          {showOpeningStatus && (
-            <Tooltip
-              label={
-                !isOpen && nextOpeningTime
-                  ? `Prochaine ouverture : ${nextOpeningTime}`
-                  : undefined
-              }
-              hasArrow
-            >
-              <Badge
-                colorScheme={isOpen ? "green" : "red"}
-                variant="solid"
-                borderRadius="full"
-                fontSize="xs"
-                px={2}
-                py={1}
+          {/* Prochaine ouverture si fermé */}
+          {!shopIsOpen && nextOpeningTime && (
+            <HStack spacing={2} align="center">
+              <Icon as={FiClock} color={tokens.colors[600]} boxSize="4" />
+              <Text
+                fontSize="sm"
+                color={tokens.colors[600]}
+                fontFamily={tokens.typography.fontFamily.body}
+                fontStyle="italic"
               >
-                {isOpen ? "Ouvert" : "Fermé"}
-              </Badge>
-            </Tooltip>
+                Ouvre {nextOpeningTime}
+              </Text>
+            </HStack>
           )}
-        </HStack>
+
+          {/* Bouton détails si activé */}
+          {showDetailsButton && (
+            <Badge
+              as="button"
+              onClick={onOpen}
+              colorScheme={tokens.meta.colorScheme}
+              variant="outline"
+              px={3}
+              py={2}
+              fontSize="xs"
+              cursor="pointer"
+              transition={tokens.animations.transition}
+              _hover={{
+                bg: `${tokens.meta.colorScheme}.50`,
+                transform: tokens.animations.enableOnMobile
+                  ? "none"
+                  : "scale(1.02)",
+              }}
+            >
+              Voir détails →
+            </Badge>
+          )}
+        </VStack>
       </Box>
     );
   }
 
-  // Version avec menu de navigation - glassmorphism professionnel
+  // Version complète avec toutes les infos
   return (
-    <Menu>
-      <MenuButton
-        as={Button}
-        rightIcon={<ChevronDownIcon />}
-        bg={bg}
-        borderWidth={1}
-        borderColor={borderColor}
-        color={textColor}
-        backdropFilter="blur(20px) saturate(150%)"
-        _hover={{
-          borderColor: `${themeColor}.300`,
-          bg: hoverBg,
-          transform: "translateY(-2px)",
-          shadow: "xl",
-        }}
-        _active={{
-          borderColor: `${themeColor}.400`,
-          transform: "translateY(0px)",
-        }}
-        borderRadius="xl"
+    <>
+      <Box
+        bg={`linear-gradient(135deg, ${tokens.colors[50]} 0%, ${tokens.colors[100]} 50%, white 100%)`}
+        borderWidth="2px"
+        borderColor={tokens.colors[200]}
+        borderRadius={tokens.borderRadius.xl}
+        p={6}
         shadow="lg"
-        fontWeight="medium"
-        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-        {...sizeStyles[size]}
-      >
-        <HStack spacing={3}>
-          <Text>{currentShop.name}</Text>
-
-          {showOpeningStatus && (
-            <Badge
-              colorScheme={isOpen ? "green" : "red"}
-              variant="solid"
-              borderRadius="full"
-              fontSize="xs"
-              px={2}
-              py={1}
-            >
-              {isOpen ? "Ouvert" : "Fermé"}
-            </Badge>
-          )}
-        </HStack>
-      </MenuButton>
-
-      <MenuList
-        borderColor={borderColor}
-        shadow="2xl"
-        borderWidth={1}
-        borderRadius="xl"
+        transition="all 0.4s ease"
+        position="relative"
         overflow="hidden"
-        bg={bg}
-        backdropFilter="blur(25px) saturate(150%)"
+        _before={{
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "6px",
+          bg: `linear-gradient(90deg, ${tokens.colors[400]}, ${tokens.colors[600]}, ${tokens.colors[400]})`,
+        }}
+        _hover={{
+          shadow: "xl",
+          transform: tokens.animations.enableOnMobile
+            ? "none"
+            : "translateY(-4px)",
+          borderColor: tokens.colors[400],
+        }}
       >
-        {compatibleShops.map((shop) => (
-          <MenuItem
-            key={shop.id}
-            onClick={() => onShopChange?.(shop)}
-            bg={shop.id === currentShop.id ? hoverBg : "transparent"}
-            _hover={{ bg: hoverBg }}
-            color={textColor}
-            px={4}
-            py={3}
-            transition="all 0.2s"
-          >
-            <HStack justify="space-between" w="full">
-              <Text
-                fontWeight={shop.id === currentShop.id ? "semibold" : "normal"}
-              >
-                {shop.name}
-              </Text>
-              {shop.id === currentShop.id && (
-                <Badge colorScheme={themeColor} size="sm">
-                  Actuel
-                </Badge>
-              )}
+        <VStack spacing={4} align="stretch">
+          {/* En-tête avec icône et statut */}
+          <HStack justify="space-between" align="center">
+            <HStack spacing={3}>
+              <Text fontSize="2xl">{tokens.meta.icon}</Text>
+              <VStack align="start" spacing={1}>
+                <Text
+                  fontSize="lg"
+                  fontWeight={tokens.typography.fontWeight.bold}
+                  fontFamily={tokens.typography.fontFamily.heading}
+                  color={tokens.colors[800]}
+                >
+                  {shop.name}
+                </Text>
+                <Text
+                  fontSize="sm"
+                  color={tokens.colors[600]}
+                  fontFamily={tokens.typography.fontFamily.body}
+                >
+                  {tokens.meta.description}
+                </Text>
+              </VStack>
             </HStack>
-          </MenuItem>
-        ))}
-      </MenuList>
-    </Menu>
+
+            <Badge
+              colorScheme={shopIsOpen ? "green" : "red"}
+              borderRadius="full"
+              fontSize="md"
+              px={4}
+              py={2}
+              fontWeight="bold"
+              display="flex"
+              alignItems="center"
+              gap={2}
+              boxShadow="md"
+            >
+              <Box
+                w="10px"
+                h="10px"
+                borderRadius="full"
+                bg={shopIsOpen ? "green.400" : "red.400"}
+                animation={shopIsOpen ? "pulse 2s infinite" : "none"}
+              />
+              {shopIsOpen ? "Ouvert" : "Fermé"}
+            </Badge>
+          </HStack>
+
+          {/* Informations de contact compactes */}
+          <VStack spacing={3} align="stretch">
+            {shop.address && (
+              <HStack spacing={3} align="center">
+                <Icon as={FiMapPin} color={tokens.colors[600]} boxSize="5" />
+                <Text
+                  fontSize="sm"
+                  color={tokens.colors[700]}
+                  fontFamily={tokens.typography.fontFamily.body}
+                >
+                  {shop.address}
+                </Text>
+              </HStack>
+            )}
+
+            {!shopIsOpen && nextOpeningTime && (
+              <HStack spacing={3} align="center">
+                <Icon as={FiClock} color={tokens.colors[600]} boxSize="5" />
+                <Text
+                  fontSize="sm"
+                  color={tokens.colors[600]}
+                  fontFamily={tokens.typography.fontFamily.body}
+                  fontStyle="italic"
+                >
+                  Prochaine ouverture : {nextOpeningTime}
+                </Text>
+              </HStack>
+            )}
+          </VStack>
+
+          {/* Bouton d'action */}
+          {showDetailsButton && (
+            <Button
+              onClick={onOpen}
+              size="sm"
+              colorScheme={tokens.meta.colorScheme}
+              variant="outline"
+              alignSelf="flex-start"
+              transition={tokens.animations.transition}
+              _hover={{
+                transform: tokens.animations.enableOnMobile
+                  ? "none"
+                  : "scale(1.05)",
+              }}
+            >
+              Informations complètes
+            </Button>
+          )}
+        </VStack>
+      </Box>
+
+      {/* Modal détails */}
+      <Modal isOpen={isOpen} onClose={onClose} size="lg">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader
+            bg={`linear-gradient(135deg, ${tokens.colors[100]}, ${tokens.colors[50]})`}
+            color={tokens.colors[800]}
+            fontFamily={tokens.typography.fontFamily.heading}
+          >
+            <HStack spacing={3}>
+              <Text fontSize="2xl">{tokens.meta.icon}</Text>
+              <Text>{shop.name}</Text>
+            </HStack>
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            <VStack spacing={4} align="stretch">
+              <Box>
+                <Text fontWeight="bold" mb={2} color={tokens.colors[700]}>
+                  Type de boutique
+                </Text>
+                <Text color={tokens.colors[600]}>
+                  {tokens.meta.description}
+                </Text>
+              </Box>
+
+              {shop.address && (
+                <Box>
+                  <Text fontWeight="bold" mb={2} color={tokens.colors[700]}>
+                    <Icon as={FiMapPin} mr={2} />
+                    Adresse
+                  </Text>
+                  <Text color={tokens.colors[600]}>{shop.address}</Text>
+                </Box>
+              )}
+
+              {shop.phone && (
+                <Box>
+                  <Text fontWeight="bold" mb={2} color={tokens.colors[700]}>
+                    <Icon as={FiPhone} mr={2} />
+                    Téléphone
+                  </Text>
+                  <Text color={tokens.colors[600]}>{shop.phone}</Text>
+                </Box>
+              )}
+
+              {shop.email && (
+                <Box>
+                  <Text fontWeight="bold" mb={2} color={tokens.colors[700]}>
+                    <Icon as={FiMail} mr={2} />
+                    Email
+                  </Text>
+                  <Text color={tokens.colors[600]}>{shop.email}</Text>
+                </Box>
+              )}
+
+              {shop.website && (
+                <Box>
+                  <Text fontWeight="bold" mb={2} color={tokens.colors[700]}>
+                    <Icon as={FiGlobe} mr={2} />
+                    Site web
+                  </Text>
+                  <Text color={tokens.colors[600]}>{shop.website}</Text>
+                </Box>
+              )}
+
+              {showOpeningStatus && (
+                <Box>
+                  <Text fontWeight="bold" mb={2} color={tokens.colors[700]}>
+                    <Icon as={FiClock} mr={2} />
+                    Statut actuel
+                  </Text>
+                  <HStack>
+                    <Badge
+                      colorScheme={shopIsOpen ? "green" : "red"}
+                      fontSize="sm"
+                      px={3}
+                      py={1}
+                    >
+                      {shopIsOpen ? "Ouvert" : "Fermé"}
+                    </Badge>
+                    {!shopIsOpen && nextOpeningTime && (
+                      <Text fontSize="sm" color="gray.500">
+                        (Ouvre {nextOpeningTime})
+                      </Text>
+                    )}
+                  </HStack>
+                </Box>
+              )}
+            </VStack>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    </>
   );
 }

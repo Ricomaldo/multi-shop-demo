@@ -21,7 +21,7 @@ import {
 import React from "react";
 import type { Shop } from "../../../../shared/types";
 import type { ProductFilters } from "../../services/adminProductService";
-import { getUniverseColorScheme } from "../../utils/universeMapping";
+import { getUniverseTokens } from "../../theme/universeTokens";
 
 interface SharedProductFiltersProps {
   shop: Shop;
@@ -43,7 +43,8 @@ export const SharedProductFilters: React.FC<SharedProductFiltersProps> = ({
   mode = "store",
 }) => {
   const { isOpen, onToggle } = useDisclosure();
-  const themeColor = getUniverseColorScheme(shop.shopType);
+  const tokens = getUniverseTokens(shop.shopType || "brewery");
+  const colorScheme = tokens.meta.colorScheme;
 
   const handleFilterChange = (key: string, value: unknown) => {
     onFiltersChange({ ...filters, [key]: value } as ProductFilters);
@@ -148,7 +149,7 @@ export const SharedProductFilters: React.FC<SharedProductFiltersProps> = ({
             <HStack spacing={4}>
               <Text fontSize="sm">Origine bio</Text>
               <Switch
-                colorScheme={themeColor}
+                colorScheme={colorScheme}
                 isChecked={filters.origine_bio || false}
                 onChange={(e) =>
                   handleFilterChange("origine_bio", e.target.checked)
@@ -187,7 +188,7 @@ export const SharedProductFilters: React.FC<SharedProductFiltersProps> = ({
             <HStack spacing={4}>
               <Text fontSize="sm">Certification bio</Text>
               <Switch
-                colorScheme={themeColor}
+                colorScheme={colorScheme}
                 isChecked={filters.certification_bio || false}
                 onChange={(e) =>
                   handleFilterChange("certification_bio", e.target.checked)
@@ -226,7 +227,7 @@ export const SharedProductFilters: React.FC<SharedProductFiltersProps> = ({
             <HStack spacing={4}>
               <Text fontSize="sm">Culture biologique</Text>
               <Switch
-                colorScheme={themeColor}
+                colorScheme={colorScheme}
                 isChecked={filters.culture_bio || false}
                 onChange={(e) =>
                   handleFilterChange("culture_bio", e.target.checked)
@@ -254,8 +255,8 @@ export const SharedProductFilters: React.FC<SharedProductFiltersProps> = ({
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             _focus={{
-              borderColor: `${themeColor}.400`,
-              boxShadow: `0 0 0 1px var(--chakra-colors-${themeColor}-400)`,
+              borderColor: `${colorScheme}.400`,
+              boxShadow: `0 0 0 1px var(--chakra-colors-${colorScheme}-400)`,
             }}
           />
         </InputGroup>
@@ -309,7 +310,7 @@ export const SharedProductFilters: React.FC<SharedProductFiltersProps> = ({
         <HStack justify="space-between">
           <Button
             variant="outline"
-            colorScheme={themeColor}
+            colorScheme={colorScheme}
             onClick={onToggle}
             size="sm"
           >
@@ -320,7 +321,7 @@ export const SharedProductFilters: React.FC<SharedProductFiltersProps> = ({
             <Button
               size="sm"
               variant="ghost"
-              colorScheme={themeColor}
+              colorScheme={colorScheme}
               onClick={onReset}
             >
               Effacer

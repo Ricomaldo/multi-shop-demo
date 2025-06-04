@@ -5,12 +5,12 @@ import {
   HStack,
   Image,
   Text,
-  useColorModeValue,
   VStack,
   Wrap,
   WrapItem,
 } from "@chakra-ui/react";
 import type { Product, Shop } from "../../../../shared/types";
+import { getUniverseTokens } from "../../theme/universeTokens";
 
 export interface SharedProductPreviewCardProps {
   product: Product;
@@ -40,10 +40,7 @@ export const SharedProductPreviewCard: React.FC<
   showActions = true,
   priceOverride,
 }) => {
-  const bgColor = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
-  const baseHoverShadow = useColorModeValue("lg", "dark-lg");
-  const shadowHover = isHighlighted ? "2xl" : baseHoverShadow;
+  const tokens = getUniverseTokens(shop.shopType);
 
   // Prix réactif : utilise override ou prix du produit
   const displayPrice =
@@ -67,7 +64,7 @@ export const SharedProductPreviewCard: React.FC<
           return [
             attrs.degre_alcool && {
               label: `${attrs.degre_alcool}%`,
-              colorScheme: "orange",
+              colorScheme: tokens.meta.colorScheme,
             },
             attrs.amertume_ibu && {
               label: `${parseIBU(attrs.amertume_ibu)} IBU`,
@@ -79,7 +76,7 @@ export const SharedProductPreviewCard: React.FC<
           return [
             attrs.origine_plantation && {
               label: attrs.origine_plantation,
-              colorScheme: "green",
+              colorScheme: tokens.meta.colorScheme,
             },
             attrs.grade_qualite && {
               label: attrs.grade_qualite,
@@ -96,7 +93,7 @@ export const SharedProductPreviewCard: React.FC<
               }),
             attrs.type_peau && {
               label: attrs.type_peau,
-              colorScheme: "pink",
+              colorScheme: tokens.meta.colorScheme,
             },
           ].filter(Boolean);
 
@@ -104,7 +101,7 @@ export const SharedProductPreviewCard: React.FC<
           return [
             attrs.usage_traditionnel && {
               label: attrs.usage_traditionnel,
-              colorScheme: "green",
+              colorScheme: tokens.meta.colorScheme,
             },
             attrs.certification &&
               attrs.certification !== "Non certifié" && {
@@ -123,40 +120,66 @@ export const SharedProductPreviewCard: React.FC<
 
   const universeBadges = getUniverseBadges();
 
+  // 🎨 STYLES DIRECTEMENT ISSUS DES TOKENS/COLORS
+  const cardStyles = {
+    // Background selon univers
+    bg: tokens.colors[50],
+    borderWidth: "2px",
+    borderColor: tokens.colors[200],
+    // BorderRadius selon tokens univers
+    borderRadius: tokens.borderRadius.base,
+    // Typography selon tokens
+    fontFamily: tokens.typography.fontFamily.body,
+    // Padding selon tokens
+    p: 4,
+    // Hover effects selon l'univers
+    _hover: {
+      borderColor: tokens.colors[300],
+      bg: tokens.colors[100],
+      transform:
+        shop.shopType === "brewery"
+          ? "none"
+          : shop.shopType === "teaShop"
+          ? "translateY(-2px)"
+          : shop.shopType === "beautyShop"
+          ? "translateY(-1px)"
+          : "scale(1.02)", // herbShop
+      transition: "all 0.3s ease",
+      boxShadow: shop.shopType === "beautyShop" ? "lg" : "md",
+    },
+  };
+
   return (
-    <Box
-      bg={bgColor}
-      borderWidth="1px"
-      borderColor={borderColor}
-      borderRadius="lg"
-      overflow="hidden"
-      transition="all 0.3s"
-      _hover={{
-        transform: "translateY(-4px)",
-        shadow: shadowHover,
-      }}
-      height="100%"
-    >
+    <Box {...cardStyles} overflow="hidden" height="100%">
       <Image
         src={product.imageUrl}
         alt={product.name}
-        height={imageHeight}
+        height={{ base: "180px", md: imageHeight }}
         width="100%"
         objectFit="cover"
+        borderRadius={tokens.borderRadius.md}
+        mb={3}
         onError={() => console.log("❌ Erreur image:", product.imageUrl)}
       />
 
-      <VStack p={4} spacing={3} align="stretch">
+      <VStack spacing={3} align="stretch">
         <Text
           fontSize={isHighlighted ? "xl" : "lg"}
-          fontWeight="semibold"
+          fontWeight={tokens.typography.fontWeight.bold}
+          fontFamily={tokens.typography.fontFamily.heading}
           noOfLines={2}
+          color={tokens.colors[800]}
         >
           {product.name}
         </Text>
 
-        {/* Description complète sans limitation */}
-        <Text fontSize="sm" color="gray.600">
+        {/* Description avec typography de l'univers */}
+        <Text
+          fontSize="sm"
+          color={tokens.colors[600]}
+          fontFamily={tokens.typography.fontFamily.body}
+          fontWeight={tokens.typography.fontWeight.normal}
+        >
           {product.description}
         </Text>
 
@@ -169,6 +192,7 @@ export const SharedProductPreviewCard: React.FC<
                   colorScheme={badge.colorScheme}
                   size="sm"
                   variant="subtle"
+                  borderRadius={tokens.borderRadius.base}
                 >
                   {badge.label}
                 </Badge>
@@ -180,8 +204,9 @@ export const SharedProductPreviewCard: React.FC<
         <HStack justify="space-between" align="center">
           <Text
             fontSize={isHighlighted ? "xl" : "lg"}
-            fontWeight="bold"
-            color={`${shop.themeColor}.600`}
+            fontWeight={tokens.typography.fontWeight.heavy}
+            color={tokens.colors[700]}
+            fontFamily={tokens.typography.fontFamily.heading}
           >
             {displayPrice}€
           </Text>
@@ -195,53 +220,74 @@ export const SharedProductPreviewCard: React.FC<
                   ? "orange"
                   : "red"
               }
+              borderRadius={tokens.borderRadius.base}
             >
               {product.stockStatus === "in_stock"
                 ? "En stock"
                 : product.stockStatus === "low_stock"
-                ? "Stock faible"
+                ? "Stock limité"
                 : "Rupture"}
             </Badge>
           )}
         </HStack>
 
-        <HStack spacing={2}>
-          {!isAdminMode && onView && (
-            <Button
-              variant="outline"
-              colorScheme={shop.themeColor}
-              size={isHighlighted ? "md" : "sm"}
-              flex="1"
-              onClick={() => onView(product)}
-            >
-              Voir
-            </Button>
-          )}
-          {!isAdminMode &&
-            onAddToCart &&
-            product.stockStatus !== "out_of_stock" && (
-              <Button
-                colorScheme={shop.themeColor}
-                size={isHighlighted ? "md" : "sm"}
-                flex="1"
-                onClick={() => onAddToCart(product)}
-              >
-                Ajouter
-              </Button>
+        {/* Actions avec styles de l'univers */}
+        {showActions && (
+          <VStack spacing={3} pt={3}>
+            {!isAdminMode ? (
+              <HStack spacing={3} w="full">
+                {onView && (
+                  <Button
+                    flex={1}
+                    variant="outline"
+                    colorScheme={tokens.meta.colorScheme}
+                    size={{ base: "sm", md: "md" }}
+                    minH="44px"
+                    fontFamily={tokens.typography.fontFamily.body}
+                    borderRadius={tokens.borderRadius.base}
+                    onClick={() => onView(product)}
+                  >
+                    Voir
+                  </Button>
+                )}
+                {onAddToCart && (
+                  <Button
+                    variant="solid"
+                    colorScheme={tokens.meta.colorScheme}
+                    size={{ base: "sm", md: "md" }}
+                    minH="44px"
+                    fontFamily={tokens.typography.fontFamily.body}
+                    fontWeight={tokens.typography.fontWeight.bold}
+                    borderRadius={tokens.borderRadius.base}
+                    onClick={() => onAddToCart(product)}
+                    disabled={product.stockStatus === "out_of_stock"}
+                  >
+                    {product.stockStatus === "out_of_stock"
+                      ? "Rupture"
+                      : "Ajouter"}
+                  </Button>
+                )}
+              </HStack>
+            ) : (
+              <HStack spacing={3} w="full">
+                {onEdit && (
+                  <Button
+                    flex={1}
+                    variant="outline"
+                    colorScheme="blue"
+                    size={{ base: "md", md: "sm" }}
+                    onClick={() => onEdit(product)}
+                    borderRadius={tokens.borderRadius.base}
+                    minH="44px"
+                    fontSize={{ base: "sm", md: "md" }}
+                  >
+                    Modifier
+                  </Button>
+                )}
+              </HStack>
             )}
-
-          {isAdminMode && showActions && onEdit && (
-            <Button
-              variant="outline"
-              colorScheme="blue"
-              size="sm"
-              flex="1"
-              onClick={() => onEdit(product)}
-            >
-              Modifier
-            </Button>
-          )}
-        </HStack>
+          </VStack>
+        )}
       </VStack>
     </Box>
   );

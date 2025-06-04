@@ -5,7 +5,7 @@ import { storeAnimations } from "../../../theme/components/shared";
 const MotionBox = motion.create(Box);
 
 export default function HerbSection() {
-  const animation = storeAnimations.herb;
+  const animation = storeAnimations.herbShop;
 
   return (
     <MotionBox as="section" py={16} {...animation}>

@@ -1,154 +1,69 @@
-import { Badge, Grid, GridItem, Text } from "@chakra-ui/react";
-import React from "react";
-import type { Product } from "../../../../shared/types";
-import type { UniverseType } from "../../contexts/UniverseContext";
-import { getUniverseColorScheme } from "../../utils/universeMapping";
+import { Box, HStack, Text, VStack } from "@chakra-ui/react";
+import type { ShopType } from "../../../../shared/types";
+import { getUniverseTokens } from "../../theme/universeTokens";
 
 interface ProductAttributesProps {
-  product: Product;
-  shopType: UniverseType;
+  attributes: Record<string, unknown>;
+  shopType: ShopType;
+  size?: "sm" | "md";
 }
 
-// Parser IBU pour enlever "IBU" si présent
-const parseIBU = (value: string) => {
-  if (!value) return value;
-  return value.replace(/ ?IBU/gi, "").trim();
-};
-
-/**
- * Affiche les attributs spécialisés selon l'univers
- */
-export const ProductAttributes: React.FC<ProductAttributesProps> = ({
-  product,
+export default function ProductAttributes({
+  attributes,
   shopType,
-}) => {
-  const colorScheme = getUniverseColorScheme(shopType);
-  const attributes = JSON.parse(product.attributes || "{}");
+  size = "md",
+}: ProductAttributesProps) {
+  const tokens = getUniverseTokens(shopType);
 
-  const renderBreweryAttributes = () => (
-    <>
-      <GridItem>
-        <Text fontSize="sm" color="gray.600">
-          Degré d'alcool
-        </Text>
-        <Badge colorScheme={colorScheme}>{attributes.degre_alcool}%</Badge>
-      </GridItem>
-      <GridItem>
-        <Text fontSize="sm" color="gray.600">
-          Amertume (IBU)
-        </Text>
-        <Badge colorScheme={colorScheme}>
-          {parseIBU(attributes.amertume_ibu)} IBU
-        </Badge>
-      </GridItem>
-      <GridItem>
-        <Text fontSize="sm" color="gray.600">
-          Type de houblon
-        </Text>
-        <Badge variant="outline">{attributes.type_houblon}</Badge>
-      </GridItem>
-    </>
+  const attributeEntries = Object.entries(attributes).filter(
+    ([, value]) => value !== null && value !== undefined && value !== ""
   );
 
-  const renderTeaShopAttributes = () => (
-    <>
-      <GridItem>
-        <Text fontSize="sm" color="gray.600">
-          Origine
-        </Text>
-        <Badge colorScheme={colorScheme}>{attributes.origine_plantation}</Badge>
-      </GridItem>
-      <GridItem>
-        <Text fontSize="sm" color="gray.600">
-          Grade
-        </Text>
-        <Badge colorScheme={colorScheme}>{attributes.grade_qualite}</Badge>
-      </GridItem>
-      <GridItem>
-        <Text fontSize="sm" color="gray.600">
-          Temps d'infusion
-        </Text>
-        <Badge variant="outline">{attributes.temps_infusion} min</Badge>
-      </GridItem>
-    </>
-  );
-
-  const renderBeautyShopAttributes = () => (
-    <>
-      <GridItem>
-        <Text fontSize="sm" color="gray.600">
-          Type de peau
-        </Text>
-        <Badge colorScheme={colorScheme}>{attributes.type_peau}</Badge>
-      </GridItem>
-      <GridItem>
-        <Text fontSize="sm" color="gray.600">
-          Certification
-        </Text>
-        <Badge colorScheme={attributes.certification_bio ? "green" : "gray"}>
-          {attributes.certification_bio ? "Bio" : "Conventionnel"}
-        </Badge>
-      </GridItem>
-      <GridItem>
-        <Text fontSize="sm" color="gray.600">
-          Format
-        </Text>
-        <Badge variant="outline">{attributes.format}</Badge>
-      </GridItem>
-    </>
-  );
-
-  const renderHerbShopAttributes = () => (
-    <>
-      <GridItem>
-        <Text fontSize="sm" color="gray.600">
-          Usage traditionnel
-        </Text>
-        <Badge colorScheme={colorScheme}>{attributes.usage_traditionnel}</Badge>
-      </GridItem>
-      <GridItem>
-        <Text fontSize="sm" color="gray.600">
-          Forme
-        </Text>
-        <Badge colorScheme={colorScheme}>{attributes.forme_galenique}</Badge>
-      </GridItem>
-      <GridItem>
-        <Text fontSize="sm" color="gray.600">
-          Culture
-        </Text>
-        <Badge variant="outline">
-          {attributes.culture_bio ? "Bio" : "Conventionnelle"}
-        </Badge>
-      </GridItem>
-    </>
-  );
-
-  const renderAttributes = () => {
-    switch (shopType) {
-      case "brewery":
-        return renderBreweryAttributes();
-      case "teaShop":
-        return renderTeaShopAttributes();
-      case "beautyShop":
-        return renderBeautyShopAttributes();
-      case "herbShop":
-        return renderHerbShopAttributes();
-      default:
-        return null;
-    }
-  };
+  if (attributeEntries.length === 0) {
+    return null;
+  }
 
   return (
-    <Grid
-      templateColumns={{
-        base: "1fr",
-        sm: "repeat(2, 1fr)",
-        md: "repeat(3, 1fr)",
-      }}
-      gap={4}
-      mt={2}
+    <Box
+      p={size === "sm" ? 3 : 4}
+      bg={tokens.colors[50]}
+      borderRadius={tokens.borderRadius.base}
+      borderWidth={1}
+      borderColor={tokens.colors[200]}
     >
-      {renderAttributes()}
-    </Grid>
+      <Text
+        fontWeight={tokens.typography.fontWeight.bold}
+        mb={3}
+        color={tokens.colors[700]}
+        fontSize={size === "sm" ? "sm" : "md"}
+        fontFamily={tokens.typography.fontFamily.heading}
+      >
+        Caractéristiques
+      </Text>
+      <VStack spacing={size === "sm" ? 1 : 2} align="stretch">
+        {attributeEntries.map(([key, value]) => (
+          <HStack
+            key={key}
+            justify="space-between"
+            fontSize={size === "sm" ? "xs" : "sm"}
+          >
+            <Text
+              color={tokens.colors[600]}
+              fontFamily={tokens.typography.fontFamily.body}
+              textTransform="capitalize"
+            >
+              {key.replace(/_/g, " ")}
+            </Text>
+            <Text
+              fontWeight={tokens.typography.fontWeight.normal}
+              color={tokens.colors[800]}
+              fontFamily={tokens.typography.fontFamily.body}
+            >
+              {String(value)}
+            </Text>
+          </HStack>
+        ))}
+      </VStack>
+    </Box>
   );
-};
+}

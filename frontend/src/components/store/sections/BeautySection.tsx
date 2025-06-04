@@ -5,7 +5,7 @@ import { storeAnimations } from "../../../theme/components/shared";
 const MotionBox = motion.create(Box);
 
 export default function BeautySection() {
-  const animation = storeAnimations.beauty;
+  const animation = storeAnimations.beautyShop;
 
   return (
     <MotionBox as="section" py={20} {...animation}>
