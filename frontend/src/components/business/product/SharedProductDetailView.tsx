@@ -1,9 +1,7 @@
-import type { Product, Shop } from "@/types";
 import { getUniverseTokens } from "@/theme/universeTokens";
+import type { Product, Shop } from "@/types";
 import {
   getAllFormattedAttributes,
-  getStockBadgeColor,
-  getStockBadgeText,
   hasLowStock,
   isOutOfStock,
 } from "@/utils/productAttributes";
@@ -11,7 +9,6 @@ import { ChevronRightIcon } from "@chakra-ui/icons";
 import {
   Alert,
   AlertIcon,
-  Badge,
   Box,
   Breadcrumb,
   BreadcrumbItem,
@@ -22,9 +19,15 @@ import {
   GridItem,
   Heading,
   HStack,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalOverlay,
   SimpleGrid,
   Text,
   useColorModeValue,
+  useDisclosure,
   VStack,
 } from "@chakra-ui/react";
 import React from "react";
@@ -50,9 +53,10 @@ export const SharedProductDetailView: React.FC<
   // 🎯 TOKENS DIRECTS - Plus de mapping !
   const tokens = getUniverseTokens(shop.shopType);
 
+  // Modal pour lightbox
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   const allAttributes = getAllFormattedAttributes(product, shop);
-  const stockBadgeColor = getStockBadgeColor(product);
-  const stockBadgeText = getStockBadgeText(product);
   const outOfStock = isOutOfStock(product);
   const lowStock = hasLowStock(product);
 
@@ -88,53 +92,98 @@ export const SharedProductDetailView: React.FC<
           {/* Colonne gauche - Image et infos principales */}
           <GridItem>
             <VStack spacing={vStackSpacing} align="stretch">
-              {/* Image produit */}
+              {/* Image produit avec lightbox */}
               <Box
                 height={imageHeight}
-                bg={tokens.colors[50]}
                 borderRadius={tokens.borderRadius.lg}
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
                 position="relative"
                 border="1px solid"
                 borderColor={borderColor}
                 overflow="hidden"
+                bg={tokens.colors[50]}
+                cursor={product.imageUrl ? "zoom-in" : "default"}
+                onClick={product.imageUrl ? onOpen : undefined}
+                transition="transform 0.2s ease"
+                _hover={product.imageUrl ? { transform: "scale(1.02)" } : {}}
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
               >
                 {product.imageUrl ? (
-                  <Box
-                    as="img"
-                    src={product.imageUrl}
-                    alt={product.name}
-                    maxH="360px"
-                    maxW="100%"
-                    objectFit="contain"
-                    m="auto"
-                    borderRadius={tokens.borderRadius.md}
-                    boxShadow="md"
-                    bg="white"
-                  />
+                  <>
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name}
+                      style={{
+                        maxWidth: "100%",
+                        maxHeight: "100%",
+                        objectFit: "contain",
+                        userSelect: "none",
+                      }}
+                    />
+
+                    {/* Indicateur de zoom */}
+                    <Box
+                      position="absolute"
+                      top={2}
+                      right={2}
+                      bg="blackAlpha.600"
+                      color="white"
+                      fontSize="xs"
+                      px={2}
+                      py={1}
+                      borderRadius="md"
+                      opacity={0.8}
+                    >
+                      🔍 Cliquer pour agrandir
+                    </Box>
+                  </>
                 ) : (
                   <Text fontSize="8xl" opacity={0.3}>
                     {tokens.meta.icon}
                   </Text>
                 )}
-
-                {/* Badge stock en overlay */}
-                <Badge
-                  position="absolute"
-                  top={4}
-                  right={4}
-                  colorScheme={stockBadgeColor}
-                  variant="solid"
-                  fontSize="md"
-                  px={3}
-                  py={1}
-                  borderRadius={tokens.borderRadius.base}
-                >
-                  {stockBadgeText}
-                </Badge>
               </Box>
+
+              {/* Lightbox Modal */}
+              <Modal isOpen={isOpen} onClose={onClose} size="6xl" isCentered>
+                <ModalOverlay bg="blackAlpha.800" />
+                <ModalContent
+                  bg="transparent"
+                  boxShadow="none"
+                  maxW="90vw"
+                  maxH="90vh"
+                >
+                  <ModalCloseButton
+                    color="white"
+                    bg="blackAlpha.600"
+                    _hover={{ bg: "blackAlpha.800" }}
+                    size="lg"
+                    top={4}
+                    right={4}
+                    zIndex={10}
+                  />
+                  <ModalBody
+                    p={0}
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    {product.imageUrl && (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        style={{
+                          maxWidth: "100%",
+                          maxHeight: "100%",
+                          objectFit: "contain",
+                          borderRadius: tokens.borderRadius.lg,
+                        }}
+                      />
+                    )}
+                  </ModalBody>
+                </ModalContent>
+              </Modal>
 
               {/* Alertes stock */}
               {(outOfStock || lowStock) && (

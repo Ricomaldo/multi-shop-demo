@@ -12,7 +12,6 @@ import {
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { getUniverseTokens, type ShopType } from "../theme/universeTokens";
-
 const MotionBox = motion.create(Box);
 const MotionVStack = motion.create(VStack);
 
@@ -281,6 +280,60 @@ export default function Home() {
               }}
             >
               Accéder à l'admin
+            </Button>
+          </VStack>
+        </MotionBox>
+
+        {/* Demo Système Émotionnel */}
+        <MotionBox
+          mt={{ base: 6, md: 8 }}
+          p={{ base: 6, md: 8 }}
+          bg="linear-gradient(135deg, purple.50, pink.50)"
+          borderRadius="xl"
+          borderWidth="2px"
+          borderColor="purple.200"
+          textAlign="center"
+          w="full"
+          maxW="600px"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.9, duration: 0.4 }}
+          _hover={{
+            borderColor: "purple.300",
+            bg: "linear-gradient(135deg, purple.100, pink.100)",
+          }}
+        >
+          <VStack spacing={{ base: 3, md: 4 }}>
+            <Heading
+              size={{ base: "sm", md: "md" }}
+              color="purple.700"
+              fontWeight="bold"
+            >
+              🎨 Système Émotionnel
+            </Heading>
+            <Text
+              fontSize={{ base: "sm", md: "md" }}
+              color="purple.600"
+              fontWeight="medium"
+            >
+              Découvrez les couleurs, animations et interactions de chaque
+              univers
+            </Text>
+            <Button
+              as={Link}
+              to="/demo"
+              colorScheme="purple"
+              size={{ base: "md", md: "lg" }}
+              fontSize={{ base: "md", md: "lg" }}
+              fontWeight="bold"
+              px={{ base: 6, md: 8 }}
+              leftIcon={<Text>✨</Text>}
+              _hover={{
+                transform: "translateY(-2px)",
+                boxShadow: "lg",
+              }}
+            >
+              Tester les interactions
             </Button>
           </VStack>
         </MotionBox>

@@ -1,3 +1,4 @@
+import type { Product } from "@/types";
 import { SearchIcon } from "@chakra-ui/icons";
 import {
   AlertDialog,
@@ -26,15 +27,17 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useMemo, useRef, useState } from "react";
-import type { Product } from "@/types";
+import { SharedProductPreviewCard } from "../../components/business/product/SharedProductPreviewCard";
 import { AdminProductForm } from "../../components/features/admin/product/AdminProductForm";
 import AdminProductList from "../../components/features/admin/product/AdminProductList";
 import LoadingState from "../../components/ui/LoadingState";
-import { SharedProductPreviewCard } from "../../components/business/product/SharedProductPreviewCard";
 import {
   useAdminShop,
   useAdvancedProductFilters,
   useShopData,
+  useUniverseAnimations,
+  useUniverseButton,
+  useUniverseColors,
 } from "../../hooks";
 import type { ProductFilters } from "../../services/adminProductService";
 import { getUniverseTokens } from "../../theme/universeTokens";
@@ -57,6 +60,13 @@ export default function Products() {
   const { shop: activeShop } = useAdminShop();
   const { products, loading, refreshData } = useShopData();
 
+  // 🆕 HOOKS ÉMOTIONNELS POUR ADMIN
+  const shopType = activeShop?.shopType || "brewery";
+  const tokens = getUniverseTokens(shopType);
+  const universeButton = useUniverseButton(shopType);
+  const universeColors = useUniverseColors(shopType);
+  const animations = useUniverseAnimations(shopType);
+
   // Filtrer les produits pour la boutique active
   const shopProducts = useMemo(
     () => products.filter((p) => p.shopId === activeShop?.id),
@@ -72,12 +82,6 @@ export default function Products() {
     resetFilters,
     applyAdvancedFilters,
   } = useAdvancedProductFilters(shopProducts, activeShop?.id);
-
-  // Thème couleur selon l'univers
-  const tokens = activeShop
-    ? getUniverseTokens(activeShop.shopType)
-    : getUniverseTokens("brewery");
-  const colorScheme = tokens.meta.colorScheme;
 
   const handleSearchChange = (search: string) => {
     setSearchTerm(search);
@@ -242,13 +246,13 @@ export default function Products() {
   }
 
   return (
-    <Box p={{ base: 4, md: 8 }}>
+    <Box p={{ base: 4, md: 8 }} {...animations.getEntranceProps()}>
       <VStack spacing={8} align="stretch">
         {/* En-tête avec filtres */}
         <Card>
           <CardHeader>
-            <Heading size="md" mb={4}>
-              🏪 Gestion des produits
+            <Heading size="md" mb={4} color={universeColors.primary}>
+              🏪 Gestion des produits - {tokens.meta.displayName}
             </Heading>
             <Flex gap={4} wrap="wrap">
               <InputGroup maxW="300px">
@@ -259,6 +263,8 @@ export default function Products() {
                   placeholder="Rechercher un produit..."
                   value={searchTerm}
                   onChange={(e) => handleSearchChange(e.target.value)}
+                  borderColor={universeColors.borders.light}
+                  focusBorderColor={universeColors.primary}
                 />
               </InputGroup>
 
@@ -267,6 +273,8 @@ export default function Products() {
                 value={selectedCategoryId || ""}
                 onChange={(e) => setSelectedCategoryId(e.target.value)}
                 maxW="200px"
+                borderColor={universeColors.borders.light}
+                focusBorderColor={universeColors.primary}
               >
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
@@ -276,9 +284,8 @@ export default function Products() {
               </Select>
 
               <Button
-                variant="ghost"
-                colorScheme={colorScheme}
                 onClick={handleResetFilters}
+                {...universeButton.getSecondaryProps()}
                 size="md"
               >
                 Réinitialiser

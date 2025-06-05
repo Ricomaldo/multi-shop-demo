@@ -1,7 +1,6 @@
-import StoreShopInfoBadge from "@/components/business/shop/StoreShopInfoBadge";
 import { StorePageWrapper } from "@/components/features/store/content/StorePageWrapper";
 import type { Product } from "@/types";
-import { Box, Button, Flex, HStack, Text } from "@chakra-ui/react";
+import { Box, Button, Flex } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { SharedProductDetailView } from "../../components/business/product/SharedProductDetailView";
@@ -37,17 +36,11 @@ export default function StoreProductDetail() {
 
   return (
     <StorePageWrapper headerVariant="nav-only">
-      {/* Breadcrumb et retour */}
+      {/* Bouton retour seulement */}
       <Box w="full">
-        <HStack spacing={4} mb={6}>
-          <Button onClick={handleGoBack} variant="ghost" size="sm">
-            ← Retour
-          </Button>
-          <Text color="gray.500" fontSize="sm">
-            {currentShop.name} / {product.category?.name || "Produits"} /{" "}
-            {product.name}
-          </Text>
-        </HStack>
+        <Button onClick={handleGoBack} variant="ghost" size="sm" mb={6}>
+          ← Retour
+        </Button>
       </Box>
 
       {/* Layout principal : contenu + sidebar */}
@@ -64,15 +57,6 @@ export default function StoreProductDetail() {
             shop={currentShop}
             onAddToCart={handleAddToCart}
           />
-        </Box>
-
-        {/* Sidebar avec informations boutique */}
-        <Box
-          w={{ base: "full", lg: "350px" }}
-          flexShrink={0}
-          order={{ base: -1, lg: 1 }}
-        >
-          <StoreShopInfoBadge shop={currentShop} variant="full" />
         </Box>
       </Flex>
     </StorePageWrapper>

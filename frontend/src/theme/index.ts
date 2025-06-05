@@ -6,6 +6,8 @@ import {
   getUniverseVariant,
   storeAnimations,
 } from "./components/shared";
+import { universeButtonTheme } from "./components/universeButton";
+import { universeInputTheme } from "./components/universeInput";
 import {
   generateUniverseVariant,
   getResponsiveTokenValue,
@@ -18,6 +20,13 @@ const theme = extendTheme({
     // Les couleurs d'univers sont intégrées via universeTokens.ts
   },
   components: {
+    // 🔘 BOUTONS ÉMOTIONNELS PAR UNIVERS
+    Button: universeButtonTheme,
+
+    // 📝 INPUTS ÉMOTIONNELS PAR UNIVERS
+    Input: universeInputTheme,
+
+    // Composants existants
     SharedProductPreviewCard,
     ProductGrid,
     UniverseSection,

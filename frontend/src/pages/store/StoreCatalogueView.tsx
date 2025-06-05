@@ -1,7 +1,7 @@
-import StoreShopInfoBadge from "@/components/business/shop/StoreShopInfoBadge";
 import { StorePageWrapper } from "@/components/features/store/content/StorePageWrapper";
 import type { Category, Product } from "@/types";
 import {
+  Badge,
   Box,
   Button,
   Flex,
@@ -15,7 +15,16 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SharedProductPreviewCard } from "../../components/business/product/SharedProductPreviewCard";
-import { useStoreHandlers, useStorePage } from "../../hooks";
+import {
+  useResponsiveEmotions,
+  useStoreHandlers,
+  useStorePage,
+  useUniverseAnimations,
+  useUniverseButton,
+  useUniverseColors,
+  useUniverseLayout,
+  useUniverseSignature,
+} from "../../hooks";
 import type { ProductFilters } from "../../services/adminProductService";
 import { getUniverseTokens } from "../../theme/universeTokens";
 
@@ -32,8 +41,20 @@ export default function StoreCatalogueView() {
   );
   const [filters, setFilters] = useState<ProductFilters>({});
 
-  // Tokens pour la thématisation automatique
-  const tokens = getUniverseTokens(currentShop?.shopType || "brewery");
+  // 🆕 HOOKS ÉMOTIONNELS INTÉGRÉS - avec fallback safe
+  const shopType = currentShop?.shopType || "brewery";
+  const tokens = getUniverseTokens(shopType);
+  const universeButton = useUniverseButton(shopType);
+  const universeColors = useUniverseColors(shopType);
+  const universeLayout = useUniverseLayout(shopType);
+  const responsiveEmotions = useResponsiveEmotions(shopType);
+  const animations = useUniverseAnimations(shopType);
+  const signature = useUniverseSignature(shopType);
+
+  // ✅ SÉCURITÉ : Vérification currentShop avant le rendu
+  if (!currentShop) {
+    return null; // ou un skeleton/loading si besoin
+  }
 
   // Obtenir les catégories uniques
   const categories: Category[] = Array.from(
@@ -98,131 +119,135 @@ export default function StoreCatalogueView() {
 
   return (
     <StorePageWrapper headerVariant="nav-only" redirectOnShopChange={true}>
-      {/* Badge d'informations boutique - En haut du contenu */}
-      <Flex justify={{ base: "center", md: "flex-end" }} w="full">
-        <Box maxW={{ base: "full", md: "400px" }}>
-          <StoreShopInfoBadge shop={currentShop!} variant="compact" />
-        </Box>
-      </Flex>
-
-      {/* En-tête catalogue avec tokens */}
-      <Box textAlign="center" py={8}>
-        <Heading
-          size="xl"
-          mb={4}
-          color={tokens.colors[800]}
-          fontFamily={tokens.typography.fontFamily.heading}
-        >
-          {tokens.meta.icon} Catalogue {currentShop?.name}
-        </Heading>
-        <Text
-          fontSize="lg"
-          color={tokens.colors[600]}
-          fontFamily={tokens.typography.fontFamily.body}
-        >
-          Découvrez tous nos produits ({shopProducts.length} articles)
-        </Text>
-      </Box>
-
-      {/* Barre de recherche et filtres avec styling universel */}
-      <Box w="full">
-        <HStack spacing={4} w="full" flexWrap="wrap" justify="center">
-          <Input
-            placeholder="Rechercher un produit..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            maxW="400px"
-            size="lg"
-            borderColor={tokens.colors[200]}
-            focusBorderColor={tokens.colors[400]}
-            borderRadius={tokens.borderRadius.base}
-          />
-
-          <Select
-            placeholder="Toutes les catégories"
-            value={selectedCategoryId || ""}
-            onChange={(e) => handleCategoryChange(e.target.value || null)}
-            maxW="250px"
-            size="lg"
-            borderColor={tokens.colors[200]}
-            focusBorderColor={tokens.colors[400]}
-            borderRadius={tokens.borderRadius.base}
-          >
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </Select>
-
-          <Button
-            onClick={handleResetFilters}
-            variant="outline"
-            size="lg"
-            colorScheme={tokens.meta.colorScheme}
-            borderRadius={tokens.borderRadius.base}
-            fontFamily={tokens.typography.fontFamily.body}
-          >
-            Réinitialiser
-          </Button>
-        </HStack>
-
-        {/* Résultats avec styling universel */}
-        <Flex justify="center" align="center" w="full" mt={6}>
-          <Text
-            color={tokens.colors[600]}
-            fontFamily={tokens.typography.fontFamily.body}
-          >
-            {filteredProducts.length} produit
-            {filteredProducts.length > 1 ? "s" : ""} trouvé
-            {filteredProducts.length > 1 ? "s" : ""}
-          </Text>
-        </Flex>
-      </Box>
-
-      {/* Grille des produits */}
-      <Box w="full">
-        {filteredProducts.length > 0 ? (
-          <SimpleGrid
-            columns={{
-              base: 1,
-              sm: 2,
-              md: 3,
-              lg: 4,
-            }}
-            spacing={6}
-          >
-            {filteredProducts.map((product: Product) => (
-              <SharedProductPreviewCard
-                key={product.id}
-                product={product}
-                shop={currentShop!}
-                onAddToCart={handleAddToCart}
-                onView={handleProductView}
-              />
-            ))}
-          </SimpleGrid>
-        ) : (
-          <Box textAlign="center" py={12}>
-            <Text
-              fontSize="lg"
-              color={tokens.colors[500]}
-              fontFamily={tokens.typography.fontFamily.body}
-              mb={4}
+      {/* Container avec signature background */}
+      <Box
+        {...universeLayout.getContainerProps()}
+        {...signature.getSignatureProps()}
+      >
+        {/* En-tête avec différenciateur visible */}
+        <Box textAlign="center" py={8} {...animations.getEntranceProps()}>
+          <Flex justify="center" align="center" gap={3} mb={4}>
+            <Text fontSize="3xl">{tokens.meta.icon}</Text>
+            <Heading
+              size="xl"
+              color={universeColors.primary}
+              fontFamily={tokens.typography.fontFamily.heading}
             >
-              Aucun produit ne correspond à vos critères
+              Catalogue {currentShop.name}
+            </Heading>
+            <Text fontSize="lg" color={universeColors.text.subtle}>
+              {signature.signature.visualElement}
             </Text>
+          </Flex>
+
+          {/* 🆕 BADGE DIFFÉRENCIATEUR UNIQUE */}
+          <Badge
+            variant="outline"
+            colorScheme={tokens.meta.colorScheme}
+            fontSize="xs"
+            px={3}
+            py={1}
+            borderRadius={tokens.borderRadius.base}
+          >
+            {signature.getDifferentiatorText()}
+          </Badge>
+        </Box>
+
+        {/* Barre de recherche et filtres avec styling universel */}
+        <Box w="full" {...animations.getStaggeredEntranceProps(1)}>
+          <HStack spacing={4} w="full" flexWrap="wrap" justify="center">
+            <Input
+              placeholder="Rechercher un produit..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              maxW="400px"
+              size="lg"
+              borderColor={universeColors.borders.light}
+              focusBorderColor={universeColors.primary}
+              borderRadius={tokens.borderRadius.base}
+              {...responsiveEmotions.getInputProps()}
+            />
+
+            <Select
+              placeholder="Toutes les catégories"
+              value={selectedCategoryId || ""}
+              onChange={(e) => handleCategoryChange(e.target.value || null)}
+              maxW="250px"
+              size="lg"
+              borderColor={universeColors.borders.light}
+              focusBorderColor={universeColors.primary}
+              borderRadius={tokens.borderRadius.base}
+              {...responsiveEmotions.getInputProps()}
+            >
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </Select>
+
             <Button
               onClick={handleResetFilters}
-              colorScheme={tokens.meta.colorScheme}
-              borderRadius={tokens.borderRadius.base}
-              fontFamily={tokens.typography.fontFamily.body}
-              fontWeight={tokens.typography.fontWeight.bold}
+              {...universeButton.getSecondaryProps()}
+              size="lg"
+              {...responsiveEmotions.getButtonProps()}
             >
-              Voir tous les produits
+              Réinitialiser
             </Button>
-          </Box>
-        )}
+          </HStack>
+
+          {/* Résultats avec couleurs contextuelles */}
+          <Flex justify="center" align="center" w="full" mt={6}>
+            <Text
+              color={universeColors.text.subtle}
+              fontFamily={tokens.typography.fontFamily.body}
+            >
+              {filteredProducts.length} produit
+              {filteredProducts.length > 1 ? "s" : ""} trouvé
+              {filteredProducts.length > 1 ? "s" : ""}
+            </Text>
+          </Flex>
+        </Box>
+
+        {/* Grille des produits avec layout émotionnel */}
+        <Box w="full" {...animations.getStaggeredEntranceProps(2)}>
+          {filteredProducts.length > 0 ? (
+            <SimpleGrid {...universeLayout.getGridProps()} spacing={6}>
+              {filteredProducts.map((product: Product, index: number) => (
+                <Box
+                  key={product.id}
+                  {...animations.getStaggeredEntranceProps(index, 0.05)}
+                  {...responsiveEmotions.getCardProps()}
+                >
+                  <SharedProductPreviewCard
+                    product={product}
+                    shop={currentShop}
+                    onAddToCart={handleAddToCart}
+                    onView={handleProductView}
+                  />
+                </Box>
+              ))}
+            </SimpleGrid>
+          ) : (
+            <Box textAlign="center" py={12}>
+              <Text
+                fontSize="lg"
+                color={universeColors.text.subtle}
+                fontFamily={tokens.typography.fontFamily.body}
+                mb={4}
+              >
+                Aucun produit ne correspond à vos critères
+              </Text>
+              <Button
+                onClick={handleResetFilters}
+                {...universeButton.getPrimaryProps()}
+                {...responsiveEmotions.getButtonProps()}
+              >
+                Voir tous les produits
+              </Button>
+            </Box>
+          )}
+        </Box>
       </Box>
     </StorePageWrapper>
   );

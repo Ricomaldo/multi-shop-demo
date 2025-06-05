@@ -1,5 +1,10 @@
-import type { Product, Shop } from "@/types";
+import {
+  useUniverseButton,
+  useUniverseColors,
+  useUniverseMicroInteractions,
+} from "@/hooks";
 import { getUniverseTokens } from "@/theme/universeTokens";
+import type { Product, Shop } from "@/types";
 import {
   Badge,
   Box,
@@ -8,9 +13,11 @@ import {
   Image,
   Text,
   VStack,
-  Wrap,
-  WrapItem,
 } from "@chakra-ui/react";
+import { motion } from "framer-motion";
+import { useUniverseSignature } from "../../../hooks";
+
+const MotionBox = motion.create(Box);
 
 export interface SharedProductPreviewCardProps {
   product: Product;
@@ -26,6 +33,16 @@ export interface SharedProductPreviewCardProps {
   priceOverride?: number;
 }
 
+/**
+ * Carte produit universelle avec thématisation automatique
+ * 🆕 INTÈGRE LES MICRO-INTERACTIONS ÉMOTIONNELLES PAR UNIVERS
+ *
+ * Réactions différenciées :
+ * - Brewery: Clics solides, pas de mouvement
+ * - TeaShop: Lévitation zen, transitions fluides
+ * - Beauty: Effets sophistiqués, micro-expansions
+ * - Herb: Scale naturel, simplicité organique
+ */
 export const SharedProductPreviewCard: React.FC<
   SharedProductPreviewCardProps
 > = ({
@@ -33,94 +50,36 @@ export const SharedProductPreviewCard: React.FC<
   shop,
   onAddToCart,
   onView,
-  onEdit,
-  imageHeight = "200px",
   isHighlighted = false,
-  isAdminMode = false,
-  showActions = true,
   priceOverride,
 }) => {
+  // 🎯 TOKENS DIRECTS - Plus de mapping !
   const tokens = getUniverseTokens(shop.shopType);
+  const colors = useUniverseColors(shop.shopType);
+
+  // 🆕 MICRO-INTERACTIONS ÉMOTIONNELLES
+  const { getCardHoverProps, getEmotionalContext, emotions } =
+    useUniverseMicroInteractions(shop.shopType);
+
+  // 🔘 BOUTONS ÉMOTIONNELS
+  const { getPrimaryProps } = useUniverseButton(shop.shopType);
+
+  const signature = useUniverseSignature(shop.shopType);
 
   // Prix réactif : utilise override ou prix du produit
   const displayPrice =
-    priceOverride !== undefined ? priceOverride : product.price;
+    priceOverride !== undefined
+      ? priceOverride
+      : product.price?.toFixed(2) || "0.00";
 
-  // Parser IBU pour enlever "IBU" si présent
-  const parseIBU = (value: string) => {
-    if (!value) return value;
-    return value.replace(/ ?IBU/gi, "").trim();
+  // Statut stock simple
+  const getStockBadgeColor = () => {
+    if (product.stockStatus === "in_stock") return "green";
+    if (product.stockStatus === "low_stock") return "orange";
+    return "red";
   };
 
-  // Badges attributs selon l'univers
-  const getUniverseBadges = () => {
-    if (!product.attributes) return [];
-
-    try {
-      const attrs = JSON.parse(product.attributes);
-
-      switch (shop.shopType) {
-        case "brewery":
-          return [
-            attrs.degre_alcool && {
-              label: `${attrs.degre_alcool}%`,
-              colorScheme: tokens.meta.colorScheme,
-            },
-            attrs.amertume_ibu && {
-              label: `${parseIBU(attrs.amertume_ibu)} IBU`,
-              colorScheme: "yellow",
-            },
-          ].filter(Boolean);
-
-        case "teaShop":
-          return [
-            attrs.origine_plantation && {
-              label: attrs.origine_plantation,
-              colorScheme: tokens.meta.colorScheme,
-            },
-            attrs.grade_qualite && {
-              label: attrs.grade_qualite,
-              colorScheme: "teal",
-            },
-          ].filter(Boolean);
-
-        case "beautyShop":
-          return [
-            attrs.certification_bio === "true" ||
-              (attrs.certification_bio === true && {
-                label: "Bio",
-                colorScheme: "green",
-              }),
-            attrs.type_peau && {
-              label: attrs.type_peau,
-              colorScheme: tokens.meta.colorScheme,
-            },
-          ].filter(Boolean);
-
-        case "herbShop":
-          return [
-            attrs.usage_traditionnel && {
-              label: attrs.usage_traditionnel,
-              colorScheme: tokens.meta.colorScheme,
-            },
-            attrs.certification &&
-              attrs.certification !== "Non certifié" && {
-                label: attrs.certification,
-                colorScheme: "teal",
-              },
-          ].filter(Boolean);
-
-        default:
-          return [];
-      }
-    } catch {
-      return [];
-    }
-  };
-
-  const universeBadges = getUniverseBadges();
-
-  // 🎨 STYLES DIRECTEMENT ISSUS DES TOKENS/COLORS
+  // 🎨 STYLES DIRECTEMENT ISSUS DES TOKENS/COLORS + MICRO-INTERACTIONS
   const cardStyles = {
     // Background selon univers
     bg: tokens.colors[50],
@@ -132,73 +91,126 @@ export const SharedProductPreviewCard: React.FC<
     fontFamily: tokens.typography.fontFamily.body,
     // Padding selon tokens
     p: 4,
-    // Hover effects selon l'univers
-    _hover: {
-      borderColor: tokens.colors[300],
-      bg: tokens.colors[100],
-      transform:
-        shop.shopType === "brewery"
-          ? "none"
-          : shop.shopType === "teaShop"
-          ? "translateY(-2px)"
-          : shop.shopType === "beautyShop"
-          ? "translateY(-1px)"
-          : "scale(1.02)", // herbShop
-      transition: "all 0.3s ease",
-      boxShadow: shop.shopType === "beautyShop" ? "lg" : "md",
-    },
+    // 🆕 MICRO-INTERACTIONS ÉMOTIONNELLES AUTOMATIQUES
+    ...getCardHoverProps(),
+    // 🆕 CONTEXTE ÉMOTIONNEL (data attributes pour debug)
+    ...getEmotionalContext(),
+    // Animations selon l'univers et la personnalité
+    transition: `all ${
+      emotions.rhythm === "slow"
+        ? "0.6s"
+        : emotions.rhythm === "precise"
+        ? "0.3s"
+        : "0.25s"
+    } ease`,
+  };
+
+  // Animations d'entrée selon la personnalité émotionnelle
+  const getEntryAnimation = () => {
+    switch (emotions.personality) {
+      case "authentic": // Brewery - Direct et franc
+        return {
+          initial: { opacity: 0, scale: 0.9 },
+          animate: { opacity: 1, scale: 1 },
+          transition: { type: "spring", stiffness: 300, damping: 25 },
+        };
+      case "serene": // TeaShop - Doux et fluide
+        return {
+          initial: { opacity: 0, y: 20 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.6, ease: "easeOut" },
+        };
+      case "sophisticated": // Beauty - Précis et raffiné
+        return {
+          initial: { opacity: 0, scale: 0.95 },
+          animate: { opacity: 1, scale: 1 },
+          transition: { duration: 0.4, ease: "easeInOut" },
+        };
+      case "sincere": // Herb - Simple et naturel
+        return {
+          initial: { opacity: 0 },
+          animate: { opacity: 1 },
+          transition: { duration: 0.3, ease: "linear" },
+        };
+      default:
+        return {
+          initial: { opacity: 0 },
+          animate: { opacity: 1 },
+          transition: { duration: 0.3 },
+        };
+    }
   };
 
   return (
-    <Box {...cardStyles} overflow="hidden" height="100%">
-      <Image
-        src={product.imageUrl}
-        alt={product.name}
-        height={{ base: "180px", md: imageHeight }}
-        width="100%"
-        objectFit="cover"
-        borderRadius={tokens.borderRadius.md}
-        mb={3}
-        onError={() => console.log("❌ Erreur image:", product.imageUrl)}
-      />
+    <MotionBox
+      {...cardStyles}
+      {...getEntryAnimation()}
+      cursor="pointer"
+      onClick={() => onView?.(product)}
+      height="100%"
+      display="flex"
+      flexDirection="column"
+      {...signature.getSignatureProps()}
+    >
+      {/* Image avec interactions spécifiques */}
+      <Box position="relative" mb={3}>
+        <Image
+          src={product.imageUrl || "/images/products/placeholder.jpg"}
+          alt={product.name}
+          w="100%"
+          h="200px"
+          objectFit="cover"
+          borderRadius={tokens.borderRadius.md}
+          loading="lazy"
+          // Effet image selon l'émotion
+          filter={emotions.texture === "refined" ? "brightness(1.05)" : "none"}
+          transition={`all ${
+            emotions.rhythm === "slow" ? "0.6s" : "0.3s"
+          } ease`}
+        />
 
-      <VStack spacing={3} align="stretch">
+        {/* Badge stock avec couleurs émotionnelles */}
+        {product.stockStatus && (
+          <Badge
+            position="absolute"
+            top={2}
+            right={2}
+            colorScheme={getStockBadgeColor()}
+            borderRadius={tokens.borderRadius.base}
+            fontSize="xs"
+            fontWeight={tokens.typography.fontWeight.bold}
+          >
+            {product.stockStatus === "in_stock"
+              ? "En stock"
+              : product.stockStatus === "low_stock"
+              ? "Stock limité"
+              : "Rupture"}
+          </Badge>
+        )}
+      </Box>
+
+      {/* Contenu avec typography émotionnelle */}
+      <VStack align="stretch" spacing={3} flex={1}>
         <Text
-          fontSize={isHighlighted ? "xl" : "lg"}
+          fontSize={isHighlighted ? "lg" : "md"}
           fontWeight={tokens.typography.fontWeight.bold}
+          color={tokens.colors[800]}
           fontFamily={tokens.typography.fontFamily.heading}
           noOfLines={2}
-          color={tokens.colors[800]}
+          lineHeight={emotions.rhythm === "slow" ? "relaxed" : "normal"}
         >
           {product.name}
         </Text>
 
-        {/* Description avec typography de l'univers */}
-        <Text
-          fontSize="sm"
-          color={tokens.colors[600]}
-          fontFamily={tokens.typography.fontFamily.body}
-          fontWeight={tokens.typography.fontWeight.normal}
-        >
-          {product.description}
-        </Text>
-
-        {/* Badges attributs par univers */}
-        {universeBadges.length > 0 && (
-          <Wrap spacing={1}>
-            {universeBadges.map((badge, idx) => (
-              <WrapItem key={idx}>
-                <Badge
-                  colorScheme={badge.colorScheme}
-                  size="sm"
-                  variant="subtle"
-                  borderRadius={tokens.borderRadius.base}
-                >
-                  {badge.label}
-                </Badge>
-              </WrapItem>
-            ))}
-          </Wrap>
+        {product.description && (
+          <Text
+            fontSize="sm"
+            color={tokens.colors[600]}
+            fontFamily={tokens.typography.fontFamily.body}
+            noOfLines={2}
+          >
+            {product.description}
+          </Text>
         )}
 
         <HStack justify="space-between" align="center">
@@ -210,85 +222,39 @@ export const SharedProductPreviewCard: React.FC<
           >
             {displayPrice}€
           </Text>
-
-          {product.stockStatus && (
-            <Badge
-              colorScheme={
-                product.stockStatus === "in_stock"
-                  ? "green"
-                  : product.stockStatus === "low_stock"
-                  ? "orange"
-                  : "red"
-              }
-              borderRadius={tokens.borderRadius.base}
-            >
-              {product.stockStatus === "in_stock"
-                ? "En stock"
-                : product.stockStatus === "low_stock"
-                ? "Stock limité"
-                : "Rupture"}
-            </Badge>
-          )}
         </HStack>
 
-        {/* Actions avec styles de l'univers */}
-        {showActions && (
-          <VStack spacing={3} pt={3}>
-            {!isAdminMode ? (
-              <HStack spacing={3} w="full">
-                {onView && (
-                  <Button
-                    flex={1}
-                    variant="outline"
-                    colorScheme={tokens.meta.colorScheme}
-                    size={{ base: "sm", md: "md" }}
-                    minH="44px"
-                    fontFamily={tokens.typography.fontFamily.body}
-                    borderRadius={tokens.borderRadius.base}
-                    onClick={() => onView(product)}
-                  >
-                    Voir
-                  </Button>
-                )}
-                {onAddToCart && (
-                  <Button
-                    variant="solid"
-                    colorScheme={tokens.meta.colorScheme}
-                    size={{ base: "sm", md: "md" }}
-                    minH="44px"
-                    fontFamily={tokens.typography.fontFamily.body}
-                    fontWeight={tokens.typography.fontWeight.bold}
-                    borderRadius={tokens.borderRadius.base}
-                    onClick={() => onAddToCart(product)}
-                    disabled={product.stockStatus === "out_of_stock"}
-                  >
-                    {product.stockStatus === "out_of_stock"
-                      ? "Rupture"
-                      : "Ajouter"}
-                  </Button>
-                )}
-              </HStack>
-            ) : (
-              <HStack spacing={3} w="full">
-                {onEdit && (
-                  <Button
-                    flex={1}
-                    variant="outline"
-                    colorScheme="blue"
-                    size={{ base: "md", md: "sm" }}
-                    onClick={() => onEdit(product)}
-                    borderRadius={tokens.borderRadius.base}
-                    minH="44px"
-                    fontSize={{ base: "sm", md: "md" }}
-                  >
-                    Modifier
-                  </Button>
-                )}
-              </HStack>
-            )}
-          </VStack>
+        {/* 🔘 BOUTON ÉMOTIONNEL AUTOMATIQUE */}
+        {onAddToCart && (
+          <Button
+            {...getPrimaryProps()}
+            size="sm"
+            w="full"
+            mt="auto"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart(product);
+            }}
+            disabled={product.stockStatus === "out_of_stock"}
+          >
+            {product.stockStatus === "out_of_stock"
+              ? "Rupture"
+              : "Ajouter au panier"}
+          </Button>
         )}
       </VStack>
-    </Box>
+
+      {/* 🆕 ÉLÉMENT SIGNATURE VISUEL DISCRET */}
+      <Box
+        position="absolute"
+        top={2}
+        left={2}
+        fontSize="xs"
+        opacity={0.6}
+        color={colors.text.subtle}
+      >
+        {signature.signature.visualElement}
+      </Box>
+    </MotionBox>
   );
 };

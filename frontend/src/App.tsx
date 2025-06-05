@@ -5,6 +5,7 @@ import Categories from "./pages/admin/Categories";
 import Dashboard from "./pages/admin/Dashboard";
 import Products from "./pages/admin/Products";
 import Settings from "./pages/admin/Settings";
+import EmotionalSystemDemo from "./pages/EmotionalSystemDemo";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import StoreCatalogueView from "./pages/store/StoreCatalogueView";
@@ -26,6 +27,7 @@ export default function App() {
     <Routes>
       {/* ==== ROUTES PUBLIQUES ==== */}
       <Route path="/" element={<Home />} />
+      <Route path="/demo" element={<EmotionalSystemDemo />} />
 
       {/* ==== ROUTES ADMIN ==== */}
       <Route

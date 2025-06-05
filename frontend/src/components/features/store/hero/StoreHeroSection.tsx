@@ -1,5 +1,7 @@
-import type { Shop } from "@/types";
+import { useShopContent, useUniverseColors } from "@/hooks";
+import { useUniverseSignature } from "@/hooks/useUniverseSignature";
 import { getUniverseTokens } from "@/theme/universeTokens";
+import type { Shop } from "@/types";
 import { Box, Container, Heading, Text, VStack } from "@chakra-ui/react";
 
 interface StoreHeroSectionProps {
@@ -25,9 +27,13 @@ export default function StoreHeroSection({
 }: StoreHeroSectionProps) {
   // 🎯 APPLICATION DIRECTE shopType → tokens (plus de mapping !)
   const tokens = getUniverseTokens(shop.shopType);
+  const colors = useUniverseColors(shop.shopType);
 
-  // Images par défaut selon le shopType (depuis tokens)
-  const heroImage = imagePath || tokens.imagePaths.hero;
+  // 🎯 Récupération de l'image hero depuis shop_content.json
+  const { heroImage: contentHeroImage } = useShopContent(shop.shopType);
+
+  // Images par défaut selon le shopType - priorité : imagePath prop > shop_content.json > tokens
+  const heroImage = imagePath || contentHeroImage || tokens.imagePaths.hero;
 
   // Overlay selon le shopType (plus subtil pour TeaShop, plus marqué pour Brewery)
   const overlayColor = (() => {
@@ -78,6 +84,7 @@ export default function StoreHeroSection({
   };
 
   const spacing = getResponsiveSpacing();
+  const signature = useUniverseSignature(shop.shopType);
 
   return (
     <Box
@@ -89,6 +96,15 @@ export default function StoreHeroSection({
       backgroundAttachment={{ base: "scroll", md: "fixed" }}
       overflow="hidden"
       borderRadius={tokens.borderRadius.base}
+      _before={{
+        content: `"${signature.signature.visualElement}"`,
+        position: "absolute",
+        top: "8px",
+        right: "12px",
+        fontSize: "xs",
+        opacity: 0.6,
+        color: tokens.colors[600],
+      }}
     >
       {overlay && (
         <Box
@@ -120,6 +136,14 @@ export default function StoreHeroSection({
           maxW="4xl"
           px={{ base: 4, md: 0 }}
         >
+          <Text
+            fontSize="sm"
+            color={colors.text.subtle}
+            textAlign="center"
+            fontStyle="italic"
+          >
+            {signature.signature.description}
+          </Text>
           <Heading
             as="h1"
             size={{ base: "xl", md: "2xl", lg: "3xl" }}

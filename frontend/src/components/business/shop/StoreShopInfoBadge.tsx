@@ -1,6 +1,7 @@
 import { useOpeningStatus } from "@/hooks/useOpeningStatus";
-import { getUniverseTokens, type ShopType } from "@/theme/universeTokens";
+import { getUniverseTokens } from "@/theme/universeTokens";
 import type { Shop } from "@/types/index";
+import { getStatusColors } from "@/utils/universeUtilities";
 import {
   Badge,
   Box,
@@ -40,33 +41,37 @@ export default function StoreShopInfoBadge({
   showOpeningStatus = true,
 }: StoreShopInfoBadgeProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
-
-  // 🎯 APPLICATION DIRECTE shopType → tokens (plus de mapping !)
   const tokens = getUniverseTokens(shop.shopType);
+  const statusColors = getStatusColors(shop.shopType);
   const { isOpen: shopIsOpen, nextOpeningTime } = useOpeningStatus(
     shop.openingHours
   );
 
   const getUniverseLabel = (shopType: string) => {
-    const tokens = getUniverseTokens(shopType as ShopType);
-    return `${tokens.meta.icon} ${tokens.meta.displayName}`;
+    const labels = {
+      brewery: "Brasserie",
+      teaShop: "Salon de Thé",
+      beautyShop: "Institut",
+      herbShop: "Herboristerie",
+    };
+    return labels[shopType as keyof typeof labels] || shopType;
   };
 
   // Version minimaliste - juste le statut
   if (variant === "minimal") {
     return (
-      <HStack spacing={3}>
+      <HStack spacing={2}>
         <Badge
           colorScheme={shopIsOpen ? "green" : "red"}
           borderRadius="full"
-          fontSize="sm"
-          px={4}
-          py={2}
+          fontSize="xs"
+          px={3}
+          py={1}
           fontWeight="bold"
           display="flex"
           alignItems="center"
           gap={2}
-          transition="all 0.3s ease"
+          transition={tokens.animations.transition}
           _hover={{
             transform: tokens.animations.enableOnMobile
               ? "none"
@@ -77,8 +82,12 @@ export default function StoreShopInfoBadge({
             w="8px"
             h="8px"
             borderRadius="full"
-            bg={shopIsOpen ? "green.400" : "red.400"}
-            animation={shopIsOpen ? "pulse 2s infinite" : "none"}
+            bg={shopIsOpen ? statusColors.open.bg : statusColors.closed.bg}
+            animation={
+              shopIsOpen && statusColors.open.pulse
+                ? "pulse 2s infinite"
+                : "none"
+            }
           />
           {shopIsOpen ? "Ouvert" : "Fermé"}
         </Badge>
@@ -106,7 +115,7 @@ export default function StoreShopInfoBadge({
           left: 0,
           width: "4px",
           height: "100%",
-          bg: shopIsOpen ? "green.400" : "red.400",
+          bg: shopIsOpen ? statusColors.open.bg : statusColors.closed.bg,
           transition: "all 0.3s ease",
         }}
         _hover={{
@@ -148,8 +157,12 @@ export default function StoreShopInfoBadge({
                 w="8px"
                 h="8px"
                 borderRadius="full"
-                bg={shopIsOpen ? "green.400" : "red.400"}
-                animation={shopIsOpen ? "pulse 2s infinite" : "none"}
+                bg={shopIsOpen ? statusColors.open.bg : statusColors.closed.bg}
+                animation={
+                  shopIsOpen && statusColors.open.pulse
+                    ? "pulse 2s infinite"
+                    : "none"
+                }
               />
               {shopIsOpen ? "Ouvert" : "Fermé"}
             </Badge>
@@ -278,8 +291,12 @@ export default function StoreShopInfoBadge({
                 w="10px"
                 h="10px"
                 borderRadius="full"
-                bg={shopIsOpen ? "green.400" : "red.400"}
-                animation={shopIsOpen ? "pulse 2s infinite" : "none"}
+                bg={shopIsOpen ? statusColors.open.bg : statusColors.closed.bg}
+                animation={
+                  shopIsOpen && statusColors.open.pulse
+                    ? "pulse 2s infinite"
+                    : "none"
+                }
               />
               {shopIsOpen ? "Ouvert" : "Fermé"}
             </Badge>
