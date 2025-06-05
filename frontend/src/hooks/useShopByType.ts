@@ -1,6 +1,6 @@
-import { useMemo } from "react";
 import type { Product, Shop, ShopType } from "@/types";
-import { useShopData } from "./useShopData";
+import { useMemo } from "react";
+import { useStoreDataQuery } from "./useStoreDataQuery";
 
 interface UseShopByTypeReturn {
   shop: Shop | null;
@@ -10,7 +10,7 @@ interface UseShopByTypeReturn {
 }
 
 export const useShopByType = (shopType: ShopType): UseShopByTypeReturn => {
-  const { shops, loading, error, getProductsByShop } = useShopData();
+  const { shops, loading, error, getProductsByShop } = useStoreDataQuery();
 
   const result = useMemo(() => {
     const shop = shops.find((s) => s.shopType === shopType) || null;

@@ -14,13 +14,15 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useEffect, useMemo, useState } from "react";
-import { useAdminContext, useShopData } from "../../hooks";
+import { useAdminContext } from "../../hooks";
+import { useStoreDataQuery } from "../../hooks/useStoreDataQuery";
 import { getUniverseTokens } from "../../theme/universeTokens";
 
 export default function Dashboard() {
   const { selectedShopType, selectedShop, loading, error } = useAdminContext();
 
-  const { products } = useShopData();
+  // 🚀 Récupérer les produits via React Query
+  const { products } = useStoreDataQuery();
   const tokens = getUniverseTokens(selectedShopType);
 
   const [shopProducts, setShopProducts] = useState<Product[]>([]);

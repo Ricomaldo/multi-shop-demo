@@ -25,7 +25,8 @@ import {
 import { useMemo, useState } from "react";
 import AdminShopForm from "../../components/features/admin/shop/AdminShopForm";
 import LoadingState from "../../components/ui/LoadingState";
-import { useAdminShop, useShopData } from "../../hooks";
+import { useAdminShop } from "../../hooks";
+import { useStoreDataQuery } from "../../hooks/useStoreDataQuery";
 
 interface ShopSettings {
   isActive: boolean;
@@ -48,7 +49,7 @@ export default function Settings() {
   const toast = useToast();
 
   const { shop: activeShop } = useAdminShop();
-  const { products } = useShopData();
+  const { products } = useStoreDataQuery();
 
   const colorScheme = "purple";
 

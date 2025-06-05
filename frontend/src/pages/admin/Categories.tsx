@@ -31,7 +31,8 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import LoadingState from "../../components/ui/LoadingState";
-import { useAdminShop, useShopData } from "../../hooks";
+import { useAdminShop } from "../../hooks";
+import { useStoreDataQuery } from "../../hooks/useStoreDataQuery";
 import adminCategoriesService, {
   type CategoryWithStats,
 } from "../../services/adminCategoriesService";
@@ -59,7 +60,7 @@ export default function Categories() {
   const toast = useToast();
 
   const { shop: activeShop } = useAdminShop();
-  const { products, loading, error } = useShopData();
+  const { products, loading, error } = useStoreDataQuery();
 
   const colorScheme = "green";
 

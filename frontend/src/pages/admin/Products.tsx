@@ -1,3 +1,4 @@
+import { useStoreDataQuery } from "@/hooks/useStoreDataQuery";
 import type { Product } from "@/types";
 import { SearchIcon } from "@chakra-ui/icons";
 import {
@@ -34,7 +35,6 @@ import LoadingState from "../../components/ui/LoadingState";
 import {
   useAdminShop,
   useAdvancedProductFilters,
-  useShopData,
   useUniverseAnimations,
   useUniverseButton,
   useUniverseColors,
@@ -58,14 +58,16 @@ export default function Products() {
   const toast = useToast();
 
   const { shop: activeShop } = useAdminShop();
-  const { products, loading, refreshData } = useShopData();
+  const { products, loading, refetch } = useStoreDataQuery();
 
   // 🆕 HOOKS ÉMOTIONNELS POUR ADMIN
   const shopType = activeShop?.shopType || "brewery";
   const tokens = getUniverseTokens(shopType);
   const universeButton = useUniverseButton(shopType);
   const universeColors = useUniverseColors(shopType);
-  const animations = useUniverseAnimations(shopType);
+  const universeAnimations = useUniverseAnimations(
+    activeShop?.shopType || "brewery"
+  );
 
   // Filtrer les produits pour la boutique active
   const shopProducts = useMemo(
@@ -119,8 +121,6 @@ export default function Products() {
 
     setIsLoading(true);
     try {
-      // Simulation API - Dans un vrai projet, appel backend
-      console.log("Suppression du produit:", productToDelete.id);
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       toast({
@@ -130,7 +130,7 @@ export default function Products() {
         duration: 3000,
       });
 
-      refreshData();
+      refetch();
       onDeleteClose();
       setProductToDelete(null);
     } catch {
@@ -148,20 +148,10 @@ export default function Products() {
   const handleSave = async (productData: Partial<Product>) => {
     setIsLoading(true);
 
-    // Debug logging
-    console.log("🔧 [DEBUG] handleSave appelée avec:", productData);
-    console.log("🔧 [DEBUG] editingProduct:", editingProduct);
-    console.log("🔧 [DEBUG] activeShop:", activeShop);
-
     try {
       if (!editingProduct?.id || !activeShop?.id) {
         throw new Error("Produit ou boutique manquant");
       }
-
-      // Log avant appel API
-      console.log("🔧 [DEBUG] Appel API updateProduct...");
-      console.log("🔧 [DEBUG] Endpoint:", `/api/products/${editingProduct.id}`);
-      console.log("🔧 [DEBUG] Payload:", JSON.stringify(productData, null, 2));
 
       // Conversion des attributes string JSON vers objet pour l'API
       const apiData = {
@@ -187,9 +177,8 @@ export default function Products() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const updatedProduct = await response.json();
-
       // Log réponse serveur
+      const updatedProduct = await response.json();
       console.log("✅ [DEBUG] Réponse serveur:", updatedProduct);
 
       toast({
@@ -201,7 +190,7 @@ export default function Products() {
 
       setEditingProduct(null);
       setSelectedProduct(null);
-      refreshData();
+      refetch();
     } catch (error) {
       // Log erreur détaillée
       console.error("❌ [DEBUG] Erreur lors de la sauvegarde:", error);
@@ -246,7 +235,7 @@ export default function Products() {
   }
 
   return (
-    <Box p={{ base: 4, md: 8 }} {...animations.getEntranceProps()}>
+    <Box p={{ base: 4, md: 8 }} {...universeAnimations.getEntranceProps()}>
       <VStack spacing={8} align="stretch">
         {/* En-tête avec filtres */}
         <Card>

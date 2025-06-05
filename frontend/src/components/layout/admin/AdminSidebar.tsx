@@ -1,5 +1,6 @@
 import AdminShopSelector from "@/components/business/shop/AdminShopSelector";
-import { useAdminShop, useShopData } from "@/hooks";
+import { useAdminShop } from "@/hooks";
+import { useStoreDataQuery } from "@/hooks/useStoreDataQuery";
 import {
   Box,
   Flex,
@@ -45,7 +46,7 @@ export default function AdminSidebar({
   onToggleCollapse,
 }: AdminSidebarProps) {
   const location = useLocation();
-  const { shops } = useShopData();
+  const { shops } = useStoreDataQuery();
   const { universe, setUniverse, shop, setShop } = useAdminShop();
 
   // Responsive

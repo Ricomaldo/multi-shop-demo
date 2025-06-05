@@ -1,6 +1,7 @@
 import React, { createContext, useEffect, useState } from "react";
 import type { Shop, ShopType } from "../../../shared/types";
-import { useShopData } from "../hooks/useShopData";
+import { useStoreDataQuery } from "../hooks/useStoreDataQuery";
+import { demoforgeStorage } from "../utils/storage";
 
 export interface AdminContextValue {
   // État de l'univers/shopType DIRECT (plus besoin UniverseContext)
@@ -40,51 +41,47 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   // Hooks
-  const { shops, loading, refreshData } = useShopData();
+  const { shops, loading, refetch } = useStoreDataQuery();
 
   // Filtrer les boutiques selon le shopType DIRECT
   const availableShops = shops.filter(
     (shop) => shop.shopType === selectedShopType
   );
 
-  // Persistence admin avec clés spécifiques (logique préservée)
-  const SHOPTYPE_STORAGE_KEY = "demoforge_admin_shoptype";
-  const SHOP_STORAGE_KEY = `demoforge_admin_shop_${selectedShopType}`;
-
+  // 🚀 Utilisation du nouveau système de storage
   // Wrapper setShopType avec persistence
   const setSelectedShopType = (newShopType: ShopType) => {
     setSelectedShopTypeState(newShopType);
-    localStorage.setItem(SHOPTYPE_STORAGE_KEY, newShopType);
+    demoforgeStorage.admin.setShopType(newShopType);
   };
 
   // Setter avec persistence pour la boutique + refresh des données
   const setSelectedShop = async (shop: Shop | null) => {
     setSelectedShopState(shop);
     if (shop) {
-      localStorage.setItem(SHOP_STORAGE_KEY, shop.id);
+      demoforgeStorage.admin.setSelectedShop(selectedShopType, shop.id);
       // Refresh des données pour la nouvelle boutique
-      await refreshData();
+      await refetch();
     } else {
-      localStorage.removeItem(SHOP_STORAGE_KEY);
+      demoforgeStorage.admin.clearShop(selectedShopType);
     }
     setError(null);
   };
 
   // Restauration persistence admin au démarrage
   useEffect(() => {
-    const storedShopType = localStorage.getItem(
-      SHOPTYPE_STORAGE_KEY
-    ) as ShopType;
+    const storedShopType = demoforgeStorage.admin.getShopType() as ShopType;
 
     if (storedShopType && storedShopType !== selectedShopType) {
       setSelectedShopTypeState(storedShopType);
     }
   }, [selectedShopType]);
 
-  // Effet pour restaurer la boutique depuis localStorage
+  // Effet pour restaurer la boutique depuis storage
   useEffect(() => {
     if (!loading && availableShops.length > 0) {
-      const storedShopId = localStorage.getItem(SHOP_STORAGE_KEY);
+      const storedShopId =
+        demoforgeStorage.admin.getSelectedShop(selectedShopType);
 
       if (storedShopId) {
         const storedShop = availableShops.find(
@@ -98,9 +95,12 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({
 
       // Fallback: première boutique disponible
       setSelectedShopState(availableShops[0]);
-      localStorage.setItem(SHOP_STORAGE_KEY, availableShops[0].id);
+      demoforgeStorage.admin.setSelectedShop(
+        selectedShopType,
+        availableShops[0].id
+      );
     }
-  }, [availableShops, loading, SHOP_STORAGE_KEY]);
+  }, [availableShops, loading, selectedShopType]);
 
   // Réinitialiser la boutique quand le shopType change
   useEffect(() => {

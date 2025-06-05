@@ -1,7 +1,7 @@
+import type { Shop, ShopType } from "@/types";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import type { Shop, ShopType } from "@/types";
-import { useShopData } from "./useShopData";
+import { useStoreDataQuery } from "./useStoreDataQuery";
 
 interface UseStorePageOptions {
   redirectOnShopChange?: boolean;
@@ -11,7 +11,7 @@ interface UseStorePageOptions {
 export function useStorePage(options: UseStorePageOptions = {}) {
   const { shopType } = useParams<{ shopType: string }>();
   const navigate = useNavigate();
-  const { shops, products, loading, refreshData } = useShopData();
+  const { shops, products, loading, refetch } = useStoreDataQuery();
 
   const [currentShop, setCurrentShop] = useState<Shop | null>(null);
   const [availableShops, setAvailableShops] = useState<Shop[]>([]);
@@ -54,10 +54,10 @@ export function useStorePage(options: UseStorePageOptions = {}) {
       }
 
       // Refresh des données
-      await refreshData();
+      await refetch();
       setIsChanging(false);
     },
-    [refreshData, navigate, options.redirectOnShopChange]
+    [refetch, navigate, options.redirectOnShopChange]
   );
 
   // Produits de la boutique courante

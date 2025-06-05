@@ -1,3 +1,4 @@
+import type { Product, Shop } from "@/types";
 import {
   Box,
   Button,
@@ -12,7 +13,6 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import type { Product, Shop } from "@/types";
 import { SharedProductPreviewCard } from "../../components/business/product/SharedProductPreviewCard";
 import StoreHeader from "../../components/layout/store/StoreHeader";
 import StoreLayout from "../../components/layout/store/StoreLayout";
@@ -45,8 +45,6 @@ const StoreHerbShop = () => {
 
   // Grouper les produits par catégorie (simple et fiable)
   const productsByCategory = useMemo(() => {
-    console.log(`[HerbShop] Produits total: ${products.length}`);
-
     const grouped: Record<
       string,
       { products: Product[]; icon: string; description: string }
@@ -102,7 +100,6 @@ const StoreHerbShop = () => {
       grouped[categoryName].products.push(product);
     });
 
-    console.log(`[HerbShop] Catégories trouvées:`, Object.keys(grouped));
     return grouped;
   }, [products]);
 

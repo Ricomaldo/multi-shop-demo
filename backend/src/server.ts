@@ -40,6 +40,73 @@ app.get("/api/shops", async (req, res) => {
   }
 });
 
+// 🚀 NOUVEL ENDPOINT UNIFIÉ - Remplace 40 appels par 1 seul
+app.get("/api/store/data", async (req, res) => {
+  try {
+    console.log("🎯 /api/store/data - Chargement unifié des données");
+
+    // 1. Charger toutes les boutiques avec leurs catégories
+    const shops = await prisma.shop.findMany({
+      include: { categories: true },
+    });
+
+    // 2. Charger TOUS les produits de TOUTES les boutiques en 1 seule requête
+    const products = await prisma.product.findMany({
+      include: {
+        category: true,
+        shop: {
+          select: {
+            id: true,
+            name: true,
+            shopType: true,
+          },
+        },
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    // 3. Charger toutes les catégories
+    const categories = await prisma.category.findMany({
+      include: {
+        shop: {
+          select: {
+            id: true,
+            name: true,
+            shopType: true,
+          },
+        },
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    const responseData = {
+      shops,
+      products,
+      categories,
+      meta: {
+        shopsCount: shops.length,
+        productsCount: products.length,
+        categoriesCount: categories.length,
+        timestamp: new Date().toISOString(),
+      },
+    };
+
+    console.log(
+      `✅ /api/store/data - Retour ${shops.length} shops, ${products.length} products, ${categories.length} categories`
+    );
+    res.json(responseData);
+  } catch (error) {
+    console.error("❌ Erreur /api/store/data:", error);
+    res
+      .status(500)
+      .json({ error: "Erreur serveur lors du chargement des données" });
+  }
+});
+
 app.get("/api/shops/:shopId", async (req, res) => {
   try {
     const { shopId } = req.params;
@@ -64,14 +131,12 @@ app.get("/api/shops/:shopId/products", async (req, res) => {
   try {
     const { shopId } = req.params;
 
-
     const products = await prisma.product.findMany({
       where: { shopId },
       include: { category: true },
     });
 
     res.json(products);
-
   } catch (error) {
     console.error("Erreur /api/shops/:shopId/products:", error);
     res.status(500).json({ error: "Erreur serveur" });
