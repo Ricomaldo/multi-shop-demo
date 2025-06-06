@@ -30,15 +30,12 @@ const API_BASE_URL =
 
 // Fonction fetch réutilisable
 const fetchStoreData = async (): Promise<StoreDataResponse> => {
-  console.log("🚀 React Query - Fetch /api/store/data");
-
   const response = await fetch(`${API_BASE_URL}/store/data`);
   if (!response.ok) {
     throw new Error(`Erreur store/data: ${response.status}`);
   }
 
   const data = await response.json();
-  console.log("✅ React Query - Données reçues:", data.meta);
 
   return data;
 };
@@ -90,13 +87,6 @@ export const useStoreDataQuery = (): UseStoreDataReturn => {
       products: enrichedProducts,
     };
   }, [data]);
-
-  // Log de debug détaillé
-  console.log(
-    `🎯 useStoreDataQuery - ${processedData.shops.length} shops, ${
-      processedData.products.length
-    } products (cached: ${!loading})`
-  );
 
   return {
     shops: processedData.shops,
