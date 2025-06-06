@@ -20,7 +20,7 @@ interface StoreShopSelectorProps {
   currentShop: Shop;
   onShopChange?: (shop: Shop) => void;
   showOpeningStatus?: boolean;
-  variant?: "compact" | "full" | "minimal";
+  variant?: "robust" | "floating" | "glass" | "bark";
 }
 
 // Composant wrapper pour pouvoir utiliser le hook useOpeningStatus
@@ -29,7 +29,7 @@ interface ShopMenuItemProps {
   currentShop: Shop;
   onShopChange?: (shop: Shop) => void;
   showOpeningStatus: boolean;
-  variant: "compact" | "full" | "minimal";
+  variant: "robust" | "floating" | "glass" | "bark";
   styles: {
     menuItem: Record<string, unknown>;
   };
@@ -45,7 +45,7 @@ function ShopMenuItem({
 }: ShopMenuItemProps) {
   const { isOpen, nextOpeningTime } = useOpeningStatus(shop.openingHours);
 
-  if (variant === "compact") {
+  if (variant === "robust") {
     return (
       <MenuItem
         key={shop.id}
@@ -80,7 +80,7 @@ function ShopMenuItem({
     );
   }
 
-  if (variant === "full") {
+  if (variant === "floating") {
     return (
       <MenuItem
         key={shop.id}
@@ -123,30 +123,59 @@ function ShopMenuItem({
     );
   }
 
-  // variant === "minimal"
-  return (
-    <MenuItem
-      key={shop.id}
-      onClick={() => onShopChange?.(shop)}
-      {...styles.menuItem}
-      isDisabled={shop.id === currentShop.id}
-      fontSize="xs"
-    >
-      <HStack justify="space-between" w="full">
-        <Text>{shop.name}</Text>
-        {showOpeningStatus && (
-          <Badge
-            colorScheme={isOpen ? "green" : "red"}
-            borderRadius="full"
-            fontSize="xs"
-            px={1}
-          >
-            {isOpen ? "●" : "●"}
-          </Badge>
-        )}
-      </HStack>
-    </MenuItem>
-  );
+  if (variant === "glass") {
+    return (
+      <MenuItem
+        key={shop.id}
+        onClick={() => onShopChange?.(shop)}
+        {...styles.menuItem}
+        isDisabled={shop.id === currentShop.id}
+        fontSize="xs"
+      >
+        <HStack justify="space-between" w="full">
+          <Text>{shop.name}</Text>
+          {showOpeningStatus && (
+            <Badge
+              colorScheme={isOpen ? "green" : "red"}
+              borderRadius="full"
+              fontSize="xs"
+              px={1}
+            >
+              {isOpen ? "●" : "●"}
+            </Badge>
+          )}
+        </HStack>
+      </MenuItem>
+    );
+  }
+
+  if (variant === "bark") {
+    return (
+      <MenuItem
+        key={shop.id}
+        onClick={() => onShopChange?.(shop)}
+        {...styles.menuItem}
+        isDisabled={shop.id === currentShop.id}
+        fontSize="xs"
+      >
+        <HStack justify="space-between" w="full">
+          <Text>{shop.name}</Text>
+          {showOpeningStatus && (
+            <Badge
+              colorScheme={isOpen ? "green" : "red"}
+              borderRadius="full"
+              fontSize="xs"
+              px={1}
+            >
+              {isOpen ? "●" : "●"}
+            </Badge>
+          )}
+        </HStack>
+      </MenuItem>
+    );
+  }
+
+  return null;
 }
 
 /**
@@ -158,10 +187,13 @@ export default function StoreShopSelector({
   currentShop,
   onShopChange,
   showOpeningStatus = true,
-  variant = "full",
+  variant,
 }: StoreShopSelectorProps) {
-  // 🎯 APPLICATION DIRECTE shopType → tokens (plus de mapping !)
+  // 🎯 APPLICATION DIRECTE shopType → tokens
   const tokens = getUniverseTokens(currentShop.shopType);
+
+  // Utilise la variante des tokens si non spécifiée
+  const effectiveVariant = variant || tokens.variants.selector;
 
   // 🎯 Statut d'ouverture de la boutique courante
   const { isOpen: currentShopIsOpen } = useOpeningStatus(
@@ -430,7 +462,7 @@ export default function StoreShopSelector({
             currentShop={currentShop}
             onShopChange={onShopChange}
             showOpeningStatus={showOpeningStatus}
-            variant="compact"
+            variant="robust"
             styles={styles}
           />
         ))}
@@ -481,7 +513,7 @@ export default function StoreShopSelector({
             currentShop={currentShop}
             onShopChange={onShopChange}
             showOpeningStatus={showOpeningStatus}
-            variant="full"
+            variant="floating"
             styles={styles}
           />
         ))}
@@ -528,7 +560,7 @@ export default function StoreShopSelector({
             currentShop={currentShop}
             onShopChange={onShopChange}
             showOpeningStatus={showOpeningStatus}
-            variant="minimal"
+            variant="glass"
             styles={styles}
           />
         ))}
@@ -537,11 +569,15 @@ export default function StoreShopSelector({
   );
 
   // Rendu selon la variante
-  switch (variant) {
-    case "compact":
+  switch (effectiveVariant) {
+    case "robust":
       return renderCompactVersion();
-    case "minimal":
+    case "floating":
+      return renderFullVersion();
+    case "glass":
       return renderMinimalVersion();
+    case "bark":
+      return renderMinimalVersion(); // Version bark utilise minimal pour l'instant
     default:
       return renderFullVersion();
   }

@@ -1,10 +1,9 @@
+import ProductAttributes from "@/components/ui/ProductAttributes";
 import { getUniverseTokens } from "@/theme/universeTokens";
 import type { Product, Shop } from "@/types";
-import {
-  getAllFormattedAttributes,
-  hasLowStock,
-  isOutOfStock,
-} from "@/utils/productAttributes";
+import { formatPrice } from "@/utils/formatPrice";
+import { getProductImageUrl } from "@/utils/imageUtils";
+import { hasLowStock, isOutOfStock } from "@/utils/productAttributes";
 import { ChevronRightIcon } from "@chakra-ui/icons";
 import {
   Alert,
@@ -24,7 +23,6 @@ import {
   ModalCloseButton,
   ModalContent,
   ModalOverlay,
-  SimpleGrid,
   Text,
   useColorModeValue,
   useDisclosure,
@@ -56,7 +54,6 @@ export const SharedProductDetailView: React.FC<
   // Modal pour lightbox
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const allAttributes = getAllFormattedAttributes(product, shop);
   const outOfStock = isOutOfStock(product);
   const lowStock = hasLowStock(product);
 
@@ -112,7 +109,7 @@ export const SharedProductDetailView: React.FC<
                 {product.imageUrl ? (
                   <>
                     <img
-                      src={product.imageUrl}
+                      src={getProductImageUrl(product.imageUrl)}
                       alt={product.name}
                       style={{
                         maxWidth: "100%",
@@ -171,7 +168,7 @@ export const SharedProductDetailView: React.FC<
                   >
                     {product.imageUrl && (
                       <img
-                        src={product.imageUrl}
+                        src={getProductImageUrl(product.imageUrl)}
                         alt={product.name}
                         style={{
                           maxWidth: "100%",
@@ -254,7 +251,7 @@ export const SharedProductDetailView: React.FC<
                   color={tokens.colors[500]}
                   fontFamily={tokens.typography.fontFamily.heading}
                 >
-                  {product.price}€
+                  {formatPrice(product.price)}
                 </Text>
               </Box>
 
@@ -271,28 +268,11 @@ export const SharedProductDetailView: React.FC<
               )}
 
               {/* Détails produit */}
-              <SimpleGrid columns={2} spacing={4}>
-                {allAttributes.map((attr, idx) => (
-                  <Box key={attr.label + String(attr.value) + idx}>
-                    <Text
-                      fontSize="sm"
-                      color={textColor}
-                      fontWeight="medium"
-                      fontFamily={tokens.typography.fontFamily.body}
-                    >
-                      {attr.label}
-                    </Text>
-                    <Text
-                      fontSize="md"
-                      fontWeight={tokens.typography.fontWeight.bold}
-                      color={tokens.colors[700]}
-                      fontFamily={tokens.typography.fontFamily.body}
-                    >
-                      {attr.value}
-                    </Text>
-                  </Box>
-                ))}
-              </SimpleGrid>
+              <ProductAttributes
+                product={product}
+                shop={shop}
+                variant="detail"
+              />
             </VStack>
           </GridItem>
         </Grid>

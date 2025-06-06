@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { SharedProductDetailView } from "../../components/business/product/SharedProductDetailView";
 import { useStoreHandlers, useStorePage } from "../../hooks";
+import { getUniverseTokens } from "../../theme/universeTokens";
 
 export default function StoreProductDetail() {
   const { productId } = useParams<{ productId: string }>();
@@ -34,31 +35,35 @@ export default function StoreProductDetail() {
     return null;
   }
 
+  const tokens = getUniverseTokens(currentShop.shopType);
+
   return (
     <StorePageWrapper headerVariant="nav-only">
-      {/* Bouton retour seulement */}
-      <Box w="full">
-        <Button onClick={handleGoBack} variant="ghost" size="sm" mb={6}>
-          ← Retour
-        </Button>
-      </Box>
-
-      {/* Layout principal : contenu + sidebar */}
-      <Flex
-        gap={8}
-        direction={{ base: "column", lg: "row" }}
-        align="flex-start"
-        w="full"
-      >
-        {/* Contenu principal */}
-        <Box flex="1" minW="0">
-          <SharedProductDetailView
-            product={product}
-            shop={currentShop}
-            onAddToCart={handleAddToCart}
-          />
+      <Box py={tokens.spacing.section}>
+        {/* Bouton retour seulement */}
+        <Box w="full" mb={tokens.spacing.component}>
+          <Button onClick={handleGoBack} variant="ghost" size="sm">
+            ← Retour
+          </Button>
         </Box>
-      </Flex>
+
+        {/* Layout principal : contenu + sidebar */}
+        <Flex
+          gap={tokens.spacing.section}
+          direction={{ base: "column", lg: "row" }}
+          align="flex-start"
+          w="full"
+        >
+          {/* Contenu principal */}
+          <Box flex="1" minW="0">
+            <SharedProductDetailView
+              product={product}
+              shop={currentShop}
+              onAddToCart={handleAddToCart}
+            />
+          </Box>
+        </Flex>
+      </Box>
     </StorePageWrapper>
   );
 }

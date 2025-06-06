@@ -71,45 +71,78 @@ export default function StoreLandingGeneric() {
       redirectOnShopChange={true}
       contentWrapper="none"
     >
-      <VStack spacing={12} py={12}>
-        {/* Grille de produits avec carousel */}
-        <Box position="relative" w="full" maxW="1400px" mx="auto">
-          <Flex align="center" justify="space-between">
-            <IconButton
-              aria-label="Produit précédent"
-              icon={<ChevronLeftIcon />}
-              onClick={handlePrevious}
-              isDisabled={currentIndex === 0}
-              variant="ghost"
-              size="lg"
-              colorScheme={tokens.meta.colorScheme}
-            />
+      <VStack spacing={tokens.spacing.section} py={tokens.spacing.section}>
+        {/* Carrousel responsive - Mobile et Desktop différenciés */}
+        <Box w="full" maxW="1400px" mx="auto">
+          {/* Version Mobile - Simple et directe */}
+          <Box display={{ base: "block", md: "none" }} px={4}>
+            <VStack spacing={4}>
+              {shopProducts.slice(0, 3).map((product) => (
+                <Box key={product.id} w="full" maxW="350px">
+                  <SharedProductPreviewCard
+                    product={product}
+                    shop={currentShop}
+                    onAddToCart={handleAddToCart}
+                    onView={handleViewProduct}
+                  />
+                </Box>
+              ))}
+            </VStack>
+          </Box>
 
-            <Flex flex={1} gap={6} px={4} overflow="hidden" position="relative">
-              {shopProducts
-                .slice(currentIndex, currentIndex + itemsToShow)
-                .map((product) => (
-                  <Box key={product.id} flex={1}>
-                    <SharedProductPreviewCard
-                      product={product}
-                      shop={currentShop}
-                      onAddToCart={handleAddToCart}
-                      onView={handleViewProduct}
-                    />
-                  </Box>
-                ))}
+          {/* Version Desktop - Avec navigation */}
+          <Box display={{ base: "none", md: "block" }} px={6}>
+            <Flex align="center" justify="center" gap={4}>
+              <IconButton
+                aria-label="Produit précédent"
+                icon={<ChevronLeftIcon />}
+                onClick={handlePrevious}
+                isDisabled={currentIndex === 0}
+                variant="outline"
+                size="lg"
+                colorScheme={tokens.meta.colorScheme}
+                flexShrink={0}
+              />
+
+              <Box flex={1} maxW="1000px">
+                <Flex gap={6} justify="center">
+                  {shopProducts
+                    .slice(currentIndex, currentIndex + itemsToShow)
+                    .map((product) => (
+                      <Box
+                        key={product.id}
+                        flex={`0 0 ${
+                          itemsToShow === 1
+                            ? "100%"
+                            : itemsToShow === 2
+                            ? "45%"
+                            : "30%"
+                        }`}
+                        maxW="400px"
+                      >
+                        <SharedProductPreviewCard
+                          product={product}
+                          shop={currentShop}
+                          onAddToCart={handleAddToCart}
+                          onView={handleViewProduct}
+                        />
+                      </Box>
+                    ))}
+                </Flex>
+              </Box>
+
+              <IconButton
+                aria-label="Produit suivant"
+                icon={<ChevronRightIcon />}
+                onClick={handleNext}
+                isDisabled={currentIndex >= maxIndex}
+                variant="outline"
+                size="lg"
+                colorScheme={tokens.meta.colorScheme}
+                flexShrink={0}
+              />
             </Flex>
-
-            <IconButton
-              aria-label="Produit suivant"
-              icon={<ChevronRightIcon />}
-              onClick={handleNext}
-              isDisabled={currentIndex >= maxIndex}
-              variant="ghost"
-              size="lg"
-              colorScheme={tokens.meta.colorScheme}
-            />
-          </Flex>
+          </Box>
         </Box>
 
         {/* Section spécifique à l'univers */}
@@ -122,8 +155,8 @@ export default function StoreLandingGeneric() {
           colorScheme={tokens.meta.colorScheme}
           size="lg"
           variant="solid"
-          px={8}
-          py={6}
+          px={tokens.spacing.section}
+          py={tokens.spacing.component}
           borderRadius={tokens.borderRadius.base}
           fontFamily={tokens.typography.fontFamily.body}
           fontWeight={tokens.typography.fontWeight.bold}

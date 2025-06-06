@@ -1,5 +1,6 @@
 import { AdminDashboard } from "@/components/features/admin/dashboard/AdminDashboard";
 import type { Product } from "@/types";
+import { formatPrice } from "@/utils/formatPrice";
 import {
   Alert,
   AlertIcon,
@@ -98,7 +99,7 @@ export default function Dashboard() {
           <Stat p={6} bg="white" borderRadius="md" shadow="sm">
             <StatLabel>Prix moyen</StatLabel>
             <StatNumber color="green.500">
-              {shopStats.averagePrice.toFixed(2)} €
+              {formatPrice(shopStats.averagePrice)}
             </StatNumber>
             <StatHelpText>Catalogue actuel</StatHelpText>
           </Stat>

@@ -1,3 +1,4 @@
+import ProductAttributes from "@/components/ui/ProductAttributes";
 import { useStoreDataQuery } from "@/hooks/useStoreDataQuery";
 import type { Product } from "@/types";
 import { SearchIcon } from "@chakra-ui/icons";
@@ -23,6 +24,7 @@ import {
   InputLeftElement,
   Select,
   Text,
+  useColorModeValue,
   useDisclosure,
   useToast,
   VStack,
@@ -68,6 +70,9 @@ export default function Products() {
   const universeAnimations = useUniverseAnimations(
     activeShop?.shopType || "brewery"
   );
+
+  // Couleurs pour le mode sombre/clair
+  const previewBg = useColorModeValue("gray.50", "gray.700");
 
   // Filtrer les produits pour la boutique active
   const shopProducts = useMemo(
@@ -289,19 +294,27 @@ export default function Products() {
               <VStack spacing={6} align="stretch">
                 {/* Mobile: Preview en haut, Form en bas */}
                 {selectedProduct && (
-                  <Box display={{ base: "block", lg: "none" }}>
-                    <Heading size="sm" mb={4} color="gray.600">
-                      Aperçu vitrine
-                    </Heading>
-                    <Box maxW="300px" mx="auto">
-                      <SharedProductPreviewCard
-                        product={selectedProduct}
-                        shop={activeShop}
-                        isAdminMode={false}
-                        showActions={false}
-                        imageHeight="200px"
-                        priceOverride={selectedProduct.price}
-                      />
+                  <Box display={{ base: "block", lg: "none" }} mb={6}>
+                    <Box
+                      bg={previewBg}
+                      p={4}
+                      borderRadius="lg"
+                      borderLeft="4px solid"
+                      borderColor={universeColors.primary}
+                    >
+                      <Heading size="sm" mb={4} color={universeColors.primary}>
+                        Aperçu vitrine
+                      </Heading>
+                      <Box maxW="300px" mx="auto">
+                        <SharedProductPreviewCard
+                          product={selectedProduct}
+                          shop={activeShop}
+                          isAdminMode={false}
+                          showActions={false}
+                          imageHeight="200px"
+                          priceOverride={selectedProduct.price}
+                        />
+                      </Box>
                     </Box>
                   </Box>
                 )}
@@ -327,8 +340,20 @@ export default function Products() {
                   {/* Preview desktop uniquement */}
                   <GridItem display={{ base: "none", lg: "block" }}>
                     {selectedProduct && (
-                      <Box position="sticky" top={4}>
-                        <Heading size="sm" mb={4} color="gray.600">
+                      <Box
+                        position="sticky"
+                        top={4}
+                        bg={previewBg}
+                        p={6}
+                        borderRadius="lg"
+                        borderLeft="4px solid"
+                        borderColor={universeColors.primary}
+                      >
+                        <Heading
+                          size="sm"
+                          mb={4}
+                          color={universeColors.primary}
+                        >
                           Aperçu vitrine
                         </Heading>
                         <SharedProductPreviewCard
@@ -339,6 +364,24 @@ export default function Products() {
                           imageHeight="250px"
                           priceOverride={selectedProduct.price}
                         />
+
+                        {/* Affichage des attributs */}
+                        <Box mt={6}>
+                          <Heading
+                            size="sm"
+                            mb={4}
+                            color={universeColors.primary}
+                          >
+                            Caractéristiques du produit
+                          </Heading>
+                          {activeShop && selectedProduct && (
+                            <ProductAttributes
+                              product={selectedProduct}
+                              shop={activeShop}
+                              variant="detail"
+                            />
+                          )}
+                        </Box>
                       </Box>
                     )}
                   </GridItem>

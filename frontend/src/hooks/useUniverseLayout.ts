@@ -37,27 +37,29 @@ export const useUniverseLayout = (shopType: ShopType) => {
           : 8, // Brewery/Herb - standard
     }),
 
-    // Grid émotionnel selon le rythme
+    // Grid émotionnel responsive et mobile-friendly
     getGridProps: () => ({
-      display: "grid",
-      gap:
-        tokens.emotions.rhythm === "slow"
-          ? 8 // TeaShop - plus d'espace
-          : tokens.emotions.rhythm === "precise"
-          ? 6 // Beauty - précis
-          : tokens.emotions.rhythm === "natural"
-          ? 7 // Herb - organique
-          : 5, // Brewery - standard
-
-      // Colonnes selon la personnalité
-      gridTemplateColumns:
+      // Colonnes responsive selon la personnalité mais mobile-friendly
+      columns:
         tokens.emotions.personality === "sophisticated"
-          ? "repeat(auto-fit, minmax(320px, 1fr))" // Beauty - grille sophistiquée
+          ? { base: 1, sm: 2, md: 3, lg: 4 } // Beauty - plus de colonnes
           : tokens.emotions.personality === "serene"
-          ? "repeat(auto-fit, minmax(280px, 1fr))" // TeaShop - grille zen
+          ? { base: 1, md: 2, lg: 3 } // TeaShop - grille zen
           : tokens.emotions.personality === "authentic"
-          ? "repeat(auto-fit, minmax(300px, 1fr))" // Brewery - grille robuste
-          : "repeat(auto-fit, minmax(290px, 1fr))", // Herb - grille naturelle
+          ? { base: 1, md: 2, lg: 3, xl: 4 } // Brewery - grille robuste
+          : { base: 1, md: 2, lg: 3 }, // Herb - grille naturelle
+
+      spacing:
+        tokens.emotions.rhythm === "slow"
+          ? { base: 4, md: 8 } // TeaShop - plus d'espace responsive
+          : tokens.emotions.rhythm === "precise"
+          ? { base: 3, md: 6 } // Beauty - précis responsive
+          : tokens.emotions.rhythm === "natural"
+          ? { base: 4, md: 7 } // Herb - organique responsive
+          : { base: 3, md: 5 }, // Brewery - standard responsive
+
+      w: "full",
+      px: { base: 4, md: 6 }, // Padding responsive
     }),
 
     // Card container émotionnel

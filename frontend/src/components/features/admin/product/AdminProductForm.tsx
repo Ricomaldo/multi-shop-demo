@@ -29,6 +29,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
+import ImageUploader from "../../../ui/ImageUploader";
 
 interface AdminProductFormProps {
   product?: Product;
@@ -57,6 +58,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
   const [name, setName] = useState(product?.name || "");
   const [description, setDescription] = useState(product?.description || "");
   const [price, setPrice] = useState(product?.price || 0);
+  const [imageUrl, setImageUrl] = useState(product?.imageUrl || "");
 
   // État pour les attributs spécialisés avec typage simple
   const [attributes, setAttributes] = useState<Record<string, string>>({});
@@ -225,6 +227,44 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
         price: newPrice,
         attributes: JSON.stringify(attributes),
       });
+    }
+  };
+
+  const handleImageUpload = async (file: File): Promise<string> => {
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await fetch(
+        "http://localhost:3001/api/admin/upload/image",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const newImageUrl = `http://localhost:3001${data.url}`;
+
+      setImageUrl(newImageUrl);
+      if (onChange) {
+        onChange({
+          name,
+          description,
+          price,
+          imageUrl: newImageUrl,
+          attributes: JSON.stringify(attributes),
+        });
+      }
+
+      return newImageUrl;
+    } catch (error) {
+      console.error("Erreur lors de l'upload:", error);
+      throw error;
     }
   };
 
@@ -644,6 +684,14 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
         {/* Champs de base */}
         <VStack spacing={4} align="stretch">
           <Heading size="md">Informations générales</Heading>
+
+          <FormControl>
+            <FormLabel>Image du produit</FormLabel>
+            <ImageUploader
+              currentImageUrl={imageUrl}
+              onImageUpload={handleImageUpload}
+            />
+          </FormControl>
 
           <FormControl>
             <FormLabel>Nom du produit</FormLabel>

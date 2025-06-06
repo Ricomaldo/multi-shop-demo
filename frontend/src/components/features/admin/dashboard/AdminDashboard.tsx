@@ -1,4 +1,5 @@
 import type { Product, Shop } from "@/types";
+import { formatPrice } from "@/utils/formatPrice";
 import {
   hasLowStock,
   isBeautyShopAttributes,
@@ -301,7 +302,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             <Stat>
               <StatLabel>Prix moyen</StatLabel>
-              <StatNumber>{averagePrice.toFixed(2)} €</StatNumber>
+              <StatNumber>{formatPrice(averagePrice)}</StatNumber>
               <StatHelpText>Toutes boutiques</StatHelpText>
             </Stat>
 
@@ -359,7 +360,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </Stat>
                     <Stat size="sm">
                       <StatLabel>Prix moyen</StatLabel>
-                      <StatNumber>{stats.averagePrice.toFixed(2)} €</StatNumber>
+                      <StatNumber>{formatPrice(stats.averagePrice)}</StatNumber>
                     </Stat>
                   </SimpleGrid>
 

@@ -6,11 +6,11 @@ import {
   Button,
   Flex,
   Heading,
-  HStack,
   Input,
   Select,
   SimpleGrid,
   Text,
+  VStack,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -123,10 +123,20 @@ export default function StoreCatalogueView() {
       <Box
         {...universeLayout.getContainerProps()}
         {...signature.getSignatureProps()}
+        py={tokens.spacing.section}
       >
         {/* En-tête avec différenciateur visible */}
-        <Box textAlign="center" py={8} {...animations.getEntranceProps()}>
-          <Flex justify="center" align="center" gap={3} mb={4}>
+        <Box
+          textAlign="center"
+          mb={tokens.spacing.section}
+          {...animations.getEntranceProps()}
+        >
+          <Flex
+            justify="center"
+            align="center"
+            gap={3}
+            mb={tokens.spacing.component}
+          >
             <Text fontSize="3xl">{tokens.meta.icon}</Text>
             <Heading
               size="xl"
@@ -153,15 +163,21 @@ export default function StoreCatalogueView() {
           </Badge>
         </Box>
 
-        {/* Barre de recherche et filtres avec styling universel */}
-        <Box w="full" {...animations.getStaggeredEntranceProps(1)}>
-          <HStack spacing={4} w="full" flexWrap="wrap" justify="center">
+        {/* Barre de recherche et filtres avec styling universel responsive */}
+        <Box
+          w="full"
+          mb={tokens.spacing.section}
+          px={{ base: 4, md: 6 }}
+          {...animations.getStaggeredEntranceProps(1)}
+        >
+          <VStack spacing={{ base: 3, md: 4 }} w="full" align="center">
             <Input
               placeholder="Rechercher un produit..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              w={{ base: "100%", sm: "400px" }}
               maxW="400px"
-              size="lg"
+              size={{ base: "md", md: "lg" }}
               borderColor={universeColors.borders.light}
               focusBorderColor={universeColors.primary}
               borderRadius={tokens.borderRadius.base}
@@ -172,8 +188,9 @@ export default function StoreCatalogueView() {
               placeholder="Toutes les catégories"
               value={selectedCategoryId || ""}
               onChange={(e) => handleCategoryChange(e.target.value || null)}
+              w={{ base: "100%", sm: "250px" }}
               maxW="250px"
-              size="lg"
+              size={{ base: "md", md: "lg" }}
               borderColor={universeColors.borders.light}
               focusBorderColor={universeColors.primary}
               borderRadius={tokens.borderRadius.base}
@@ -189,15 +206,21 @@ export default function StoreCatalogueView() {
             <Button
               onClick={handleResetFilters}
               {...universeButton.getSecondaryProps()}
-              size="lg"
+              size={{ base: "md", md: "lg" }}
+              w={{ base: "100%", sm: "auto" }}
               {...responsiveEmotions.getButtonProps()}
             >
               Réinitialiser
             </Button>
-          </HStack>
+          </VStack>
 
           {/* Résultats avec couleurs contextuelles */}
-          <Flex justify="center" align="center" w="full" mt={6}>
+          <Flex
+            justify="center"
+            align="center"
+            w="full"
+            mt={tokens.spacing.component}
+          >
             <Text
               color={universeColors.text.subtle}
               fontFamily={tokens.typography.fontFamily.body}
@@ -212,7 +235,7 @@ export default function StoreCatalogueView() {
         {/* Grille des produits avec layout émotionnel */}
         <Box w="full" {...animations.getStaggeredEntranceProps(2)}>
           {filteredProducts.length > 0 ? (
-            <SimpleGrid {...universeLayout.getGridProps()} spacing={6}>
+            <SimpleGrid {...universeLayout.getGridProps()}>
               {filteredProducts.map((product: Product, index: number) => (
                 <Box
                   key={product.id}
@@ -229,12 +252,12 @@ export default function StoreCatalogueView() {
               ))}
             </SimpleGrid>
           ) : (
-            <Box textAlign="center" py={12}>
+            <Box textAlign="center" py={tokens.spacing.section}>
               <Text
                 fontSize="lg"
                 color={universeColors.text.subtle}
                 fontFamily={tokens.typography.fontFamily.body}
-                mb={4}
+                mb={tokens.spacing.component}
               >
                 Aucun produit ne correspond à vos critères
               </Text>

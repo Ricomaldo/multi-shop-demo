@@ -182,12 +182,12 @@ export interface UniverseTokens {
     description: string;
   };
 
-  // Variantes par composant
+  // Variantes par composant - MAGNIFIÉES pour différenciation réelle
   variants: {
-    layout: "compact" | "zen" | "elegant" | "natural";
-    header: "nav-only" | "hero" | "full" | "simple";
-    badge: "compact" | "full" | "minimal";
-    selector: "compact" | "full" | "minimal";
+    layout: "industrial" | "zen" | "luxe" | "organic"; // PERSONNALITÉS DISTINCTES
+    header: "bold-hero" | "minimal-nav" | "gradient-full" | "natural-simple"; // VRAIES DIFFÉRENCES
+    badge: "rectangular" | "pill" | "diamond" | "leaf"; // FORMES UNIQUES
+    selector: "robust" | "floating" | "glass" | "bark"; // MATÉRIAUX DIFFÉRENTS
   };
 
   // 🆕 SIGNATURES VISUELLES UNIQUES
@@ -302,10 +302,10 @@ export function getUniverseTokens(shopType: ShopType): UniverseTokens {
           description: "Brasserie artisanale authentique",
         },
         variants: {
-          layout: "compact",
-          header: "hero",
-          badge: "full",
-          selector: "compact",
+          layout: "industrial",
+          header: "bold-hero",
+          badge: "rectangular",
+          selector: "robust",
         },
         borderRadius: {
           base: "0px", // ✅ Angles marqués - industriel craft
@@ -375,7 +375,7 @@ export function getUniverseTokens(shopType: ShopType): UniverseTokens {
           energy: "robust", // ✅ Énergie robuste et solide
         },
         imagePaths: {
-          hero: "/images/store/brewery-hero.jpg",
+          hero: "/images/store/brewery-hero.webp",
           background: "/images/store/brewery-bg.jpg",
           placeholder: "/images/store/brewery-placeholder.jpg",
         },
@@ -400,9 +400,9 @@ export function getUniverseTokens(shopType: ShopType): UniverseTokens {
         },
         variants: {
           layout: "zen",
-          header: "simple",
-          badge: "minimal",
-          selector: "full",
+          header: "minimal-nav",
+          badge: "pill",
+          selector: "floating",
         },
         borderRadius: {
           base: "12px", // ✅ Courbes douces zen
@@ -473,7 +473,7 @@ export function getUniverseTokens(shopType: ShopType): UniverseTokens {
           energy: "calm", // ✅ Énergie calme et paisible
         },
         imagePaths: {
-          hero: "/images/store/teashop-hero.jpg",
+          hero: "/images/store/tea-hero.webp",
           background: "/images/store/teashop-bg.jpg",
           placeholder: "/images/store/teashop-placeholder.jpg",
         },
@@ -497,10 +497,10 @@ export function getUniverseTokens(shopType: ShopType): UniverseTokens {
           description: "Institut de beauté premium",
         },
         variants: {
-          layout: "elegant",
-          header: "full",
-          badge: "compact",
-          selector: "full",
+          layout: "luxe",
+          header: "gradient-full",
+          badge: "diamond",
+          selector: "glass",
         },
         borderRadius: {
           base: "8px", // ✅ Équilibré - premium
@@ -571,7 +571,7 @@ export function getUniverseTokens(shopType: ShopType): UniverseTokens {
           energy: "dynamic", // ✅ Énergie dynamique et moderne
         },
         imagePaths: {
-          hero: "/images/store/beauty-hero.jpg",
+          hero: "/images/store/beauty-hero.webp",
           background: "/images/store/beauty-bg.jpg",
           placeholder: "/images/store/beauty-placeholder.jpg",
         },
@@ -595,10 +595,10 @@ export function getUniverseTokens(shopType: ShopType): UniverseTokens {
           description: "Plantes médicinales bio et naturelles",
         },
         variants: {
-          layout: "natural",
-          header: "hero",
-          badge: "compact",
-          selector: "minimal",
+          layout: "organic",
+          header: "natural-simple",
+          badge: "leaf",
+          selector: "bark",
         },
         borderRadius: {
           base: "6px", // ✅ Organique - naturel
@@ -669,7 +669,7 @@ export function getUniverseTokens(shopType: ShopType): UniverseTokens {
           energy: "grounded", // ✅ Énergie ancrée et stable
         },
         imagePaths: {
-          hero: "/images/store/herb-hero.jpg",
+          hero: "/images/store/herb-hero.webp",
           background: "/images/store/herb-bg.jpg",
           placeholder: "/images/store/herb-placeholder.jpg",
         },

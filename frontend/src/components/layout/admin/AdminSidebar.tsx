@@ -69,7 +69,7 @@ export default function AdminSidebar({
       borderRight="1px"
       borderColor="gray.200"
       transition="all 0.3s ease"
-      zIndex={20}
+      zIndex={1100}
       _dark={{
         bg: "gray.800",
         borderColor: "gray.700",

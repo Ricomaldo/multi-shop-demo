@@ -1,5 +1,5 @@
-import type { Shop, ShopType } from "@/types";
 import { getUniverseTokens } from "@/theme/universeTokens";
+import type { Shop, ShopType } from "@/types";
 import { ChevronDownIcon, InfoIcon } from "@chakra-ui/icons";
 import {
   Box,
@@ -123,7 +123,7 @@ export default function AdminShopSelector({
             </Text>
           </Box>
         </MenuButton>
-        <MenuList>
+        <MenuList zIndex={2000} maxW="250px">
           {shopTypeOptions.map((shopType) => {
             const shopTokens = getUniverseTokens(shopType);
             return (
@@ -132,10 +132,11 @@ export default function AdminShopSelector({
                 onClick={() => onShopTypeChange(shopType)}
                 bg={shopType === selectedShopType ? hoverBg : "transparent"}
                 _hover={{ bg: hoverBg }}
+                minH="40px"
               >
-                <HStack>
+                <HStack spacing={2}>
                   <Text>{shopTokens.meta.icon}</Text>
-                  <Text>{shopTokens.meta.displayName}</Text>
+                  <Text fontSize="sm">{shopTokens.meta.displayName}</Text>
                 </HStack>
               </MenuItem>
             );
@@ -164,7 +165,12 @@ export default function AdminShopSelector({
               </Text>
             )}
             <HStack spacing={2} justify="flex-start">
-              <Text fontSize="sm" fontWeight="medium" color={textColor}>
+              <Text
+                fontSize="sm"
+                fontWeight="medium"
+                color={textColor}
+                noOfLines={1}
+              >
                 {selectedShop
                   ? isCollapsed
                     ? extractCity(selectedShop.name)
@@ -175,20 +181,19 @@ export default function AdminShopSelector({
             </HStack>
           </Box>
         </MenuButton>
-        <MenuList>
+        <MenuList zIndex={2000} maxW="200px">
           {availableShops.map((shop) => (
             <MenuItem
               key={shop.id}
               onClick={() => handleShopChange(shop)}
               bg={shop.id === selectedShop?.id ? hoverBg : "transparent"}
               _hover={{ bg: hoverBg }}
+              minH="36px"
+              py={2}
             >
-              <VStack align="start" spacing={0}>
-                <Text fontWeight="medium">{extractCity(shop.name)}</Text>
-                <Text fontSize="xs" color={mutedColor}>
-                  {shop.address}
-                </Text>
-              </VStack>
+              <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
+                {extractCity(shop.name)}
+              </Text>
             </MenuItem>
           ))}
         </MenuList>

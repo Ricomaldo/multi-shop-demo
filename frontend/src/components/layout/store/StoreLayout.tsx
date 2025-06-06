@@ -15,23 +15,15 @@ interface StoreLayoutProps {
   /** Padding vertical global */
   py?: number;
   /** Variante de mise en page */
-  variant?: "compact" | "zen" | "elegant" | "natural";
+  variant?: "industrial" | "zen" | "luxe" | "organic";
 }
 
 /**
- * Layout standardisé pour toutes les pages vitrine
- *
- * Structure garantie :
- * - Tokens automatiques par shopType (plus besoin UniverseProvider)
- * - Container avec maxWidth responsive
- * - VStack avec spacing standardisé
- * - StoreFooter automatique
- *
- * Usage recommandé :
- * <StoreLayout shop={shop}>
- *   <StoreHeader variant="hero" ... />
- *   <PageContent />
- * </StoreLayout>
+ * 🔥 LAYOUT PERSONNALISÉ PAR UNIVERS - Variantes MAGNIFIÉES
+ * 🍺 industrial : Grilles robustes, espacements généreux, structure industrielle
+ * 🍵 zen : Centré, aéré, respiration maximale, simplicité
+ * 💄 luxe : Large, sophistiqué, mise en scène premium
+ * 🌿 organic : Formes irrégulières, naturelles, asymétrie organique
  */
 export default function StoreLayout({
   shop,
@@ -41,106 +33,257 @@ export default function StoreLayout({
   py,
   variant,
 }: StoreLayoutProps) {
-  // 🎯 APPLICATION DIRECTE shopType → tokens (plus de mapping !)
+  // 🎯 APPLICATION DIRECTE shopType → tokens
   const tokens = getUniverseTokens(shop.shopType);
 
-  // Déterminer la variante selon les tokens ou utiliser celle fournie
-  const effectiveVariant: "compact" | "zen" | "elegant" | "natural" =
-    variant || tokens.variants.layout;
+  // Utilise la variante des tokens si non spécifiée
+  const effectiveVariant = variant || tokens.variants.layout;
 
-  // Configuration responsive selon la variante et les tokens
-  const getLayoutConfig = () => {
-    switch (effectiveVariant) {
-      case "compact":
-        return {
-          maxWidth: "1200px",
-          spacing: 6,
-          py: 0,
-          bg: `${tokens.meta.colorScheme}.50`,
-        };
-      case "zen":
-        return {
-          maxWidth: "1000px",
-          spacing: 12,
-          py: 4,
-          bg: "white",
-        };
-      case "elegant":
-        return {
-          maxWidth: "1400px",
-          spacing: 10,
-          py: 2,
-          bg: `${tokens.meta.colorScheme}.25`,
-        };
-      case "natural":
-        return {
-          maxWidth: "1100px",
-          spacing: 8,
-          py: 2,
-          bg: tokens.colors[50],
-        };
-      default:
-        return {
-          maxWidth: "1200px",
-          spacing: 8,
-          py: 0,
-          bg: tokens.colors[50],
-        };
-    }
-  };
-
-  const config = getLayoutConfig();
-  const finalMaxWidth = maxWidth || config.maxWidth;
-  const finalSpacing = spacing || config.spacing;
-  const finalPy = py || config.py;
-
-  // Classes CSS spécifiques au shopType pour styles avancés
-  const getUniverseClasses = () => {
-    return `store-layout store-layout-${effectiveVariant} store-layout-${shop.shopType}`;
-  };
-
-  return (
-    <Box
-      as="main"
-      w="full"
-      bg={config.bg}
-      minH="100vh"
-      className={getUniverseClasses()}
-    >
-      <Box maxW={finalMaxWidth} mx="auto" px={{ base: 4, md: 6 }} py={finalPy}>
-        <VStack
-          spacing={finalSpacing}
-          align="stretch"
-          w="full"
-          sx={{
-            // Styles CSS par shopType (si besoin de customisation avancée)
-            "&.store-layout-compact .product-grid": {
-              display: "grid",
-              gridTemplateColumns: { base: "1fr", md: "repeat(3, 1fr)" },
-              gap: 4,
-            },
-            "&.store-layout-zen .section-title": {
-              textAlign: "center",
-              borderBottom: "2px solid",
-              borderColor: `${tokens.meta.colorScheme}.200`,
-              pb: 4,
-              mb: 8,
-            },
-            "&.store-layout-elegant .product-card": {
-              borderRadius: "xl",
-              overflow: "hidden",
-              transition: "all 0.3s",
-              _hover: {
-                transform: "translateY(-4px)",
-                boxShadow: "xl",
-              },
-            },
-            [`&.store-layout-natural .section-title::before`]: {
-              content: `"${tokens.meta.icon}"`,
-              mr: 2,
-            },
-          }}
+  // 🍺 BREWERY → INDUSTRIAL (Structure industrielle, grilles robustes)
+  if (effectiveVariant === "industrial") {
+    return (
+      <Box
+        as="main"
+        w="full"
+        bg="white"
+        minH="100vh"
+        className={`store-layout store-layout-industrial store-layout-${shop.shopType}`}
+      >
+        <Box
+          maxW={maxWidth || "1300px"}
+          mx="auto"
+          px={{ base: 6, md: 8 }}
+          py={py || 4}
         >
+          <VStack
+            spacing={spacing || 8}
+            align="stretch"
+            w="full"
+            sx={{
+              "& .section": {
+                bg: tokens.colors[50],
+                border: `2px solid ${tokens.colors[500]}`,
+                borderRadius: tokens.borderRadius.md,
+                p: 6,
+                color: tokens.colors[800],
+                fontWeight: "600",
+              },
+              "& .product-grid": {
+                display: "grid",
+                gridTemplateColumns: {
+                  base: "1fr",
+                  md: "repeat(3, 1fr)",
+                  lg: "repeat(4, 1fr)",
+                },
+                gap: 6,
+              },
+            }}
+          >
+            {children}
+            <StoreFooter shop={shop} />
+          </VStack>
+        </Box>
+      </Box>
+    );
+  }
+
+  // 🍵 TEASHOP → ZEN (Centré, aéré, respiration maximale)
+  if (effectiveVariant === "zen") {
+    return (
+      <Box
+        as="main"
+        w="full"
+        bg="white"
+        minH="100vh"
+        className={`store-layout store-layout-zen store-layout-${shop.shopType}`}
+      >
+        <Box
+          maxW={maxWidth || "1000px"}
+          mx="auto"
+          px={{ base: 4, md: 6 }}
+          py={py || 8}
+        >
+          <VStack
+            spacing={spacing || 12}
+            align="center"
+            w="full"
+            sx={{
+              "& .section": {
+                bg: "white",
+                borderRadius: "20px",
+                p: 8,
+                shadow: "lg",
+                border: `1px solid ${tokens.colors[200]}`,
+                textAlign: "center",
+                maxW: "800px",
+                mx: "auto",
+              },
+              "& .section-title": {
+                textAlign: "center",
+                fontSize: "xl",
+                fontFamily: tokens.typography.fontFamily.heading,
+                color: tokens.colors[700],
+                mb: 6,
+              },
+              "& .product-grid": {
+                display: "grid",
+                gridTemplateColumns: { base: "1fr", md: "repeat(2, 1fr)" },
+                gap: 8,
+                justifyItems: "center",
+              },
+            }}
+          >
+            {children}
+            <StoreFooter shop={shop} />
+          </VStack>
+        </Box>
+      </Box>
+    );
+  }
+
+  // 💄 BEAUTY → LUXE (Large, sophistiqué, mise en scène premium)
+  if (effectiveVariant === "luxe") {
+    return (
+      <Box
+        as="main"
+        w="full"
+        bgGradient={`linear(135deg, ${tokens.colors[50]}, white)`}
+        minH="100vh"
+        className={`store-layout store-layout-luxe store-layout-${shop.shopType}`}
+      >
+        <Box
+          maxW={maxWidth || "1400px"}
+          mx="auto"
+          px={{ base: 4, md: 8 }}
+          py={py || 6}
+        >
+          <VStack
+            spacing={spacing || 10}
+            align="stretch"
+            w="full"
+            sx={{
+              "& .section": {
+                bg: "white",
+                borderRadius: "16px",
+                p: 8,
+                shadow: "xl",
+                border: `1px solid ${tokens.colors[200]}`,
+                position: "relative",
+                _before: {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: "3px",
+                  bgGradient: `linear(to-r, ${tokens.colors[500]}, ${tokens.colors[400]})`,
+                  borderRadius: "16px 16px 0 0",
+                },
+              },
+              "& .product-grid": {
+                display: "grid",
+                gridTemplateColumns: {
+                  base: "1fr",
+                  md: "repeat(3, 1fr)",
+                  lg: "repeat(4, 1fr)",
+                },
+                gap: 8,
+              },
+              "& .product-card": {
+                borderRadius: "12px",
+                overflow: "hidden",
+                transition: "all 0.3s ease",
+                _hover: {
+                  transform: "translateY(-4px)",
+                  boxShadow: "xl",
+                },
+              },
+            }}
+          >
+            {children}
+            <StoreFooter shop={shop} />
+          </VStack>
+        </Box>
+      </Box>
+    );
+  }
+
+  // 🌿 HERB → ORGANIC (Formes irrégulières, naturelles, asymétrie organique)
+  if (effectiveVariant === "organic") {
+    return (
+      <Box
+        as="main"
+        w="full"
+        bg={tokens.colors[50]}
+        minH="100vh"
+        className={`store-layout store-layout-organic store-layout-${shop.shopType}`}
+      >
+        <Box
+          maxW={maxWidth || "1200px"}
+          mx="auto"
+          px={{ base: 4, md: 6 }}
+          py={py || 6}
+        >
+          <VStack
+            spacing={spacing || 8}
+            align="stretch"
+            w="full"
+            sx={{
+              "& .section": {
+                bg: "white",
+                borderRadius: "12px",
+                p: 6,
+                shadow: "md",
+                border: `1px solid ${tokens.colors[300]}`,
+                position: "relative",
+                _before: {
+                  content: `"${tokens.meta.icon}"`,
+                  position: "absolute",
+                  top: -2,
+                  right: 4,
+                  fontSize: "lg",
+                  color: tokens.colors[400],
+                  bg: "white",
+                  borderRadius: "full",
+                  w: "30px",
+                  h: "30px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: `1px solid ${tokens.colors[300]}`,
+                },
+              },
+              "& .section-title": {
+                position: "relative",
+                _before: {
+                  content: `"${tokens.meta.icon}"`,
+                  mr: 2,
+                  color: tokens.colors[500],
+                },
+              },
+              "& .product-grid": {
+                display: "grid",
+                gridTemplateColumns: {
+                  base: "1fr",
+                  md: "repeat(auto-fit, minmax(280px, 1fr))",
+                },
+                gap: 6,
+              },
+            }}
+          >
+            {children}
+            <StoreFooter shop={shop} />
+          </VStack>
+        </Box>
+      </Box>
+    );
+  }
+
+  // Fallback - utilise industrial par défaut
+  return (
+    <Box as="main" w="full" bg={tokens.colors[50]} minH="100vh">
+      <Box maxW="1200px" mx="auto" px={{ base: 4, md: 6 }} py={0}>
+        <VStack spacing={8} align="stretch" w="full">
           {children}
           <StoreFooter shop={shop} />
         </VStack>

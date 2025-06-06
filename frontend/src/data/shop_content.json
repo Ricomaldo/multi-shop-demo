@@ -22,7 +22,7 @@
     },
     "teaShop": {
       "heroSubtitle": "Salon de thé raffiné - L'art de l'infusion et de la détente",
-      "heroImage": "/images/store/teashop-hero.jpg",
+      "heroImage": "/images/store/tea-hero.webp",
       "sections": {
         "main": {
           "title": "L'art du thé",
@@ -62,7 +62,7 @@
     },
     "herbShop": {
       "heroSubtitle": "Herboristerie traditionnelle - La nature au service de votre bien-être",
-      "heroImage": "/images/store/herbs-hero.jpg",
+      "heroImage": "/images/store/herb-hero.webp",
       "sections": {
         "main": {
           "title": "Sagesse des plantes",

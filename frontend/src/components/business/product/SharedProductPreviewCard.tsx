@@ -5,14 +5,19 @@ import {
 } from "@/hooks";
 import { getUniverseTokens } from "@/theme/universeTokens";
 import type { Product, Shop } from "@/types";
+import { formatPrice } from "@/utils/formatPrice";
+import { getProductImageUrl } from "@/utils/imageUtils";
+import { EditIcon } from "@chakra-ui/icons";
 import {
   Badge,
   Box,
   Button,
   HStack,
+  IconButton,
   Image,
   Text,
   VStack,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useUniverseSignature } from "../../../hooks";
@@ -26,7 +31,6 @@ export interface SharedProductPreviewCardProps {
   onView?: (product: Product) => void;
   onEdit?: (product: Product) => void;
   imageHeight?: string;
-  isHighlighted?: boolean;
   isAdminMode?: boolean;
   showActions?: boolean;
   /** Prix override pour réactivité temps réel */
@@ -36,6 +40,7 @@ export interface SharedProductPreviewCardProps {
 /**
  * Carte produit universelle avec thématisation automatique
  * 🆕 INTÈGRE LES MICRO-INTERACTIONS ÉMOTIONNELLES PAR UNIVERS
+ * ✅ RESPONSIVE DESIGN AMÉLIORÉ
  *
  * Réactions différenciées :
  * - Brewery: Clics solides, pas de mouvement
@@ -50,12 +55,40 @@ export const SharedProductPreviewCard: React.FC<
   shop,
   onAddToCart,
   onView,
-  isHighlighted = false,
+  onEdit,
+  isAdminMode = false,
+  showActions = false,
   priceOverride,
 }) => {
   // 🎯 TOKENS DIRECTS - Plus de mapping !
   const tokens = getUniverseTokens(shop.shopType);
   const colors = useUniverseColors(shop.shopType);
+
+  // 🆕 RESPONSIVE VALUES
+  const imageHeight = useBreakpointValue({
+    base: "160px",
+    sm: "180px",
+    md: "200px",
+    lg: "220px",
+  });
+
+  const cardPadding = useBreakpointValue({
+    base: 3,
+    sm: 4,
+    md: 4,
+  });
+
+  const buttonSize = useBreakpointValue({
+    base: "sm",
+    sm: "md",
+    md: "md",
+  });
+
+  const fontSize = useBreakpointValue({
+    base: "sm",
+    sm: "md",
+    md: "md",
+  });
 
   // 🆕 MICRO-INTERACTIONS ÉMOTIONNELLES
   const { getCardHoverProps, getEmotionalContext, emotions } =
@@ -67,10 +100,9 @@ export const SharedProductPreviewCard: React.FC<
   const signature = useUniverseSignature(shop.shopType);
 
   // Prix réactif : utilise override ou prix du produit
-  const displayPrice =
-    priceOverride !== undefined
-      ? priceOverride
-      : product.price?.toFixed(2) || "0.00";
+  const displayPrice = formatPrice(
+    priceOverride !== undefined ? priceOverride : product.price || 0
+  );
 
   // Statut stock simple
   const getStockBadgeColor = () => {
@@ -79,18 +111,22 @@ export const SharedProductPreviewCard: React.FC<
     return "red";
   };
 
-  // 🎨 STYLES DIRECTEMENT ISSUS DES TOKENS/COLORS + MICRO-INTERACTIONS
+  // 🎨 STYLES DIRECTEMENT ISSUS DES TOKENS/COLORS + MICRO-INTERACTIONS + RESPONSIVE
   const cardStyles = {
     // Background selon univers
     bg: tokens.colors[50],
     borderWidth: "2px",
     borderColor: tokens.colors[200],
-    // BorderRadius selon tokens univers
+    // BorderRadius selon tokens
     borderRadius: tokens.borderRadius.base,
     // Typography selon tokens
     fontFamily: tokens.typography.fontFamily.body,
-    // Padding selon tokens
-    p: 4,
+    // Padding responsive
+    p: cardPadding,
+    // Responsive width management
+    w: "100%",
+    minW: { base: "280px", sm: "300px", md: "320px" },
+    maxW: { base: "100%", sm: "400px" },
     // 🆕 MICRO-INTERACTIONS ÉMOTIONNELLES AUTOMATIQUES
     ...getCardHoverProps(),
     // 🆕 CONTEXTE ÉMOTIONNEL (data attributes pour debug)
@@ -145,8 +181,8 @@ export const SharedProductPreviewCard: React.FC<
     <MotionBox
       {...cardStyles}
       {...getEntryAnimation()}
-      cursor="pointer"
-      onClick={() => onView?.(product)}
+      cursor={isAdminMode ? "default" : "pointer"}
+      onClick={() => !isAdminMode && onView?.(product)}
       height="100%"
       display="flex"
       flexDirection="column"
@@ -155,10 +191,10 @@ export const SharedProductPreviewCard: React.FC<
       {/* Image avec interactions spécifiques */}
       <Box position="relative" mb={3}>
         <Image
-          src={product.imageUrl || "/images/products/placeholder.jpg"}
+          src={getProductImageUrl(product.imageUrl)}
           alt={product.name}
           w="100%"
-          h="200px"
+          h={imageHeight}
           objectFit="cover"
           borderRadius={tokens.borderRadius.md}
           loading="lazy"
@@ -177,8 +213,10 @@ export const SharedProductPreviewCard: React.FC<
             right={2}
             colorScheme={getStockBadgeColor()}
             borderRadius={tokens.borderRadius.base}
-            fontSize="xs"
+            fontSize={{ base: "xs", sm: "xs" }}
             fontWeight={tokens.typography.fontWeight.bold}
+            px={{ base: 1, sm: 2 }}
+            py={1}
           >
             {product.stockStatus === "in_stock"
               ? "En stock"
@@ -187,74 +225,100 @@ export const SharedProductPreviewCard: React.FC<
               : "Rupture"}
           </Badge>
         )}
+
+        {/* Bouton de modification en mode admin */}
+        {isAdminMode && showActions && onEdit && (
+          <IconButton
+            aria-label="Modifier le produit"
+            icon={<EditIcon />}
+            position="absolute"
+            top={2}
+            left={2}
+            size="sm"
+            colorScheme={tokens.meta.colorScheme}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(product);
+            }}
+          />
+        )}
       </Box>
 
-      {/* Contenu avec typography émotionnelle */}
-      <VStack align="stretch" spacing={3} flex={1}>
+      {/* Contenu produit avec responsive typography */}
+      <VStack align="start" spacing={{ base: 2, sm: 3 }} flex={1}>
         <Text
-          fontSize={isHighlighted ? "lg" : "md"}
+          fontSize={{ base: "md", sm: "lg" }}
           fontWeight={tokens.typography.fontWeight.bold}
-          color={tokens.colors[800]}
-          fontFamily={tokens.typography.fontFamily.heading}
+          color={colors.text.primary}
+          lineHeight="1.2"
           noOfLines={2}
-          lineHeight={emotions.rhythm === "slow" ? "relaxed" : "normal"}
         >
           {product.name}
         </Text>
 
         {product.description && (
           <Text
-            fontSize="sm"
-            color={tokens.colors[600]}
-            fontFamily={tokens.typography.fontFamily.body}
-            noOfLines={2}
+            fontSize={{ base: "xs", sm: "sm" }}
+            color={colors.text.subtle}
+            lineHeight="1.4"
+            noOfLines={{ base: 2, sm: 3 }}
           >
             {product.description}
           </Text>
         )}
 
-        <HStack justify="space-between" align="center">
-          <Text
-            fontSize={isHighlighted ? "xl" : "lg"}
-            fontWeight={tokens.typography.fontWeight.heavy}
-            color={tokens.colors[700]}
-            fontFamily={tokens.typography.fontFamily.heading}
+        {/* Catégorie avec badge responsive */}
+        {product.category && (
+          <Badge
+            colorScheme={tokens.meta.colorScheme}
+            fontSize={{ base: "xs", sm: "xs" }}
+            px={{ base: 1, sm: 2 }}
+            py={1}
+            borderRadius={tokens.borderRadius.base}
           >
-            {displayPrice}€
-          </Text>
-        </HStack>
-
-        {/* 🔘 BOUTON ÉMOTIONNEL AUTOMATIQUE */}
-        {onAddToCart && (
-          <Button
-            {...getPrimaryProps()}
-            size="sm"
-            w="full"
-            mt="auto"
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddToCart(product);
-            }}
-            disabled={product.stockStatus === "out_of_stock"}
-          >
-            {product.stockStatus === "out_of_stock"
-              ? "Rupture"
-              : "Ajouter au panier"}
-          </Button>
+            {product.category.name}
+          </Badge>
         )}
-      </VStack>
 
-      {/* 🆕 ÉLÉMENT SIGNATURE VISUEL DISCRET */}
-      <Box
-        position="absolute"
-        top={2}
-        left={2}
-        fontSize="xs"
-        opacity={0.6}
-        color={colors.text.subtle}
-      >
-        {signature.signature.visualElement}
-      </Box>
+        {/* Prix et actions avec layout responsive */}
+        <Box w="100%" mt="auto">
+          <HStack
+            justify="space-between"
+            align="center"
+            w="100%"
+            flexWrap="wrap"
+            gap={2}
+          >
+            <Text
+              fontSize={{ base: "lg", sm: "xl" }}
+              fontWeight={tokens.typography.fontWeight.heavy}
+              color={colors.primary}
+              fontFamily={tokens.typography.fontFamily.heading}
+            >
+              {displayPrice}
+            </Text>
+
+            {!isAdminMode && onAddToCart && (
+              <Button
+                {...getPrimaryProps()}
+                size={buttonSize}
+                fontSize={fontSize}
+                px={{ base: 3, sm: 4 }}
+                py={{ base: 2, sm: 2 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddToCart(product);
+                }}
+                isDisabled={product.stockStatus === "out_of_stock"}
+                minW={{ base: "auto", sm: "120px" }}
+                flexShrink={0}
+              >
+                Ajouter
+              </Button>
+            )}
+          </HStack>
+        </Box>
+      </VStack>
     </MotionBox>
   );
 };

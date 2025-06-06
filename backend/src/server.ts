@@ -4,8 +4,11 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express, { NextFunction, Request, Response } from "express";
 import expressStaticGzip from "express-static-gzip";
+import fs from "fs/promises";
+import path from "path";
 import { errorHandler } from "./middleware/errorHandler";
 import adminRouter from "./routes/admin";
+import uploadRouter from "./routes/admin/upload";
 import categoriesRouter from "./routes/categories";
 import productsRouter from "./routes/products";
 
@@ -14,6 +17,10 @@ dotenv.config();
 const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3001;
+
+// Créer le dossier uploads s'il n'existe pas
+const uploadsDir = path.join(process.cwd(), "uploads");
+fs.mkdir(uploadsDir, { recursive: true }).catch(console.error);
 
 // 🗜️ COMPRESSION GZIP/BROTLI POUR PERFORMANCE
 app.use(
@@ -32,6 +39,9 @@ app.use(
 
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
+
+// Servir les fichiers statiques uploads
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // Cache headers pour assets statiques
 app.use(
@@ -185,6 +195,7 @@ app.get("/api/shops/:shopId/products", async (req, res) => {
 
 // Routes modulaires CRUD
 app.use("/api/admin", adminRouter);
+app.use("/api/admin/upload", uploadRouter);
 app.use("/api/products", productsRouter);
 app.use("/api/categories", categoriesRouter);
 
