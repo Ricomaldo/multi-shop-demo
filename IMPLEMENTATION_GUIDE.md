@@ -19,6 +19,22 @@ Guide pratique pour transformer DemoForge en plateforme client-ready. Approche p
 | **Time to Interactive** | <400ms     | **<200ms**     | ✅ **DÉPASSÉ** |
 | **Timeline**            | 2 semaines | **4 heures**   | ✅ **DÉPASSÉ** |
 
+### **🧹 NETTOYAGE ARCHITECTURE - NOUVEAU ✅**
+
+#### **Dead Code Supprimé**
+
+- ❌ `SimpleStoreContext.tsx` → Inutilisé, supprimé
+- ❌ `useSimpleStore.ts` → Hook orphelin, supprimé
+- ❌ Références `useShopData` → Imports cassés nettoyés
+- ❌ Complexité context inutile → Architecture simplifiée
+
+#### **Architecture Optimisée Documentée**
+
+- ✅ **Hooks directs** : Plus simple que contexts
+- ✅ **Performance préservée** : 97.5% réduction API maintenue
+- ✅ **React Query natif** : Pattern standard sans abstraction
+- ✅ **Extensibilité client** : Hooks enrichissables facilement
+
 ### **🔥 Performance Transformation**
 
 #### Avant Optimisation
@@ -52,30 +68,43 @@ Guide pratique pour transformer DemoForge en plateforme client-ready. Approche p
 
 ## 🚀 DÉMARRAGE IMMÉDIAT - PALIER 2
 
-### **Architecture Actuelle Validée**
+### **Architecture Réelle Simplifiée ✅**
 
 ```
 App.tsx
-└── QueryClientProvider (React Query)
-    ├── AdminProvider (useStoreDataQuery)
+└── QueryClientProvider (React Query global)
+    ├── AdminProvider (pour /admin uniquement)
     │   └── Admin Pages (Dashboard, Products, etc.)
-    └── Store Pages (useStoreDataQuery partagé)
+    └── Store Routes (hooks directs - PLUS SIMPLE)
+        ├── useStorePage() → Gestion état boutique
+        ├── useStoreDataQuery() → Cache données centralisé
+        ├── useStoreHandlers() → Actions utilisateur
+        └── useShopContent() → Contenu statique univers
 ```
 
-### **Hook Unifié Opérationnel**
+### **Hooks Core Opérationnels ✅**
 
 ```typescript
-// frontend/src/hooks/useStore.ts - DÉJÀ IMPLÉMENTÉ
-export function useStore() {
-  const context = useContext(StoreContext);
-  if (!context) throw new Error("useStore must be used within StoreProvider");
-  return context;
+// frontend/src/hooks/useStorePage.ts - HOOK PRINCIPAL
+export function useStorePage(options = {}) {
+  const { shops, products, loading, refetch } = useStoreDataQuery();
+  const { shopType } = useParams();
+
+  // État local boutique + navigation + transitions
+  return {
+    currentShop,
+    shopProducts,
+    loading,
+    isReady,
+    handleShopChange,
+  };
 }
 
-export function useStoreConfig() {
-  const { universeTokens, currentShop, isConfigurable } = useStore();
-  return { universeTokens, currentShop, isConfigurable };
-}
+// frontend/src/hooks/useStoreDataQuery.ts - DONNÉES CENTRALISÉES
+export const useStoreDataQuery = () => {
+  // React Query avec cache 5min/10min + enrichissement tokens
+  return { shops, products, loading, error, refetch };
+};
 ```
 
 ## 📅 PLAN PALIER 2 - SEMAINE EN COURS
@@ -109,8 +138,13 @@ export function StorePage({
   customization,
   variant = "demo",
 }: StorePageProps) {
-  const { currentShop, isReady, isChanging } = useStore();
-  const { universeTokens } = useStoreConfig();
+  // ✅ ARCHITECTURE RÉELLE - Hooks directs
+  const { currentShop, isReady, isChanging } = useStorePage();
+
+  // ✨ Tokens avec fallback intelligent
+  const universeTokens = currentShop
+    ? getUniverseTokens(currentShop.shopType)
+    : getUniverseTokens("brewery");
 
   // ✨ Adaptation client si config fournie
   const effectiveTokens = customization?.tokens || universeTokens;
@@ -284,9 +318,11 @@ curl http://localhost:3001/api/store/data  # API répond
 ### **Base Technique Solide**
 
 - **React Query** : Cache 5min/10min optimal
+- **Architecture simplifiée** : Hooks directs sans over-engineering
 - **Storage system** : Prêt config client
-- **0 dette technique** : Code propre maintenable
+- **0 dette technique** : Dead code supprimé
 - **Type safety** : 100% TypeScript strict
+- **Performance** : 97.5% réduction API calls maintenue
 
 ## 🔮 VISION FINALE
 

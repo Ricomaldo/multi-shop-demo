@@ -8,24 +8,80 @@ Architecture technique transformant DemoForge de plateforme demo vers solution c
 **Solution** : Migration 4 paliers progressifs vers plateforme client-ready  
 **ROI** : -97.5% API calls (accompli) + livraisons client 10x plus rapides
 
-## 🎯 ARCHITECTURE CIBLE
+## ✅ ARCHITECTURE RÉELLE DOCUMENTÉE
 
-### Structure Unifiée
+### **Découverte : Simplicité > Complexité**
+
+L'audit a révélé une architecture **naturellement optimisée** qui fonctionne parfaitement :
+
+```
+App.tsx (Architecture Actuelle ✅)
+└── QueryClientProvider (React Query - cache global)
+    ├── AdminProvider (pour /admin uniquement)
+    │   ├── AdminContext (gestion boutiques admin)
+    │   └── Admin Pages (Dashboard, Products, etc.)
+    └── Store Routes (HOOKS DIRECTS - Plus simple !)
+        ├── useStorePage() → État boutique + navigation
+        ├── useStoreDataQuery() → Données + cache React Query
+        ├── useStoreHandlers() → Actions utilisateur
+        └── useShopContent() → Contenu statique univers
+```
+
+### **Avantages Architecture Actuelle**
+
+#### **1. Performance Optimale ✅**
+
+- **1 appel API** `/api/store/data` au démarrage
+- **0 appel navigation** entre pages (cache React Query)
+- **<200ms Time to Interactive** maintenu
+- **Aucune sur-couche** contexte inutile
+
+#### **2. Simplicité de Maintenance ✅**
+
+- **Hooks directs** → Plus facile à débugger
+- **Pas de context hell** → Moins d'abstractions
+- **React Query natif** → Pattern standard
+- **État local minimaliste** → useStorePage() suffit
+
+#### **3. Extensibilité Client-Ready ✅**
+
+- **Tokens enrichis automatiquement** dans useStoreDataQuery
+- **Hooks facilement enrichissables** avec props client
+- **Pas de refactoring** majeur nécessaire
+- **Ajout couche client** sans impact architecture
+
+## 🎯 ARCHITECTURE ACTUELLE ✅
+
+### Structure Réelle Simplifiée
 
 ```
 App.tsx
-└── PlatformProvider ← Une seule source de données + config client
-    ├── StoreProvider (context demo/client unifié)
-    ├── UniverseProvider (tokens + customisation)
-    └── Router
-        ├── Demo Pages (existantes préservées)
-        └── Client Templates (générés automatiquement)
+└── QueryClientProvider (React Query - cache global)
+    ├── AdminProvider (pour /admin uniquement)
+    │   └── Admin Pages + Contexts
+    └── Routes Store (hooks directs - PLUS SIMPLE)
+        ├── useStorePage() → État boutique + navigation
+        ├── useStoreDataQuery() → Données centralisées + cache
+        ├── useStoreHandlers() → Actions produits
+        └── useShopContent() → Contenu statique univers
+```
+
+### Architecture Client-Ready (Paliers 2-4)
+
+```
+App.tsx (préservé)
+└── QueryClientProvider
+    ├── AdminProvider (inchangé)
+    └── PlatformProvider (ajout couche client)
+        ├── Mode: "demo" | "client"
+        ├── ClientConfig → UniverseTokens
+        └── Routes (hooks enrichis tokens)
 ```
 
 ### Principe de Configuration
 
 ```typescript
-ClientConfig → PlatformProvider → RenderedSite
+ClientConfig → EnrichedTokens → ExistingHooks → RenderedSite
 ```
 
 ## 🚀 PLAN DE MIGRATION - 4 PALIERS
@@ -35,45 +91,33 @@ ClientConfig → PlatformProvider → RenderedSite
 **Objectif** : Résoudre duplication useStorePage()  
 **Résultat** : 97.5% réduction API calls (vs objectif 75%)
 
-#### Architecture Actuelle
+#### Architecture Réelle Simplifiée ✅
 
 ```typescript
-// frontend/src/contexts/StoreContext.tsx
-export function StoreProvider({ children }: { children: ReactNode }) {
-  const storeState = useStorePage({
-    redirectOnShopChange: true,
-  });
-
-  const universeTokens = getUniverseTokens(
-    storeState.currentShop?.shopType || "brewery"
-  );
-
-  const value: StoreContextValue = {
-    ...storeState,
-    universeTokens,
-    isConfigurable: false, // Mode demo
-  };
-
-  return (
-    <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
-  );
-}
+// Architecture SANS contexte - Plus simple et efficace
+App.tsx
+└── QueryClientProvider (React Query global)
+    ├── AdminProvider (pour /admin uniquement)
+    └── Routes Store (hooks directs)
+        └── useStorePage() + useStoreDataQuery()
 ```
 
-#### Hook Unifié
+#### Hooks Core Opérationnels
 
 ```typescript
-// frontend/src/hooks/useStore.ts
-export function useStore() {
-  const context = useContext(StoreContext);
-  if (!context) throw new Error("useStore must be used within StoreProvider");
-  return context;
+// frontend/src/hooks/useStorePage.ts - HOOK PRINCIPAL
+export function useStorePage(options = {}) {
+  const { shops, products, loading, refetch } = useStoreDataQuery();
+  // Logique état boutique + navigation
+  return { currentShop, shopProducts, loading, isReady, handleShopChange };
 }
 
-export function useStoreConfig() {
-  const { universeTokens, currentShop, isConfigurable } = useStore();
-  return { universeTokens, currentShop, isConfigurable };
-}
+// frontend/src/hooks/useStoreDataQuery.ts - DONNÉES CENTRALISÉES
+export const useStoreDataQuery = () => {
+  // React Query avec cache 5min/10min
+  // Enrichissement universeTokens automatique
+  return { shops, products, loading, error, refetch };
+};
 ```
 
 **✅ Métriques Palier 1**
@@ -104,8 +148,13 @@ export function StorePage({
   customization,
   variant = "demo",
 }: StorePageProps) {
-  const { currentShop, isReady, isChanging } = useStore();
-  const { universeTokens } = useStoreConfig();
+  // ✅ ARCHITECTURE RÉELLE - Hooks directs
+  const { currentShop, isReady, isChanging } = useStorePage();
+
+  // ✨ Tokens avec fallback intelligent
+  const universeTokens = currentShop
+    ? getUniverseTokens(currentShop.shopType)
+    : getUniverseTokens("brewery");
 
   // ✨ Adaptation client si configuration fournie
   const effectiveTokens = customization?.tokens || universeTokens;
