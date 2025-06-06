@@ -10,8 +10,6 @@ DemoForge est une **démo e-commerce** avec 4 thèmes visuels différents :
 
 ## 🏗️ Architecture Simple
 
-### Frontend
-
 ```
 App.tsx
 ├── AdminProvider (pour /admin)
@@ -19,29 +17,8 @@ App.tsx
 └── Routes Store (Pages vitrine thématisées)
     ├── useStorePage() - Gestion boutique actuelle
     ├── useStoreDataQuery() - Données + cache
-    └── getUniverseTokens() - Couleurs par thème
+    └── useUniverseTokens() - Couleurs par thème
 ```
-
-### Backend - Architecture Hybride Pragmatique
-
-```
-server.ts (Point d'entrée principal)
-├── Routes Directes (endpoints simples)
-│   ├── GET /api/health - Test serveur
-│   ├── GET /api/store/data - 🚀 Endpoint unifié (shops + products + categories)
-│   ├── GET /api/shops - Liste boutiques
-│   └── GET /api/shops/:id/products - Produits par boutique
-└── Routes Modulaires (CRUD complexe)
-    ├── /api/admin/shops - Gestion boutiques
-    ├── /api/admin/products - Gestion produits
-    └── /api/admin/categories - Gestion catégories
-```
-
-**💡 Pourquoi cette approche ?**
-
-- **Routes directes** : Pour les endpoints simples et performants
-- **Routes modulaires** : Pour le CRUD admin complexe avec validation
-- **Endpoint unifié** `/api/store/data` : Remplace 40+ appels par 1 seul → Performance ⚡
 
 ## 🎨 Système de Thèmes
 
@@ -106,52 +83,8 @@ yarn reset-db  # Remplit la DB avec des produits d'exemple
 
 ### Backend
 
-- `src/server.ts` - Point d'entrée + routes directes
-- `src/routes/admin/` - Routes modulaires CRUD (shops, products, categories)
-- `src/routes/products.ts` - Route publique produits
-- `src/routes/categories.ts` - Route publique catégories
+- `src/routes/` - API endpoints
 - `prisma/schema.prisma` - Structure base de données
-- `prisma/seed.ts` - Données d'exemple (yarn reset-db)
-
-## 📡 API et Performance
-
-### Endpoint Unifié - La Clé de la Performance
-
-```typescript
-// 🚀 UN SEUL appel pour TOUTES les données
-GET /api/store/data
-
-// Retourne:
-{
-  shops: [...],           // Toutes les boutiques avec catégories
-  products: [...],        // Tous les produits avec relations
-  categories: [...],      // Toutes les catégories
-  meta: {                 // Métadonnées utiles
-    shopsCount: 4,
-    productsCount: 40,
-    timestamp: "..."
-  }
-}
-```
-
-**💡 Avantages :**
-
-- **1 appel** au lieu de 40+ → Latence divisée par 10
-- **Cache React Query** → Navigation instantanée
-- **Relations Prisma** → Données complètes en 1 fois
-
-### Tester l'API
-
-```bash
-# Test santé serveur
-curl http://localhost:3001/api/health
-
-# Récupérer toutes les données
-curl http://localhost:3001/api/store/data | jq
-
-# Produits d'une boutique spécifique
-curl http://localhost:3001/api/shops/SHOP_ID/products
-```
 
 ## 🛠️ Développement Quotidien
 
@@ -190,28 +123,6 @@ export function useMonHook() {
 }
 ```
 
-### Utiliser le système de thèmes
-
-```typescript
-// ✅ Approche recommandée - Direct
-import { getUniverseTokens } from "@/theme/universeTokens";
-
-function MonComposant() {
-  const { currentShop } = useStorePage();
-  const tokens = getUniverseTokens(currentShop?.shopType || "brewery");
-
-  return (
-    <Box
-      bg={tokens.colors[500]}
-      borderRadius={tokens.borderRadius.md}
-      _hover={{ transform: tokens.animations.hover.transform.md }}
-    >
-      Thématisé automatiquement !
-    </Box>
-  );
-}
-```
-
 ## 🔧 Stack Technique
 
 - **Frontend** : React 19 + TypeScript + Chakra UI + Vite
@@ -238,37 +149,19 @@ yarn reset-db       # Remettre données de test
 
 ### Page blanche ?
 
-1. **Backend** : Vérifier port 3001 avec `curl http://localhost:3001/api/health`
-2. **Frontend** : Console navigateur → Erreurs réseau/JavaScript
-3. **API** : Tester endpoint unifié `curl http://localhost:3001/api/store/data`
-4. **Base de données** : `cd backend && yarn db:studio` pour voir les données
+1. Vérifier que backend tourne (port 3001)
+2. Vérifier console navigateur pour erreurs
+3. Tester API : `curl http://localhost:3001/api/store/data`
 
 ### Thème ne s'applique pas ?
 
-1. **URL** : Vérifier `/store/brewery`, `/store/teaShop`, `/store/beautyShop`, `/store/herbShop`
-2. **Network** : Console → Onglet Réseau → Vérifier appel `/api/store/data` réussi
-3. **Tokens** : `console.log(getUniverseTokens('brewery'))` pour débugger les couleurs
-4. **Hook** : Vérifier que `useStorePage()` retourne une `currentShop` valide
+1. Vérifier l'URL : `/store/brewery`, `/store/teaShop`, etc.
+2. Console → Network → vérifier appel API réussi
 
 ### Performance lente ?
 
-- **1er chargement** : Normal (fetch de toutes les données)
-- **Navigation suivante** : Instantanée grâce au cache React Query
-- **Cache** : Expire après 5min → Refetch automatique en arrière-plan
-- **Debug cache** : React Query DevTools disponibles en dev
-
-### Erreurs de build ?
-
-```bash
-# Frontend
-cd frontend
-yarn type-check  # Vérifier TypeScript
-yarn build       # Tester build production
-
-# Backend
-cd backend
-yarn build       # Compiler TypeScript
-```
+- React Query cache les données automatiquement
+- Après le 1er chargement, navigation = instantanée
 
 ## 📝 Notes pour Plus Tard
 

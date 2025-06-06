@@ -1,7 +1,9 @@
 import { PrismaClient } from "@prisma/client";
+import compression from "compression";
 import cors from "cors";
 import dotenv from "dotenv";
 import express, { NextFunction, Request, Response } from "express";
+import expressStaticGzip from "express-static-gzip";
 import { errorHandler } from "./middleware/errorHandler";
 import adminRouter from "./routes/admin";
 import categoriesRouter from "./routes/categories";
@@ -13,8 +15,40 @@ const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3001;
 
+// 🗜️ COMPRESSION GZIP/BROTLI POUR PERFORMANCE
+app.use(
+  compression({
+    level: 6, // Compression niveau moyen (balance performance/taille)
+    threshold: 1024, // Compresser seulement les réponses > 1KB
+    filter: (req, res) => {
+      // Compresser tous les content-types sauf déjà compressés
+      if (req.headers["x-no-compression"]) {
+        return false;
+      }
+      return compression.filter(req, res);
+    },
+  })
+);
+
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
+
+// Cache headers pour assets statiques
+app.use(
+  express.static("public", {
+    maxAge: "1y", // Images cachées 1 an
+    etag: true,
+    lastModified: true,
+  })
+);
+
+// 🚀 SERVIR LES ASSETS FRONTEND AVEC COMPRESSION GZIP
+app.use(
+  expressStaticGzip("../frontend/dist", {
+    enableBrotli: true,
+    orderPreference: ["br", "gz"],
+  })
+);
 
 // Middleware de validation corrigé
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -95,9 +129,15 @@ app.get("/api/store/data", async (req, res) => {
       },
     };
 
+    const responseSize = JSON.stringify(responseData).length;
     console.log(
-      `✅ /api/store/data - Retour ${shops.length} shops, ${products.length} products, ${categories.length} categories`
+      `✅ /api/store/data - Retour ${shops.length} shops, ${
+        products.length
+      } products, ${categories.length} categories (${Math.round(
+        responseSize / 1024
+      )}KB)`
     );
+
     res.json(responseData);
   } catch (error) {
     console.error("❌ Erreur /api/store/data:", error);
@@ -154,6 +194,7 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`🚀 Serveur DemoForge démarré sur http://localhost:${PORT}`);
   console.log(`📡 API disponible sur http://localhost:${PORT}/api/health`);
+  console.log(`🗜️ Compression GZIP activée`);
 });
 
 // Gestion propre de l'arrêt

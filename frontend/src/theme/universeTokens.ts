@@ -1,5 +1,7 @@
 // Type direct depuis la base de données - plus de mapping inutile !
-export type ShopType = "brewery" | "teaShop" | "beautyShop" | "herbShop";
+import type { ShopType } from "../../../shared/types";
+
+export type { ShopType };
 
 // Couleurs intégrées directement (depuis universeColors.ts)
 const shopColors = {

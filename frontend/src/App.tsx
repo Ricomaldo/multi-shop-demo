@@ -1,4 +1,6 @@
+import { Box, Spinner } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import AdminLayout from "./components/layout/admin/AdminLayout";
 import { AdminProvider } from "./contexts/AdminContext";
@@ -6,13 +8,21 @@ import Categories from "./pages/admin/Categories";
 import Dashboard from "./pages/admin/Dashboard";
 import Products from "./pages/admin/Products";
 import Settings from "./pages/admin/Settings";
-import EmotionalSystemDemo from "./pages/EmotionalSystemDemo";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
-import StoreCatalogueView from "./pages/store/StoreCatalogueView";
-import StoreContact from "./pages/store/StoreContact";
-import StoreLandingGeneric from "./pages/store/StoreLandingGeneric";
-import StoreProductDetail from "./pages/store/StoreProductDetail";
+
+// 🚀 LAZY LOADING DES PAGES LOURDES POUR PERFORMANCE
+const EmotionalSystemDemo = lazy(() => import("./pages/EmotionalSystemDemo"));
+const StoreCatalogueView = lazy(
+  () => import("./pages/store/StoreCatalogueView")
+);
+const StoreContact = lazy(() => import("./pages/store/StoreContact"));
+const StoreLandingGeneric = lazy(
+  () => import("./pages/store/StoreLandingGeneric")
+);
+const StoreProductDetail = lazy(
+  () => import("./pages/store/StoreProductDetail")
+);
 
 /**
  * App principal avec page vitrine générique 4-in-1
@@ -22,6 +32,7 @@ import StoreProductDetail from "./pages/store/StoreProductDetail";
  * - Routes admin (/admin/*) avec AdminProvider
  * - Page vitrine générique pour tous les univers (/store/:shopType)
  * - Routes spécialisées (/store/:shopType/contact, /products, etc.)
+ * - Lazy loading pour les pages lourdes
  */
 
 // 🚀 Configuration React Query
@@ -36,15 +47,37 @@ const queryClient = new QueryClient({
   },
 });
 
+// Composant de chargement simple et rapide
+const PageLoader = () => (
+  <Box
+    h="200px"
+    display="flex"
+    alignItems="center"
+    justifyContent="center"
+    w="100%"
+  >
+    <Spinner size="lg" color="blue.500" thickness="3px" />
+  </Box>
+);
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Routes>
-        {/* ==== ROUTES PUBLIQUES ==== */}
+        {/* ==== ROUTES PUBLIQUES (chargement immédiat) ==== */}
         <Route path="/" element={<Home />} />
-        <Route path="/demo" element={<EmotionalSystemDemo />} />
 
-        {/* ==== ROUTES ADMIN ==== */}
+        {/* ==== ROUTES LOURDES AVEC LAZY LOADING ==== */}
+        <Route
+          path="/demo"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <EmotionalSystemDemo />
+            </Suspense>
+          }
+        />
+
+        {/* ==== ROUTES ADMIN (chargement immédiat car moins lourdes) ==== */}
         <Route
           path="/admin"
           element={
@@ -59,18 +92,40 @@ export default function App() {
           <Route path="settings" element={<Settings />} />
         </Route>
 
-        {/* ==== ROUTES VITRINE - Page générique 4-in-1 ==== */}
-        <Route path="/store/:shopType" element={<StoreLandingGeneric />} />
+        {/* ==== ROUTES VITRINE AVEC LAZY LOADING ==== */}
+        <Route
+          path="/store/:shopType"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <StoreLandingGeneric />
+            </Suspense>
+          }
+        />
 
-        {/* ==== ROUTES SPÉCIALISÉES ==== */}
-        <Route path="/store/:shopType/contact" element={<StoreContact />} />
+        {/* ==== ROUTES SPÉCIALISÉES AVEC LAZY LOADING ==== */}
+        <Route
+          path="/store/:shopType/contact"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <StoreContact />
+            </Suspense>
+          }
+        />
         <Route
           path="/store/:shopType/products"
-          element={<StoreCatalogueView />}
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <StoreCatalogueView />
+            </Suspense>
+          }
         />
         <Route
           path="/store/:shopType/product/:productId"
-          element={<StoreProductDetail />}
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <StoreProductDetail />
+            </Suspense>
+          }
         />
 
         {/* ==== REDIRECTIONS ==== */}

@@ -2,7 +2,7 @@
   "universeContent": {
     "brewery": {
       "heroSubtitle": "Brasserie artisanale - L'art du houblon et de la tradition depuis 1987",
-      "heroImage": "/images/store/brewery-hero.jpg",
+      "heroImage": "/images/store/brewery-hero.webp",
       "sections": {
         "main": {
           "title": "Nos brassages du moment",
@@ -42,7 +42,7 @@
     },
     "beautyShop": {
       "heroSubtitle": "Institut de beauté - Sublimez votre éclat naturel",
-      "heroImage": "/images/store/beauty-hero.jpg",
+      "heroImage": "/images/store/beauty-hero.webp",
       "sections": {
         "main": {
           "title": "Votre beauté naturelle",

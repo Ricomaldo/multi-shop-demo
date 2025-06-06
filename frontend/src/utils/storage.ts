@@ -26,10 +26,8 @@ const memoryFallback = new Map<string, string>();
  */
 class StorageManager {
   private storage: Storage | null;
-  private type: StorageType;
 
   constructor(type: StorageType = "localStorage") {
-    this.type = type;
     this.storage = isStorageAvailable(type) ? window[type] : null;
   }
 
