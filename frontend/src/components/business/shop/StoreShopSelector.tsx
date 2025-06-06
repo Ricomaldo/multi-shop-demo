@@ -1,6 +1,6 @@
-import type { Shop } from "@/types";
 import { useOpeningStatus } from "@/hooks/useOpeningStatus";
 import { getUniverseTokens } from "@/theme/universeTokens";
+import type { Shop } from "@/types";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 import {
   Badge,
